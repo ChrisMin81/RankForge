@@ -121,6 +121,10 @@ def build_wow_environment(lua):
         return "Priest", "PRIEST"
     end
 
+    function UnitLevel(unit)
+        return 60
+    end
+
     function IsHarmfulSpell(name)
         if name == "Mind Blast" or name == "Shadow Word: Pain" or name == "Smite" or name == "Frostbolt" then
             return true

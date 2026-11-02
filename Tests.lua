@@ -676,6 +676,25 @@ RegisterTest("UI & Layout: Toggle-All column header functionality", function()
     AssertEquals(cfg.modifiers[2].targetMouseover, false, "Mod 2 should now be false")
 end)
 
+RegisterTest("Sweet Spot: GetSpellSweetSpot calculates optimal mana efficiency rank", function()
+    -- Mock knownSpells for Renew (10 ranks) and Flash Heal (7 ranks)
+    RF.knownSpells["Renew"] = { name = "Renew", maxRank = 10, hasRanks = true }
+    RF.knownSpells["Flash Heal"] = { name = "Flash Heal", maxRank = 7, hasRanks = true }
+
+    -- Level 60: min level is max(20, 60-18) = 42
+    -- Renew: Rank 7 is level 44 (offset 10 - 7 = 3)
+    local renewOffset, renewRank, reqLvl = RF:GetSpellSweetSpot("Renew")
+    AssertEquals(renewRank, 7, "Renew sweet spot rank at level 60 should be 7")
+    AssertEquals(renewOffset, 3, "Renew sweet spot offset at level 60 should be 3 (-3)")
+    AssertEquals(reqLvl, 44, "Renew sweet spot level should be 44")
+
+    -- Flash Heal: Rank 5 is level 44 (offset 7 - 5 = 2)
+    local fhOffset, fhRank, fhLvl = RF:GetSpellSweetSpot("Flash Heal")
+    AssertEquals(fhRank, 5, "Flash Heal sweet spot rank at level 60 should be 5")
+    AssertEquals(fhOffset, 2, "Flash Heal sweet spot offset at level 60 should be 2 (-2)")
+    AssertEquals(fhLvl, 44, "Flash Heal sweet spot level should be 44")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

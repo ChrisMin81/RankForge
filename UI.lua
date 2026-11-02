@@ -648,9 +648,51 @@ local function CreateMainUI()
 
         local descText = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
         descText:SetPoint("LEFT", row, "LEFT", 228, 0)
-        descText:SetWidth(36)
+        descText:SetWidth(20)
         descText:SetJustifyH("LEFT")
         row.descText = descText
+
+        -- Sweet Spot Recommendation Button (Gold Star)
+        local starBtn = CreateFrame("Button", nil, row)
+        starBtn:SetSize(14, 14)
+        starBtn:SetPoint("LEFT", row, "LEFT", 249, 0)
+
+        local starIcon = starBtn:CreateTexture(nil, "ARTWORK")
+        starIcon:SetAllPoints()
+        starIcon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_1")
+        starBtn.icon = starIcon
+        row.starBtn = starBtn
+
+        starBtn:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            GameTooltip:SetText(L["UI_SWEET_SPOT_TITLE"] or "Sweet Spot (Optimal Downrank)", 1, 0.82, 0)
+            local spName = currentMacro and currentMacro.spellName
+            if spName and spName ~= "" then
+                local bestOffset, bestRank, reqLvl = RF:GetSpellSweetSpot(spName)
+                GameTooltip:AddLine(string.format(L["UI_SWEET_SPOT_RECOMMENDED"] or "Optimal: Rank %d (Level %d+)", bestRank, reqLvl), 0, 1, 0)
+                GameTooltip:AddLine(L["UI_SWEET_SPOT_DESC"] or "Lowest rank with 100% spell power scaling for maximum mana efficiency.", 0.8, 0.8, 0.8, true)
+                GameTooltip:AddLine(L["UI_SWEET_SPOT_CLICK"] or "|cff00ff00[Click]|r Set this rank offset automatically", 0, 1, 0)
+            else
+                GameTooltip:AddLine(L["UI_SWEET_SPOT_NO_SPELL"] or "Select a base spell first.", 0.8, 0.8, 0.8)
+            end
+            GameTooltip:Show()
+        end)
+
+        starBtn:SetScript("OnLeave", function(self)
+            GameTooltip:Hide()
+        end)
+
+        starBtn:SetScript("OnClick", function(self)
+            local spName = currentMacro and currentMacro.spellName
+            if spName and spName ~= "" and currentMacro.modifiers and currentMacro.modifiers[i] then
+                local bestOffset, bestRank, reqLvl = RF:GetSpellSweetSpot(spName)
+                currentMacro.modifiers[i].rankOffset = bestOffset
+                row.offsetEdit:SetText(tostring(bestOffset))
+                row.descText:SetText(bestOffset == 0 and "(Max)" or string.format("(-%d)", bestOffset))
+                pcall(PlaySound, SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON or 856)
+                RF:UpdatePreview()
+            end
+        end)
 
         -- Grid Targeting Checkboxes per Row
         local function CreateRowTargetCheck(x, tooltipTitle, tooltipDesc, onToggle)
@@ -1175,6 +1217,15 @@ function RF:LoadModifiersIntoUI(macroConfig)
             if row.cbHelp then row.cbHelp:SetChecked(modData.isHelp == true) end
             if row.cbHarm then row.cbHarm:SetChecked(modData.isHarm == true) end
             if row.cbNodead then row.cbNodead:SetChecked(modData.isNodead ~= false) end
+
+            if row.starBtn and row.starBtn.icon then
+                local bestOffset = RF:GetSpellSweetSpot(macroConfig.spellName)
+                if bestOffset and off == bestOffset then
+                    row.starBtn.icon:SetAlpha(1.0)
+                else
+                    row.starBtn.icon:SetAlpha(0.4)
+                end
+            end
 
             local cSpell = modData.customSpell or ""
             row.customSpellEdit:SetText(cSpell)
