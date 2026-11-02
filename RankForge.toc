@@ -1,0 +1,15 @@
+## Interface: 11505, 11506, 11507, 16000, 16001, 20504, 20505, 30403, 110007
+## Title: |cff00ccffRankForge|r
+## Notes: Automatisches Erstellen und Verwalten von Downranking-Makros mit Modifikatoren, Mouseover, Presets und Drag&Drop.
+## Notes-enUS: Automatic downranking macro manager with modifier support, mouseover targeting, presets, and action bar drag&drop.
+## Author: Antigravity
+## Version: 1.0.0
+## SavedVariables: RankForgeDB
+## SavedVariablesPerCharacter: RankForgeCharDB
+
+Localization.lua
+Base64.lua
+Presets.lua
+Core.lua
+UI.lua
+Tests.lua

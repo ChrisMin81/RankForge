@@ -1,0 +1,488 @@
+--[[
+    RankForge - Tests.lua
+    In-Game JUnit-style Unit and Integration Test Suite.
+    Run via slash command: /rf test
+]]
+
+local addonName, RF = ...
+local L = RF.L
+
+RF.Tests = {}
+local TestSuite = {}
+local passedCount = 0
+local failedCount = 0
+local testResults = {}
+
+local function Assert(condition, message)
+    if not condition then
+        error(message or "Assertion failed", 2)
+    end
+end
+
+local function AssertEquals(actual, expected, message)
+    if actual ~= expected then
+        error(string.format("%s (Expected: %s, Actual: %s)", message or "AssertEquals failed", tostring(expected), tostring(actual)), 2)
+    end
+end
+
+local function AssertTrue(val, message)
+    AssertEquals(val, true, message)
+end
+
+local function AssertFalse(val, message)
+    AssertEquals(val, false, message)
+end
+
+local function RegisterTest(name, func)
+    table.insert(TestSuite, { name = name, func = func })
+end
+
+--------------------------------------------------------------------------------
+-- 1. Localization Tests
+--------------------------------------------------------------------------------
+RegisterTest("Localization: Required keys exist", function()
+    local requiredKeys = {
+        "ADDON_TITLE", "UI_TITLE", "UI_MACRO_NAME", "UI_SPELL_NAME",
+        "UI_STORAGE_ACCOUNT", "UI_STORAGE_CHAR", "UI_MOD_NOMOD",
+        "UI_MOD_SHIFT", "UI_MOD_CTRL", "UI_MOD_ALT",
+        "UI_MOD_SHIFT_CTRL", "UI_MOD_SHIFT_ALT", "UI_MOD_CTRL_ALT",
+        "MINIMAP_TOOLTIP_TITLE", "PRESETS_TITLE", "PROFILE_TITLE"
+    }
+    for _, key in ipairs(requiredKeys) do
+        Assert(L[key] ~= nil and L[key] ~= "", "Missing localization key: " .. key)
+    end
+end)
+
+--------------------------------------------------------------------------------
+-- 2. Base64 & Profile Serialization Tests
+--------------------------------------------------------------------------------
+RegisterTest("Base64 & Profile: Export and Import roundtrip", function()
+    local testProfile = {
+        macros = {
+            {
+                macroName = "DR_TestRenew",
+                spellName = "Renew",
+                isAccount = true,
+                fallbackMode = "omit",
+                targetMouseover = true,
+                modifiers = {
+                    { key = "shift", enabled = true, mode = "relative", rankOffset = 1, customSpell = "" },
+                    { key = "nomod", enabled = true, mode = "relative", rankOffset = 0, customSpell = "" },
+                }
+            }
+        }
+    }
+
+    local exportStr = RF:ExportProfileToString(testProfile)
+    Assert(exportStr:sub(1, 4) == "RF1:", "Export string must start with RF1: prefix")
+
+    local imported = RF:ImportProfileFromString(exportStr)
+    Assert(imported ~= nil, "Imported profile must not be nil")
+    Assert(#imported.macros == 1, "Imported profile must have 1 macro")
+    AssertEquals(imported.macros[1].macroName, "DR_TestRenew", "Macro name mismatch")
+    AssertEquals(imported.macros[1].spellName, "Renew", "Spell name mismatch")
+    AssertEquals(#imported.macros[1].modifiers, 2, "Modifiers count mismatch")
+end)
+
+RegisterTest("Base64 & Profile: Invalid string handling", function()
+    local result = RF:ImportProfileFromString("invalid_corrupted_data_!@#$")
+    AssertEquals(result, nil, "Corrupted string should return nil")
+    local empty = RF:ImportProfileFromString("")
+    AssertEquals(empty, nil, "Empty string should return nil")
+end)
+
+--------------------------------------------------------------------------------
+-- 3. Spell Scanning & Rank Data Tests
+--------------------------------------------------------------------------------
+RegisterTest("Spell Scanning: Spell ranks mock verification", function()
+    -- Inject mock known spell data
+    RF.knownSpells["TestSpell"] = {
+        name = "TestSpell",
+        maxRank = 8,
+        hasRanks = true,
+        rankWord = "Rank",
+        ranks = { [1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true },
+        subtexts = {
+            [1] = "Rank 1", [2] = "Rank 2", [3] = "Rank 3", [4] = "Rank 4",
+            [5] = "Rank 5", [6] = "Rank 6", [7] = "Rank 7", [8] = "Rank 8",
+        },
+        spellID = 12345
+    }
+
+    local info = RF:GetSpellRanksInfo("TestSpell")
+    Assert(info ~= nil, "Spell ranks info should exist")
+    AssertEquals(info.maxRank, 8, "Max rank should be 8")
+    AssertTrue(info.ranks[4], "Rank 4 should be known")
+    AssertEquals(info.subtexts[8], "Rank 8", "Subtext for Rank 8 must be 'Rank 8'")
+end)
+
+--------------------------------------------------------------------------------
+-- 4. Macro Generation: Modifiers & Ranks
+--------------------------------------------------------------------------------
+RegisterTest("Macro Generation: All 7 Modifiers and relative downranks", function()
+    RF.knownSpells["Renew"] = {
+        name = "Renew",
+        maxRank = 9,
+        hasRanks = true,
+        rankWord = "Rank",
+        ranks = { [1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true },
+        subtexts = {},
+        spellID = 139
+    }
+    for r = 1, 9 do
+        RF.knownSpells["Renew"].subtexts[r] = "Rank " .. r
+    end
+
+    local cfg = {
+        macroName = "DR_Renew",
+        spellName = "Renew",
+        targetMouseover = true,
+        targetMouseoverStrict = false,
+        fallbackMode = "omit",
+        modifiers = {
+            { key = "shift_ctrl", enabled = true, mode = "relative", rankOffset = 3, customSpell = "" },
+            { key = "shift_alt",  enabled = true, mode = "relative", rankOffset = 4, customSpell = "" },
+            { key = "ctrl_alt",   enabled = true, mode = "relative", rankOffset = 5, customSpell = "" },
+            { key = "shift",      enabled = true, mode = "relative", rankOffset = 1, customSpell = "" },
+            { key = "ctrl",       enabled = true, mode = "relative", rankOffset = 2, customSpell = "" },
+            { key = "alt",        enabled = true, mode = "relative", rankOffset = 6, customSpell = "" },
+            { key = "nomod",      enabled = true, mode = "relative", rankOffset = 0, customSpell = "" },
+        }
+    }
+
+    local body = RF:GenerateMacroBody(cfg)
+    Assert(body:find("#showtooltip"), "Macro must contain #showtooltip")
+    Assert(body:find("mod:shift,mod:ctrl"), "Must contain shift_ctrl condition")
+    Assert(body:find("mod:shift,mod:alt"), "Must contain shift_alt condition")
+    Assert(body:find("mod:ctrl,mod:alt"), "Must contain ctrl_alt condition")
+    Assert(body:find("mod:shift"), "Must contain shift condition")
+    Assert(body:find("mod:ctrl"), "Must contain ctrl condition")
+    Assert(body:find("mod:alt"), "Must contain alt condition")
+    Assert(body:find("Renew%(Rank 9%)"), "Must cast Rank 9 for nomod")
+    Assert(body:find("Renew%(Rank 8%)"), "Must cast Rank 8 for shift (offset 1)")
+    Assert(body:find("Renew%(Rank 7%)"), "Must cast Rank 7 for ctrl (offset 2)")
+    Assert(body:find("Renew%(Rank 6%)"), "Must cast Rank 6 for shift_ctrl (offset 3)")
+    Assert(body:find("Renew%(Rank 4%)"), "Must cast Rank 4 for ctrl_alt (offset 5)")
+end)
+
+--------------------------------------------------------------------------------
+-- 5. Macro Generation: Alternative Spell Overrides ("Alt. Zauber")
+--------------------------------------------------------------------------------
+RegisterTest("Macro Generation: Alternative spell override on modifier", function()
+    local cfg = {
+        macroName = "DR_Hybrid",
+        spellName = "Greater Heal",
+        targetMouseover = true,
+        modifiers = {
+            { key = "shift", enabled = true, mode = "custom", rankOffset = 0, customSpell = "Flash Heal" },
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0, customSpell = "" },
+        }
+    }
+
+    local body = RF:GenerateMacroBody(cfg)
+    Assert(body:find("Flash Heal"), "Macro must contain custom spell Flash Heal for shift")
+    Assert(body:find("Greater Heal"), "Macro must contain base spell Greater Heal for nomod")
+end)
+
+--------------------------------------------------------------------------------
+-- 6. Macro Generation: Fallback Modes (omit vs rank1)
+--------------------------------------------------------------------------------
+RegisterTest("Macro Generation: Fallback mode 'omit' vs 'rank1'", function()
+    RF.knownSpells["LowSpell"] = {
+        name = "LowSpell",
+        maxRank = 2,
+        hasRanks = true,
+        rankWord = "Rank",
+        ranks = { [1] = true, [2] = true },
+        subtexts = { [1] = "Rank 1", [2] = "Rank 2" }
+    }
+
+    -- Test omit: offset 3 would result in rank -1 (not learned) -> should omit
+    local cfgOmit = {
+        macroName = "DR_Low",
+        spellName = "LowSpell",
+        fallbackMode = "omit",
+        modifiers = {
+            { key = "shift", enabled = true, mode = "relative", rankOffset = 3 },
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0 },
+        }
+    }
+    local bodyOmit = RF:GenerateMacroBody(cfgOmit)
+    AssertFalse(bodyOmit:find("mod:shift") ~= nil, "Shift condition should be omitted when rank is not learned")
+
+    -- Test rank1 fallback: offset 3 -> fallback to Rank 1
+    local cfgRank1 = {
+        macroName = "DR_Low",
+        spellName = "LowSpell",
+        fallbackMode = "rank1",
+        modifiers = {
+            { key = "shift", enabled = true, mode = "relative", rankOffset = 3 },
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0 },
+        }
+    }
+    local bodyRank1 = RF:GenerateMacroBody(cfgRank1)
+    AssertTrue(bodyRank1:find("mod:shift") ~= nil, "Shift condition should be present in rank1 fallback mode")
+    AssertTrue(bodyRank1:find("LowSpell%(Rank 1%)") ~= nil, "Should cast Rank 1 as fallback")
+end)
+
+--------------------------------------------------------------------------------
+-- 7. Macro Generation: Targeting Conditions & Order
+--------------------------------------------------------------------------------
+RegisterTest("Macro Generation: Targeting conditions ordering", function()
+    local cfg = {
+        macroName = "DR_Targeting",
+        spellName = "Renew",
+        targetMouseover = true,
+        targetMouseoverStrict = false,
+        targetFocus = true,
+        targetToT = true,
+        targetSelfcast = true,
+        modifiers = {
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0 }
+        }
+    }
+    local body = RF:GenerateMacroBody(cfg)
+    Assert(body:find("@mouseover,help,nodead"), "Must have mouseover")
+    Assert(body:find("@focus,help,nodead"), "Must have focus")
+    Assert(body:find("@targettarget,help,nodead"), "Must have targettarget")
+    Assert(body:find("@player"), "Must have player selfcast fallback")
+end)
+
+RegisterTest("Macro Generation: Per-condition help, harm, nodead toggles", function()
+    local cfg = {
+        macroName = "DR_FilterTest",
+        spellName = "Flash Heal",
+        targetMouseover = true,
+        targetMouseoverHelp = true,
+        targetMouseoverHarm = false,
+        targetMouseoverNodead = false, -- user unchecks nodead!
+        targetFocus = true,
+        targetFocusHelp = false,
+        targetFocusHarm = true,
+        targetFocusNodead = true, -- offensive focus
+        modifiers = {
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0 }
+        }
+    }
+    local body = RF:GenerateMacroBody(cfg)
+    Assert(body:find("@mouseover,help") ~= nil, "Must have [@mouseover,help] without nodead")
+    Assert(body:find("@mouseover,help,nodead") == nil, "Must NOT have nodead on mouseover")
+    Assert(body:find("@focus,harm,nodead") ~= nil, "Must have [@focus,harm,nodead]")
+end)
+
+RegisterTest("Macro Generation: Pre-Cast Utility (Trinkets, Racials, Potions)", function()
+    local cfg = {
+        macroName = "DR_UtilityTest",
+        spellName = "Flash Heal",
+        useTrinket1 = true,
+        useTrinket2 = true,
+        preCastLines = "/use Super Mana Potion\n/cast Inner Focus",
+        modifiers = {
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0 }
+        }
+    }
+    local body = RF:GenerateMacroBody(cfg)
+    Assert(body:find("/use 13") ~= nil, "Must contain /use 13")
+    Assert(body:find("/use 14") ~= nil, "Must contain /use 14")
+    Assert(body:find("/use Super Mana Potion") ~= nil, "Must contain potion line")
+    Assert(body:find("/cast Inner Focus") ~= nil, "Must contain custom spell line")
+end)
+
+--------------------------------------------------------------------------------
+-- 8. Macro Generation: 255 Character Limit Check
+--------------------------------------------------------------------------------
+RegisterTest("Modifiers: Reorder and Reset default sort order", function()
+    local cfg = {
+        macroName = "DR_ReorderTest",
+        spellName = "Renew",
+        modifiers = {
+            { key = "nomod", enabled = true },
+            { key = "shift", enabled = true },
+            { key = "shift_ctrl", enabled = true },
+            { key = "ctrl_alt", enabled = true },
+            { key = "alt", enabled = true },
+            { key = "ctrl", enabled = true },
+            { key = "shift_alt", enabled = true },
+        },
+        customSortOrder = true
+    }
+
+    RF:ResetModifierSortOrder(cfg)
+    AssertEquals(cfg.customSortOrder, false, "customSortOrder should be reset to false")
+    AssertEquals(cfg.modifiers[1].key, "shift_ctrl", "First key must be shift_ctrl")
+    AssertEquals(cfg.modifiers[2].key, "shift_alt", "Second key must be shift_alt")
+    AssertEquals(cfg.modifiers[3].key, "ctrl_alt", "Third key must be ctrl_alt")
+    AssertEquals(cfg.modifiers[4].key, "shift", "Fourth key must be shift")
+    AssertEquals(cfg.modifiers[5].key, "ctrl", "Fifth key must be ctrl")
+    AssertEquals(cfg.modifiers[6].key, "alt", "Sixth key must be alt")
+    AssertEquals(cfg.modifiers[7].key, "nomod", "Last key must be nomod")
+end)
+
+RegisterTest("Macro Generation: 255 Character Limit validation", function()
+    local cfg = {
+        macroName = "DR_FlashHeal",
+        spellName = "Flash Heal",
+        targetMouseover = true,
+        targetMouseoverStrict = false,
+        modifiers = {
+            { key = "shift", enabled = true, mode = "relative", rankOffset = 1 },
+            { key = "ctrl",  enabled = true, mode = "relative", rankOffset = 2 },
+            { key = "alt",   enabled = true, mode = "relative", rankOffset = 3 },
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0 },
+        }
+    }
+    local body = RF:GenerateMacroBody(cfg)
+    Assert(#body <= 255, string.format("Standard 4-modifier macro must not exceed 255 chars (was %d)", #body))
+end)
+
+--------------------------------------------------------------------------------
+-- 9. Macro Moving: Account vs Character Tab Migration
+--------------------------------------------------------------------------------
+RegisterTest("Macro Storage: Account vs Character Tab detection", function()
+    local macroCfgAcc = { macroName = "DR_UnitMoveTest", isAccount = true, spellName = "Renew" }
+    local macroCfgChar = { macroName = "DR_UnitMoveTest", isAccount = false, spellName = "Renew" }
+
+    AssertEquals(macroCfgAcc.isAccount, true, "Should be account macro")
+    AssertEquals(macroCfgChar.isAccount, false, "Should be character macro")
+end)
+
+--------------------------------------------------------------------------------
+-- 10. UI & Layout Verification
+--------------------------------------------------------------------------------
+RegisterTest("UI & Layout: Main window and 7 modifier rows initialized", function()
+    if not RF.MainFrame and CreateMainUI then
+        CreateMainUI()
+    end
+    if RF.MainFrame then
+        Assert(#RF.MainFrame.modRows == 7, "Main frame must have exactly 7 modifier rows")
+        local row1 = RF.MainFrame.modRows[1]
+        Assert(row1.altDropSlot ~= nil, "Row 1 must have altDropSlot")
+        Assert(row1.customSpellEdit ~= nil, "Row 1 must have customSpellEdit")
+        Assert(row1.searchBtn ~= nil, "Row 1 must have searchBtn")
+        Assert(row1.cbMo ~= nil, "Row 1 must have cbMo (Mouseover checkbox)")
+        Assert(row1.cbFocus ~= nil, "Row 1 must have cbFocus (Focus checkbox)")
+        Assert(row1.cbToT ~= nil, "Row 1 must have cbToT (Target of Target checkbox)")
+        Assert(row1.cbSelfcast ~= nil, "Row 1 must have cbSelfcast (Selfcast checkbox)")
+        Assert(row1.cbHelp ~= nil, "Row 1 must have cbHelp (Help filter checkbox)")
+        Assert(row1.cbNodead ~= nil, "Row 1 must have cbNodead (Nodead filter checkbox)")
+    end
+end)
+
+RegisterTest("Matrix Grid: Independent targeting conditions per modifier row", function()
+    RF.knownSpells["Renew"] = {
+        name = "Renew",
+        maxRank = 9,
+        hasRanks = true,
+        rankWord = "Rank",
+        ranks = { [1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true },
+        subtexts = { [7] = "Rank 7", [8] = "Rank 8", [9] = "Rank 9" },
+        spellID = 139
+    }
+    local cfg = {
+        macroName = "DR_GridMatrixTest",
+        spellName = "Renew",
+        modifiers = {
+            {
+                key = "shift",
+                enabled = true,
+                mode = "relative",
+                rankOffset = 1,
+                targetMouseover = true,
+                targetFocus = false,
+                isHelp = true,
+                isHarm = false,
+                isNodead = true
+            },
+            {
+                key = "alt",
+                enabled = true,
+                mode = "relative",
+                rankOffset = 2,
+                targetMouseover = false,
+                targetFocus = true,
+                isHelp = false,
+                isHarm = true,
+                isNodead = true
+            },
+            {
+                key = "nomod",
+                enabled = true,
+                mode = "relative",
+                rankOffset = 0,
+                targetMouseover = false,
+                targetFocus = false,
+                targetSelfcast = true,
+                isHelp = true,
+                isHarm = false,
+                isNodead = true
+            }
+        }
+    }
+    local body = RF:GenerateMacroBody(cfg)
+    -- Shift clause should have mouseover help,nodead
+    Assert(body:find("mod:shift,@mouseover,help,nodead") ~= nil, "Shift must have mouseover")
+    Assert(body:find("mod:shift,@focus") == nil, "Shift must NOT have focus")
+    -- Alt clause should have focus harm,nodead
+    Assert(body:find("mod:alt,@focus,harm,nodead") ~= nil, "Alt must have focus harm,nodead")
+    Assert(body:find("mod:alt,@mouseover") == nil, "Alt must NOT have mouseover")
+    -- nomod clause should have @player
+    Assert(body:find("@player") ~= nil, "nomod must have @player selfcast")
+end)
+
+RegisterTest("UI & Layout: Minimap button initialized", function()
+    if RF.InitMinimapButton then
+        RF:InitMinimapButton()
+    end
+    Assert(RF.MinimapButton ~= nil, "Minimap button must be initialized")
+    Assert(RF.MinimapButton.icon ~= nil, "Minimap button must have icon texture")
+end)
+
+RegisterTest("UI & Layout: Preview box is selectable EditBox", function()
+    if not RF.MainFrame and CreateMainUI then
+        CreateMainUI()
+    end
+    if RF.MainFrame then
+        Assert(RF.MainFrame.previewText ~= nil, "previewText must exist")
+        Assert(RF.MainFrame.previewText.HighlightText ~= nil, "previewText must be an EditBox supporting HighlightText")
+        Assert(RF.MainFrame.previewScroll ~= nil, "previewScroll frame must exist")
+    end
+end)
+
+--------------------------------------------------------------------------------
+-- Test Runner Execution
+--------------------------------------------------------------------------------
+function RF:RunAllTests()
+    passedCount = 0
+    failedCount = 0
+    wipe(testResults)
+
+    print("|cff00ccff========================================|r")
+    print("|cff00ccffRankForge Unit & Integration Tests|r")
+    print("|cff00ccff========================================|r")
+
+    local startTime = debugprofilestop and debugprofilestop() or 0
+
+    for i, test in ipairs(TestSuite) do
+        local ok, err = pcall(test.func)
+        if ok then
+            passedCount = passedCount + 1
+            table.insert(testResults, { name = test.name, passed = true })
+            print(string.format("  |cff00ff00[PASS]|r %s", test.name))
+        else
+            failedCount = failedCount + 1
+            table.insert(testResults, { name = test.name, passed = false, error = err })
+            print(string.format("  |cffff2222[FAIL]|r %s: %s", test.name, tostring(err)))
+        end
+    end
+
+    local elapsed = (debugprofilestop and (debugprofilestop() - startTime)) or 0
+    print("|cff00ccff----------------------------------------|r")
+    if failedCount == 0 then
+        print(string.format("|cff00ff00ALL TESTS PASSED!|r (%d / %d tests in %.1f ms)", passedCount, #TestSuite, elapsed))
+    else
+        print(string.format("|cffff2222TESTS FAILED:|r %d passed, %d failed in %.1f ms", passedCount, failedCount, elapsed))
+    end
+    print("|cff00ccff========================================|r")
+
+    return passedCount, failedCount, testResults
+end
