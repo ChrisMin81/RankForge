@@ -46,11 +46,19 @@ RegisterTest("Localization: Required keys exist", function()
         "UI_STORAGE_ACCOUNT", "UI_STORAGE_CHAR", "UI_MOD_NOMOD",
         "UI_MOD_SHIFT", "UI_MOD_CTRL", "UI_MOD_ALT",
         "UI_MOD_SHIFT_CTRL", "UI_MOD_SHIFT_ALT", "UI_MOD_CTRL_ALT",
-        "MINIMAP_TOOLTIP_TITLE", "PRESETS_TITLE", "PROFILE_TITLE"
+        "MINIMAP_TOOLTIP_TITLE", "PRESETS_TITLE", "PROFILE_TITLE",
+        "UI_SLOT_STATUS", "UI_COPY_HINT", "UI_DEFAULT_MACRO_NAME"
     }
     for _, key in ipairs(requiredKeys) do
         Assert(L[key] ~= nil and L[key] ~= "", "Missing localization key: " .. key)
     end
+end)
+
+RegisterTest("Localization: English default values and German translations", function()
+    -- Under enUS test environment
+    AssertEquals(L["RANK_WORD"], "Rank")
+    AssertEquals(L["UI_NEW_MACRO"], "+ New Macro")
+    AssertEquals(L["UI_SAVE_MACRO"], "Save & Create")
 end)
 
 --------------------------------------------------------------------------------

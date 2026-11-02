@@ -734,7 +734,7 @@ local function CreateMainUI()
     end)
     previewIcon:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:SetText(currentMacro and currentMacro.macroName or "Makro")
+        GameTooltip:SetText(currentMacro and currentMacro.macroName or (L["UI_MACRO_NAME"] and L["UI_MACRO_NAME"]:gsub(":", "") or "Macro"))
         GameTooltip:AddLine(L["UI_DRAG_HINT"], 0, 1, 0, true)
         GameTooltip:Show()
     end)
@@ -756,7 +756,7 @@ local function CreateMainUI()
 
     local copyHint = editor:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     copyHint:SetPoint("BOTTOMRIGHT", previewBoxBg, "TOPRIGHT", 0, 4)
-    copyHint:SetText("|cff888888(Klick = Alles markieren für Strg+C)|r")
+    copyHint:SetText(L["UI_COPY_HINT"] or "|cff888888(Click = Select all for Ctrl+C)|r")
 
     local previewScroll = CreateFrame("ScrollFrame", "RankForgePreviewScrollFrame", previewBoxBg, "UIPanelScrollFrameTemplate")
     previewScroll:SetPoint("TOPLEFT", previewBoxBg, "TOPLEFT", 6, -6)
@@ -872,15 +872,16 @@ end
 --------------------------------------------------------------------------------
 -- Modifier Labels & Default Setup
 --------------------------------------------------------------------------------
-local MOD_DISPLAY_NAMES = {
-    ["shift_ctrl"] = L["UI_MOD_SHIFT_CTRL"],
-    ["shift_alt"]  = L["UI_MOD_SHIFT_ALT"],
-    ["ctrl_alt"]   = L["UI_MOD_CTRL_ALT"],
-    ["shift"]      = L["UI_MOD_SHIFT"],
-    ["ctrl"]       = L["UI_MOD_CTRL"],
-    ["alt"]        = L["UI_MOD_ALT"],
-    ["nomod"]      = L["UI_MOD_NOMOD"]
-}
+local function GetModifierDisplayName(key)
+    if key == "nomod" then return L["UI_MOD_NOMOD"] end
+    if key == "shift_ctrl" then return L["UI_MOD_SHIFT_CTRL"] end
+    if key == "shift_alt" then return L["UI_MOD_SHIFT_ALT"] end
+    if key == "ctrl_alt" then return L["UI_MOD_CTRL_ALT"] end
+    if key == "shift" then return L["UI_MOD_SHIFT"] end
+    if key == "ctrl" then return L["UI_MOD_CTRL"] end
+    if key == "alt" then return L["UI_MOD_ALT"] end
+    return key
+end
 
 local DEFAULT_MODIFIERS_LIST = {
     { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3, customSpell = "", targetMouseover = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
@@ -928,7 +929,7 @@ end
 function RF:CreateNewMacroConfig()
     local _, classFileName = UnitClass("player")
     local newCfg = {
-        macroName = "DR_Neu",
+        macroName = L["UI_DEFAULT_MACRO_NAME"] or "DR_New",
         spellName = "",
         isAccount = true,
         fallbackMode = "omit",
@@ -978,7 +979,7 @@ function RF:LoadModifiersIntoUI(macroConfig)
         if modData then
             row:Show()
             row.enableCb:SetChecked(modData.enabled)
-            row.modLabel:SetText(MOD_DISPLAY_NAMES[modData.key] or modData.key)
+            row.modLabel:SetText(GetModifierDisplayName(modData.key))
             row.offsetEdit:SetText(tostring(modData.rankOffset or 0))
             local off = tonumber(modData.rankOffset) or 0
             row.descText:SetText(off == 0 and "(Max)" or string.format("(-%d)", off))
@@ -1071,7 +1072,8 @@ function RF:UpdateSlotStatus()
     if not RF.MainFrame or not RF.MainFrame.slotStatus then return end
     local freeAcc, usedAcc, maxAcc = RF:GetAvailableMacroSlots(true)
     local freeChar, usedChar, maxChar = RF:GetAvailableMacroSlots(false)
-    RF.MainFrame.slotStatus:SetText(string.format("Allg.: %d/%d | Char: %d/%d", usedAcc, maxAcc or 120, usedChar, maxChar or 18))
+    local pattern = L["UI_SLOT_STATUS"] or "Gen.: %d/%d | Char: %d/%d"
+    RF.MainFrame.slotStatus:SetText(string.format(pattern, usedAcc, maxAcc or 120, usedChar, maxChar or 18))
 end
 
 function RF:UpdateUI()
@@ -1116,7 +1118,7 @@ function RF:UpdateUI()
         end
 
         btn:SetPoint("TOPLEFT", listContent, "TOPLEFT", 0, -yOffset)
-        btn:SetText(macroCfg.macroName or ("Makro " .. i))
+        btn:SetText(macroCfg.macroName or ("Macro " .. i))
 
         -- Resolve spell icon for list button
         local tex = nil
