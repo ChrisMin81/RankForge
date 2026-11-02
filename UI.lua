@@ -64,10 +64,58 @@ local function CreateMainUI()
     local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     title:SetPoint("TOP", titleBg, "TOP", 0, -14)
     title:SetText(L["UI_TITLE"])
+    f.title = title
 
     -- Close Button
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -5, -5)
+
+    -- Language Selection Dropdown
+    local langDropdown = CreateFrame("Frame", "RankForgeLanguageDropdown", f, "UIDropDownMenuTemplate")
+    langDropdown:SetPoint("RIGHT", closeBtn, "LEFT", 15, -2)
+    UIDropDownMenu_SetWidth(langDropdown, 105)
+
+    local function LanguageDropdown_OnClick(btn)
+        local val = btn.value
+        UIDropDownMenu_SetSelectedValue(langDropdown, val)
+        if RankForgeDB then
+            RankForgeDB.locale = val
+        end
+        RF:SetLocale(val)
+        RF:RefreshUILabels()
+        RF:UpdateUI()
+        CloseDropDownMenus()
+    end
+
+    local function LanguageDropdown_Initialize()
+        local cur = (RankForgeDB and RankForgeDB.locale) or "auto"
+        local info = UIDropDownMenu_CreateInfo()
+
+        info.text = L["UI_LANG_AUTO"] or "Auto (Client)"
+        info.value = "auto"
+        info.func = LanguageDropdown_OnClick
+        info.checked = (cur == "auto")
+        UIDropDownMenu_AddButton(info)
+
+        info.text = L["UI_LANG_EN"] or "English"
+        info.value = "enUS"
+        info.func = LanguageDropdown_OnClick
+        info.checked = (cur == "enUS")
+        UIDropDownMenu_AddButton(info)
+
+        info.text = L["UI_LANG_DE"] or "Deutsch"
+        info.value = "deDE"
+        info.func = LanguageDropdown_OnClick
+        info.checked = (cur == "deDE")
+        UIDropDownMenu_AddButton(info)
+    end
+
+    UIDropDownMenu_Initialize(langDropdown, LanguageDropdown_Initialize)
+    local cur = (RankForgeDB and RankForgeDB.locale) or "auto"
+    local curText = L["UI_LANG_AUTO"] or "Auto (Client)"
+    if cur == "enUS" then curText = L["UI_LANG_EN"] elseif cur == "deDE" then curText = L["UI_LANG_DE"] end
+    UIDropDownMenu_SetText(langDropdown, curText)
+    f.langDropdown = langDropdown
 
     ----------------------------------------------------------------------------
     -- Left Panel: Macro List
@@ -87,6 +135,7 @@ local function CreateMainUI()
     local listHeader = leftPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightMedium")
     listHeader:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 10, -10)
     listHeader:SetText(L["UI_CONFIGURED_MACROS"])
+    f.listHeader = listHeader
 
     -- Macro Scroll Frame
     local scrollFrame = CreateFrame("ScrollFrame", "RankForgeMacroListScroll", leftPanel, "UIPanelScrollFrameTemplate")
@@ -106,14 +155,27 @@ local function CreateMainUI()
     newBtn:SetScript("OnClick", function()
         RF:CreateNewMacroConfig()
     end)
+    f.newBtn = newBtn
 
-    local presetBtn = CreateFrame("Button", nil, leftPanel, "UIPanelButtonTemplate")
-    presetBtn:SetSize(200, 24)
-    presetBtn:SetPoint("BOTTOM", leftPanel, "BOTTOM", 0, 45)
-    presetBtn:SetText(L["UI_PRESETS_BTN"])
-    presetBtn:SetScript("OnClick", function()
-        RF:OpenPresetsDialog()
+    local cloneBtn = CreateFrame("Button", nil, leftPanel, "UIPanelButtonTemplate")
+    cloneBtn:SetSize(200, 24)
+    cloneBtn:SetPoint("BOTTOM", leftPanel, "BOTTOM", 0, 45)
+    cloneBtn:SetText(L["UI_CLONE_BTN"])
+    cloneBtn:SetScript("OnClick", function()
+        if currentMacro then
+            local cloned = RF:CloneMacro(currentMacro)
+            if cloned then
+                local macros = RF:GetMacrosList()
+                selectedMacroIndex = #macros
+                RF:SyncMacro(cloned, true)
+                RF:UpdateUI()
+                RF:LoadMacroIntoEditor(cloned)
+                local msg = L["MACRO_CLONED_SUCCESS"] or "|cff00ccffRankForge:|r Macro duplicated: '|cffffd200%s|r'."
+                print(string.format(msg, cloned.macroName))
+            end
+        end
     end)
+    f.cloneBtn = cloneBtn
 
     local exportBtn = CreateFrame("Button", nil, leftPanel, "UIPanelButtonTemplate")
     exportBtn:SetSize(200, 24)
@@ -122,6 +184,7 @@ local function CreateMainUI()
     exportBtn:SetScript("OnClick", function()
         RF:OpenImportExportDialog()
     end)
+    f.exportBtn = exportBtn
 
     -- Slot status text
     local slotStatus = leftPanel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
@@ -147,6 +210,7 @@ local function CreateMainUI()
     local nameLabel = editor:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     nameLabel:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -15)
     nameLabel:SetText(L["UI_MACRO_NAME"])
+    f.nameLabel = nameLabel
 
     local nameEdit = CreateFrame("EditBox", nil, editor, "InputBoxTemplate")
     nameEdit:SetSize(160, 20)
@@ -204,6 +268,7 @@ local function CreateMainUI()
     local spellLabel = editor:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     spellLabel:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -48)
     spellLabel:SetText(L["UI_SPELL_NAME"])
+    f.spellLabel = spellLabel
 
     -- Drag & Drop Spell Button Slot
     local dropSlot = CreateFrame("Button", nil, editor, "BackdropTemplate")
@@ -223,6 +288,7 @@ local function CreateMainUI()
     local dropSlotText = editor:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     dropSlotText:SetPoint("LEFT", dropSlot, "RIGHT", 8, 0)
     dropSlotText:SetText(L["UI_DROP_SPELL_HERE"])
+    f.dropSlotText = dropSlotText
 
     -- Handle Drag & Drop spell onto drop slot
     dropSlot:SetScript("OnReceiveDrag", function(self)
@@ -338,6 +404,7 @@ local function CreateMainUI()
     local preCastLabel = editor:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     preCastLabel:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -138)
     preCastLabel:SetText(L["UI_PRECAST_CUSTOM"])
+    f.preCastHeader = preCastLabel
 
     local preCastEdit = CreateFrame("EditBox", nil, editor, "InputBoxTemplate")
     preCastEdit:SetPoint("TOPLEFT", editor, "TOPLEFT", 18, -154)
@@ -356,6 +423,7 @@ local function CreateMainUI()
     local customTargetLabel = editor:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     customTargetLabel:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -182)
     customTargetLabel:SetText(L["UI_TARGET_CUSTOM"])
+    f.customTargetHeader = customTargetLabel
 
     local customTargetEdit = CreateFrame("EditBox", nil, editor, "InputBoxTemplate")
     customTargetEdit:SetPoint("LEFT", customTargetLabel, "RIGHT", 10, 0)
@@ -376,6 +444,7 @@ local function CreateMainUI()
     local modHeader = editor:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     modHeader:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -210)
     modHeader:SetText(L["UI_MODIFIERS_HEADER"])
+    f.modifiersHeader = modHeader
 
     local resetSortBtn = CreateFrame("Button", nil, editor, "UIPanelButtonTemplate")
     resetSortBtn:SetSize(140, 18)
@@ -420,14 +489,15 @@ local function CreateMainUI()
         return h
     end
 
-    CreateColHeader(40,  L["UI_GRID_MOD"])
-    CreateColHeader(172, L["UI_GRID_RANK"])
-    CreateColHeader(282, L["UI_GRID_MO"], "Mouseover (@mouseover)", "Wirkt auf die Einheit unter dem Mauszeiger")
-    CreateColHeader(322, L["UI_GRID_FOCUS"], "Fokus-Ziel (@focus)", "Wirkt auf dein gesetztes Fokus-Ziel")
-    CreateColHeader(362, L["UI_GRID_TOT"], "Ziel des Ziels (@targettarget)", "Wirkt auf das Ziel deines aktuellen Ziels")
-    CreateColHeader(402, L["UI_GRID_SELF"], "Selbstzauber-Fallback (@player)", "Wirkt auf dich selbst, wenn kein anderes Ziel aktiv ist")
-    CreateColHeader(448, L["UI_GRID_FILTER"], "Ziel-Filter (help / nodead)", "Schränkt das Ziel auf freundlich ('help') und/oder lebendig ('nodead') ein")
-    CreateColHeader(575, L["UI_GRID_ALTSPELL"])
+    f.colHeaders = {}
+    f.colHeaders.mod    = CreateColHeader(40,  L["UI_GRID_MOD"])
+    f.colHeaders.rank   = CreateColHeader(172, L["UI_GRID_RANK"])
+    f.colHeaders.mo     = CreateColHeader(282, L["UI_GRID_MO"], "Mouseover (@mouseover)", "Wirkt auf die Einheit unter dem Mauszeiger")
+    f.colHeaders.focus  = CreateColHeader(322, L["UI_GRID_FOCUS"], "Fokus-Ziel (@focus)", "Wirkt auf dein gesetztes Fokus-Ziel")
+    f.colHeaders.tot    = CreateColHeader(362, L["UI_GRID_TOT"], "Ziel des Ziels (@targettarget)", "Wirkt auf das Ziel deines aktuellen Ziels")
+    f.colHeaders.self   = CreateColHeader(402, L["UI_GRID_SELF"], "Selbstzauber-Fallback (@player)", "Wirkt auf dich selbst, wenn kein anderes Ziel aktiv ist")
+    f.colHeaders.filter = CreateColHeader(448, L["UI_GRID_FILTER"], "Ziel-Filter (help / nodead)", "Schränkt das Ziel auf freundlich ('help') und/oder lebendig ('nodead') ein")
+    f.colHeaders.alt    = CreateColHeader(575, L["UI_GRID_ALTSPELL"])
 
     f.modRows = {}
     local startY = -252
@@ -698,10 +768,12 @@ local function CreateMainUI()
     local previewHeader = editor:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     previewHeader:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -436)
     previewHeader:SetText(L["UI_PREVIEW_HEADER"])
+    f.previewHeader = previewHeader
 
     local dragHint = editor:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     dragHint:SetPoint("LEFT", previewHeader, "RIGHT", 10, 0)
     dragHint:SetText("|cff00ff00(" .. L["UI_DRAG_HINT"] .. ")|r")
+    f.dragHint = dragHint
 
     -- Action Bar Drag Preview Icon
     local previewIcon = CreateFrame("Button", "RankForgePreviewDragButton", editor, "BackdropTemplate")
@@ -758,6 +830,7 @@ local function CreateMainUI()
     local copyHint = editor:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     copyHint:SetPoint("BOTTOMRIGHT", previewBoxBg, "TOPRIGHT", 0, 4)
     copyHint:SetText(L["UI_COPY_HINT"] or "|cff888888(Click = Select all for Ctrl+C)|r")
+    f.copyHint = copyHint
 
     local previewScroll = CreateFrame("ScrollFrame", "RankForgePreviewScrollFrame", previewBoxBg, "UIPanelScrollFrameTemplate")
     previewScroll:SetPoint("TOPLEFT", previewBoxBg, "TOPLEFT", 6, -6)
@@ -1066,6 +1139,68 @@ function RF:UpdatePreview()
         f.charCount:SetText("|cffffcc00" .. countStr .. "|r")
     else
         f.charCount:SetText("|cff00ff00" .. countStr .. "|r")
+    end
+end
+
+function RF:RefreshUILabels()
+    if not RF.MainFrame then return end
+    local f = RF.MainFrame
+
+    if f.title then f.title:SetText(L["UI_TITLE"]) end
+    if f.listHeader then f.listHeader:SetText(L["UI_CONFIGURED_MACROS"]) end
+    if f.newBtn then f.newBtn:SetText(L["UI_NEW_MACRO"]) end
+    if f.cloneBtn then f.cloneBtn:SetText(L["UI_CLONE_BTN"]) end
+    if f.exportBtn then f.exportBtn:SetText(L["UI_EXPORT_BTN"]) end
+    if f.nameLabel then f.nameLabel:SetText(L["UI_MACRO_NAME"]) end
+    if f.spellLabel then f.spellLabel:SetText(L["UI_SPELL_NAME"]) end
+    if f.dropSlotText then f.dropSlotText:SetText(L["UI_DROP_SPELL_HERE"]) end
+    if f.targetHeader then f.targetHeader:SetText(L["UI_TARGETING_HEADER"]) end
+    if f.fallbackCheck and f.fallbackCheck.text then f.fallbackCheck.text:SetText(L["UI_FALLBACK_RANK1"]) end
+    if f.cbTrinket1 and f.cbTrinket1.text then f.cbTrinket1.text:SetText(L["UI_USE_TRINKET_1"]) end
+    if f.cbTrinket2 and f.cbTrinket2.text then f.cbTrinket2.text:SetText(L["UI_USE_TRINKET_2"]) end
+    if f.cbRacial and f.cbRacial.text then f.cbRacial.text:SetText(L["UI_USE_RACIAL"]) end
+    if f.preCastHeader then f.preCastHeader:SetText(L["UI_PRECAST_CUSTOM"]) end
+    if f.customTargetHeader then f.customTargetHeader:SetText(L["UI_TARGET_CUSTOM"]) end
+    if f.modifiersHeader then f.modifiersHeader:SetText(L["UI_MODIFIERS_HEADER"]) end
+    if f.resetSortBtn then f.resetSortBtn:SetText(L["UI_RESET_SORT_BTN"]) end
+    if f.previewHeader then f.previewHeader:SetText(L["UI_PREVIEW_HEADER"]) end
+    if f.dragHint then f.dragHint:SetText("|cff00ff00(" .. L["UI_DRAG_HINT"] .. ")|r") end
+    if f.copyHint then f.copyHint:SetText(L["UI_COPY_HINT"] or "|cff888888(Click = Select all for Ctrl+C)|r") end
+    if f.saveBtn then f.saveBtn:SetText(L["UI_SAVE_MACRO"]) end
+    if f.deleteBtn then f.deleteBtn:SetText(L["UI_DELETE_MACRO"]) end
+
+    if f.colHeaders then
+        if f.colHeaders.mod then f.colHeaders.mod:SetText(L["UI_GRID_MOD"]) end
+        if f.colHeaders.rank then f.colHeaders.rank:SetText(L["UI_GRID_RANK"]) end
+        if f.colHeaders.mo then f.colHeaders.mo:SetText(L["UI_GRID_MO"]) end
+        if f.colHeaders.focus then f.colHeaders.focus:SetText(L["UI_GRID_FOCUS"]) end
+        if f.colHeaders.tot then f.colHeaders.tot:SetText(L["UI_GRID_TOT"]) end
+        if f.colHeaders.self then f.colHeaders.self:SetText(L["UI_GRID_SELF"]) end
+        if f.colHeaders.filter then f.colHeaders.filter:SetText(L["UI_GRID_FILTER"]) end
+        if f.colHeaders.alt then f.colHeaders.alt:SetText(L["UI_GRID_ALTSPELL"]) end
+    end
+
+    if f.modRows then
+        for _, row in ipairs(f.modRows) do
+            if row.offsetLabel then
+                row.offsetLabel:SetText((L["RANK_WORD"] or "Rank") .. ":")
+            end
+        end
+    end
+
+    if f.langDropdown then
+        local cur = (RankForgeDB and RankForgeDB.locale) or "auto"
+        local curText = L["UI_LANG_AUTO"] or "Auto (Client)"
+        if cur == "enUS" then
+            curText = L["UI_LANG_EN"] or "English"
+        elseif cur == "deDE" then
+            curText = L["UI_LANG_DE"] or "Deutsch"
+        end
+        UIDropDownMenu_SetText(f.langDropdown, curText)
+    end
+
+    if currentMacro then
+        RF:LoadMacroIntoEditor(currentMacro)
     end
 end
 
@@ -1534,7 +1669,7 @@ function RF:InitMinimapButton()
     local icon = btn:CreateTexture(nil, "BACKGROUND")
     icon:SetSize(20, 20)
     icon:SetPoint("CENTER", 0, 0)
-    icon:SetTexture("Interface\\Icons\\Spell_Holy_Renew")
+    icon:SetTexture("Interface\\Icons\\Spell_ChargeDown")
     btn.icon = icon
 
     local border = btn:CreateTexture(nil, "OVERLAY")

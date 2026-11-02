@@ -55,10 +55,22 @@ RegisterTest("Localization: Required keys exist", function()
 end)
 
 RegisterTest("Localization: English default values and German translations", function()
-    -- Under enUS test environment
+    -- Switch to English
+    RF:SetLocale("enUS")
     AssertEquals(L["RANK_WORD"], "Rank")
     AssertEquals(L["UI_NEW_MACRO"], "+ New Macro")
     AssertEquals(L["UI_SAVE_MACRO"], "Save & Create")
+    AssertEquals(L["UI_CLONE_BTN"], "Duplicate Macro")
+
+    -- Switch to German
+    RF:SetLocale("deDE")
+    AssertEquals(L["RANK_WORD"], "Rang")
+    AssertEquals(L["UI_NEW_MACRO"], "+ Neues Makro")
+    AssertEquals(L["UI_SAVE_MACRO"], "Speichern & Erstellen")
+    AssertEquals(L["UI_CLONE_BTN"], "Makro duplizieren")
+
+    -- Reset back to auto/enUS
+    RF:SetLocale("enUS")
 end)
 
 --------------------------------------------------------------------------------
@@ -443,6 +455,35 @@ RegisterTest("UI & Layout: Minimap button initialized", function()
     end
     Assert(RF.MinimapButton ~= nil, "Minimap button must be initialized")
     Assert(RF.MinimapButton.icon ~= nil, "Minimap button must have icon texture")
+end)
+
+RegisterTest("Macro Cloning: CloneMacro creates deep copy with unique name", function()
+    local orig = {
+        macroName = "DR_CloneTest",
+        spellName = "Flash Heal",
+        isAccount = false,
+        fallbackMode = "rank1",
+        targetMouseover = true,
+        useTrinket1 = true,
+        modifiers = {
+            { key = "shift", enabled = true, mode = "relative", rankOffset = 2, targetMouseover = true, isHelp = true, isNodead = true },
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0, targetMouseover = true, isHelp = true, isNodead = true }
+        }
+    }
+    local cloned = RF:CloneMacro(orig)
+    Assert(cloned ~= nil, "Cloned macro should not be nil")
+    Assert(cloned.macroName:find("DR_CloneTest") ~= nil, "Name should inherit base name")
+    Assert(cloned.macroName ~= orig.macroName, "Name must be different from original")
+    AssertEquals(cloned.spellName, "Flash Heal")
+    AssertEquals(cloned.isAccount, false)
+    AssertEquals(cloned.fallbackMode, "rank1")
+    AssertEquals(cloned.useTrinket1, true)
+    AssertEquals(#cloned.modifiers, 2)
+    AssertEquals(cloned.modifiers[1].rankOffset, 2)
+
+    -- Mutating clone must not mutate original
+    cloned.modifiers[1].rankOffset = 5
+    AssertEquals(orig.modifiers[1].rankOffset, 2, "Original modifier rankOffset must be unmodified")
 end)
 
 RegisterTest("UI & Layout: Preview box is selectable EditBox", function()

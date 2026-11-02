@@ -19,6 +19,7 @@ RF.isInitialized = false
 -- Database & Profile Defaults
 --------------------------------------------------------------------------------
 local defaultDB = {
+    locale = "auto",
     minimapPos = 215,
     showMinimap = true,
     profiles = {
@@ -735,6 +736,69 @@ function RF:DeleteMacro(macroConfig, deleteFromWoW)
     end
 end
 
+function RF:CloneMacro(macroConfig)
+    if not macroConfig then return nil end
+
+    local baseName = macroConfig.macroName or "DR_Macro"
+    local macros = RF:GetMacrosList()
+
+    -- Generate a unique clone name
+    local suffix = L["MACRO_COPY_SUFFIX"] or "_Copy"
+    local newName = baseName .. suffix
+    local counter = 2
+    local function NameExists(n)
+        for _, m in ipairs(macros) do
+            if m.macroName and m.macroName:lower() == n:lower() then
+                return true
+            end
+        end
+        return false
+    end
+
+    while NameExists(newName) do
+        newName = string.format("%s%s%d", baseName, suffix, counter)
+        counter = counter + 1
+    end
+
+    -- Deep copy the macro configuration
+    local cloned = {
+        macroName = newName,
+        spellName = macroConfig.spellName or "",
+        isAccount = (macroConfig.isAccount ~= false),
+        fallbackMode = macroConfig.fallbackMode or "omit",
+        targetMouseover = macroConfig.targetMouseover,
+        customTarget = macroConfig.customTarget or "",
+        customSortOrder = macroConfig.customSortOrder or false,
+        useTrinket1 = macroConfig.useTrinket1 or false,
+        useTrinket2 = macroConfig.useTrinket2 or false,
+        useRacial = macroConfig.useRacial or false,
+        preCastLines = macroConfig.preCastLines or "",
+        modifiers = {}
+    }
+
+    if macroConfig.modifiers then
+        for _, mod in ipairs(macroConfig.modifiers) do
+            table.insert(cloned.modifiers, {
+                key = mod.key,
+                enabled = mod.enabled,
+                mode = mod.mode or "relative",
+                rankOffset = mod.rankOffset or 0,
+                customSpell = mod.customSpell or "",
+                targetMouseover = mod.targetMouseover,
+                targetFocus = mod.targetFocus,
+                targetToT = mod.targetToT,
+                targetSelfcast = mod.targetSelfcast,
+                isHelp = mod.isHelp,
+                isHarm = mod.isHarm,
+                isNodead = mod.isNodead,
+            })
+        end
+    end
+
+    table.insert(macros, cloned)
+    return cloned
+end
+
 --------------------------------------------------------------------------------
 -- Default Presets Initializer
 --------------------------------------------------------------------------------
@@ -784,6 +848,10 @@ EventFrame:SetScript("OnEvent", function(self, event, arg1, ...)
             if RankForgeCharDB[k] == nil then
                 RankForgeCharDB[k] = v
             end
+        end
+
+        if RF.SetLocale then
+            RF:SetLocale(RankForgeDB.locale or "auto")
         end
 
     elseif event == "PLAYER_LOGIN" then

@@ -1,6 +1,7 @@
 --[[
     RankForge - Localization.lua
-    Multi-language support: English (enUS/enGB default) and German (deDE)
+    Multi-language support: English (default) and German (deDE)
+    Supports in-game dynamic language switching.
 ]]
 
 local addonName, RF = ...
@@ -12,213 +13,252 @@ local L = setmetatable({}, {
 })
 RF.L = L
 
-local locale = GetLocale()
+local STRINGS_EN = {
+    ["ADDON_TITLE"] = "RankForge",
+    ["SLASH_HELP_1"] = "|cff00ccffRankForge|r commands:",
+    ["SLASH_HELP_2"] = "/rf or /rankforge - Toggle the user interface",
+    ["SLASH_HELP_3"] = "/rf update - Immediately update all configured macros",
+    ["SLASH_HELP_TEST"] = "/rf test - Run automated test suite (Unit-Tests)",
+    ["SLASH_HELP_4"] = "/rf help - Show this help message",
 
---------------------------------------------------------------------------------
--- English (Default fallback for enUS, enGB and all other locales)
---------------------------------------------------------------------------------
-L["ADDON_TITLE"] = "RankForge"
-L["SLASH_HELP_1"] = "|cff00ccffRankForge|r commands:"
-L["SLASH_HELP_2"] = "/rf or /rankforge - Toggle the user interface"
-L["SLASH_HELP_3"] = "/rf update - Immediately update all configured macros"
-L["SLASH_HELP_TEST"] = "/rf test - Run automated test suite (Unit-Tests)"
-L["SLASH_HELP_4"] = "/rf help - Show this help message"
+    ["MACRO_SYNC_SUCCESS"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' successfully updated.",
+    ["MACRO_SYNC_ALL_SUCCESS"] = "|cff00ccffRankForge:|r All macros updated (%d macros synced).",
+    ["MACRO_CREATED"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' created.",
+    ["MACRO_DELETED"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' deleted.",
+    ["MACRO_LIMIT_ACCOUNT_FULL"] = "|cffff3333RankForge Warning:|r General macro slots are full (120/120)!",
+    ["MACRO_LIMIT_CHAR_FULL"] = "|cffff3333RankForge Warning:|r Character-specific macro slots are full (18/18)!",
+    ["COMBAT_LOCKDOWN_QUEUED"] = "|cffffcc00RankForge:|r Macro update delayed in combat. Will execute after combat ends.",
+    ["COMBAT_LOCKDOWN_EXECUTED"] = "|cff00ccffRankForge:|r Executed queued updates after combat (%d macros updated).",
 
-L["MACRO_SYNC_SUCCESS"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' successfully updated."
-L["MACRO_SYNC_ALL_SUCCESS"] = "|cff00ccffRankForge:|r All macros updated (%d macros synced)."
-L["MACRO_CREATED"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' created."
-L["MACRO_DELETED"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' deleted."
-L["MACRO_LIMIT_ACCOUNT_FULL"] = "|cffff3333RankForge Warning:|r General macro slots are full (120/120)!"
-L["MACRO_LIMIT_CHAR_FULL"] = "|cffff3333RankForge Warning:|r Character-specific macro slots are full (18/18)!"
-L["COMBAT_LOCKDOWN_QUEUED"] = "|cffffcc00RankForge:|r Macro update delayed in combat. Will execute after combat ends."
-L["COMBAT_LOCKDOWN_EXECUTED"] = "|cff00ccffRankForge:|r Executed queued updates after combat (%d macros updated)."
+    ["UI_TITLE"] = "RankForge - Downranking Macro Forge",
+    ["UI_CONFIGURED_MACROS"] = "Configured Macros",
+    ["UI_NEW_MACRO"] = "+ New Macro",
+    ["UI_CLONE_BTN"] = "Duplicate Macro",
+    ["UI_DELETE_MACRO"] = "Delete",
+    ["UI_SAVE_MACRO"] = "Save & Create",
+    ["UI_PRESETS_BTN"] = "Presets...",
+    ["UI_EXPORT_BTN"] = "Profile Import / Export",
+    ["MACRO_COPY_SUFFIX"] = "_Copy",
+    ["MACRO_CLONED_SUCCESS"] = "|cff00ccffRankForge:|r Macro duplicated: '|cffffd200%s|r'.",
 
-L["UI_TITLE"] = "RankForge - Downranking Macro Forge"
-L["UI_CONFIGURED_MACROS"] = "Configured Macros"
-L["UI_NEW_MACRO"] = "+ New Macro"
-L["UI_DELETE_MACRO"] = "Delete"
-L["UI_SAVE_MACRO"] = "Save & Create"
-L["UI_PRESETS_BTN"] = "Presets..."
-L["UI_EXPORT_BTN"] = "Profile Import / Export"
-L["UI_MACRO_NAME"] = "Macro Name:"
-L["UI_SPELL_NAME"] = "Base Spell:"
-L["UI_DROP_SPELL_HERE"] = "Drag spell here\n(from spellbook)"
-L["UI_SPELL_SELECT_DROPDOWN"] = "Or select from list:"
-L["UI_STORAGE_LOCATION"] = "Storage Location:"
-L["UI_STORAGE_ACCOUNT"] = "General (Account, 120 Slots)"
-L["UI_STORAGE_CHAR"] = "Character (18 Slots)"
-L["UI_FALLBACK_MODE"] = "When rank not yet learned:"
-L["UI_FALLBACK_OMIT"] = "Omit modifier until learned"
-L["UI_FALLBACK_RANK1"] = "Use Rank 1 as fallback"
+    ["UI_LANG_LABEL"] = "Language:",
+    ["UI_LANG_AUTO"] = "Auto (Client)",
+    ["UI_LANG_EN"] = "English",
+    ["UI_LANG_DE"] = "Deutsch",
 
-L["UI_TARGETING_HEADER"] = "Targeting Conditions"
-L["UI_TARGET_MOUSEOVER"] = "Mouseover (@mouseover)"
-L["UI_TARGET_MOUSEOVER_STRICT"] = "Mouseover only if exists"
-L["UI_TARGET_FOCUS"] = "Focus Target (@focus)"
-L["UI_TARGET_TARGETOFTARGET"] = "Target of Target (@targettarget)"
-L["UI_TARGET_SELFCAST"] = "Auto-Selfcast Fallback ([@player])"
-L["UI_COND_HELP"] = "help"
-L["UI_COND_HARM"] = "harm"
-L["UI_COND_NODEAD"] = "nodead"
-L["UI_UTILITY_HEADER"] = "Pre-Cast Utility Actions"
-L["UI_USE_TRINKET_1"] = "Trinket 1 (/use 13)"
-L["UI_USE_TRINKET_2"] = "Trinket 2 (/use 14)"
-L["UI_USE_RACIAL"] = "Racial Ability (Berserking etc.)"
-L["UI_PRECAST_CUSTOM"] = "Extra Commands (e.g. /cast Inner Focus, /use Potion, /click Button):"
-L["UI_TARGET_CUSTOM"] = "Custom Targeting Condition:"
+    ["UI_MACRO_NAME"] = "Macro Name:",
+    ["UI_SPELL_NAME"] = "Base Spell:",
+    ["UI_DROP_SPELL_HERE"] = "Drag spell here\n(from spellbook)",
+    ["UI_SPELL_SELECT_DROPDOWN"] = "Or select from list:",
+    ["UI_STORAGE_LOCATION"] = "Storage Location:",
+    ["UI_STORAGE_ACCOUNT"] = "General (Account, 120 Slots)",
+    ["UI_STORAGE_CHAR"] = "Character (18 Slots)",
+    ["UI_FALLBACK_MODE"] = "When rank not yet learned:",
+    ["UI_FALLBACK_OMIT"] = "Omit modifier until learned",
+    ["UI_FALLBACK_RANK1"] = "Use Rank 1 as fallback",
 
-L["UI_MODIFIERS_HEADER"] = "Keybinds, Ranks & Targeting Matrix (Change order with arrow buttons)"
-L["UI_RESET_SORT_BTN"] = "Default Order"
-L["UI_RESET_SORT_TOOLTIP"] = "Reset modifiers to recommended priority order (dual-keys first, nomod last)."
-L["UI_GRID_MOD"] = "Key / Mod"
-L["UI_GRID_RANK"] = "Rank"
-L["UI_GRID_MO"] = "MO"
-L["UI_GRID_FOCUS"] = "Focus"
-L["UI_GRID_TOT"] = "ToT"
-L["UI_GRID_SELF"] = "Self"
-L["UI_GRID_FILTER"] = "Filter (help/nodead)"
-L["UI_GRID_ALTSPELL"] = "Alternative Spell"
-L["UI_MOD_NOMOD"] = "No Modifier (nomod)"
-L["UI_MOD_SHIFT"] = "Shift"
-L["UI_MOD_CTRL"] = "Ctrl"
-L["UI_MOD_ALT"] = "Alt"
-L["UI_MOD_SHIFT_CTRL"] = "Shift + Ctrl"
-L["UI_MOD_SHIFT_ALT"] = "Shift + Alt"
-L["UI_MOD_CTRL_ALT"] = "Ctrl + Alt"
+    ["UI_TARGETING_HEADER"] = "Targeting Conditions",
+    ["UI_TARGET_MOUSEOVER"] = "Mouseover (@mouseover)",
+    ["UI_TARGET_MOUSEOVER_STRICT"] = "Mouseover only if exists",
+    ["UI_TARGET_FOCUS"] = "Focus Target (@focus)",
+    ["UI_TARGET_TARGETOFTARGET"] = "Target of Target (@targettarget)",
+    ["UI_TARGET_SELFCAST"] = "Auto-Selfcast Fallback ([@player])",
+    ["UI_COND_HELP"] = "help",
+    ["UI_COND_HARM"] = "harm",
+    ["UI_COND_NODEAD"] = "nodead",
+    ["UI_UTILITY_HEADER"] = "Pre-Cast Utility Actions",
+    ["UI_USE_TRINKET_1"] = "Trinket 1 (/use 13)",
+    ["UI_USE_TRINKET_2"] = "Trinket 2 (/use 14)",
+    ["UI_USE_RACIAL"] = "Racial Ability (Berserking etc.)",
+    ["UI_PRECAST_CUSTOM"] = "Extra Commands (e.g. /cast Inner Focus, /use Potion, /click Button):",
+    ["UI_TARGET_CUSTOM"] = "Custom Targeting Condition:",
 
-L["UI_PREVIEW_HEADER"] = "Macro Preview (Draggable to Action Bar):"
-L["UI_CHAR_COUNT"] = "%d / 255 Characters"
-L["UI_CHAR_COUNT_WARNING"] = "|cffff3333Warning: Macro exceeds 255 characters!|r"
-L["UI_DRAG_HINT"] = "Tip: Drag the icon directly onto your action bar!"
-L["UI_COPY_HINT"] = "|cff888888(Click = Select all for Ctrl+C)|r"
-L["UI_SLOT_STATUS"] = "Gen.: %d/%d | Char: %d/%d"
-L["UI_DEFAULT_MACRO_NAME"] = "DR_New"
+    ["UI_MODIFIERS_HEADER"] = "Keybinds, Ranks & Targeting Matrix (Change order with arrow buttons)",
+    ["UI_RESET_SORT_BTN"] = "Default Order",
+    ["UI_RESET_SORT_TOOLTIP"] = "Reset modifiers to recommended priority order (dual-keys first, nomod last).",
+    ["UI_GRID_MOD"] = "Key / Mod",
+    ["UI_GRID_RANK"] = "Rank",
+    ["UI_GRID_MO"] = "MO",
+    ["UI_GRID_FOCUS"] = "Focus",
+    ["UI_GRID_TOT"] = "ToT",
+    ["UI_GRID_SELF"] = "Self",
+    ["UI_GRID_FILTER"] = "Filter (help/nodead)",
+    ["UI_GRID_ALTSPELL"] = "Alternative Spell",
+    ["UI_MOD_NOMOD"] = "No Modifier (nomod)",
+    ["UI_MOD_SHIFT"] = "Shift",
+    ["UI_MOD_CTRL"] = "Ctrl",
+    ["UI_MOD_ALT"] = "Alt",
+    ["UI_MOD_SHIFT_CTRL"] = "Shift + Ctrl",
+    ["UI_MOD_SHIFT_ALT"] = "Shift + Alt",
+    ["UI_MOD_CTRL_ALT"] = "Ctrl + Alt",
 
-L["CONFIRM_DELETE_TITLE"] = "Delete Macro?"
-L["CONFIRM_DELETE_TEXT"] = "Do you really want to delete the macro '|cffffd200%s|r'?\nIt will also be removed from your WoW macro window."
-L["CONFIRM_YES"] = "Yes, delete"
-L["CONFIRM_NO"] = "Cancel"
+    ["UI_PREVIEW_HEADER"] = "Macro Preview (Draggable to Action Bar):",
+    ["UI_CHAR_COUNT"] = "%d / 255 Characters",
+    ["UI_CHAR_COUNT_WARNING"] = "|cffff3333Warning: Macro exceeds 255 characters!|r" ,
+    ["UI_DRAG_HINT"] = "Tip: Drag the icon directly onto your action bar!",
+    ["UI_COPY_HINT"] = "|cff888888(Click = Select all for Ctrl+C)|r",
+    ["UI_SLOT_STATUS"] = "Gen.: %d/%d | Char: %d/%d",
+    ["UI_DEFAULT_MACRO_NAME"] = "DR_New",
 
-L["PRESETS_TITLE"] = "Select Preset"
-L["PRESETS_APPLY"] = "Apply Preset"
-L["PRESETS_CLOSE"] = "Close"
+    ["CONFIRM_DELETE_TITLE"] = "Delete Macro?",
+    ["CONFIRM_DELETE_TEXT"] = "Do you really want to delete the macro '|cffffd200%s|r'?\nIt will also be removed from your WoW macro window.",
+    ["CONFIRM_YES"] = "Yes, delete",
+    ["CONFIRM_NO"] = "Cancel",
 
-L["PROFILE_TITLE"] = "Profile Import / Export"
-L["PROFILE_EXPORT_HINT"] = "Copy this Base64 string (Ctrl+C) to share your profile:"
-L["PROFILE_IMPORT_HINT"] = "Paste a profile string here (Ctrl+V) and click Import:"
-L["PROFILE_IMPORT_BTN"] = "Import Profile"
-L["PROFILE_COPY_BTN"] = "Copy to Clipboard"
-L["PROFILE_IMPORT_SUCCESS"] = "|cff00ccffRankForge:|r Profile successfully imported (%d macros)!"
-L["PROFILE_IMPORT_INVALID"] = "|cffff3333RankForge Error:|r Invalid profile string!"
+    ["PRESETS_TITLE"] = "Select Preset",
+    ["PRESETS_APPLY"] = "Apply Preset",
+    ["PRESETS_CLOSE"] = "Close",
 
-L["MINIMAP_TOOLTIP_TITLE"] = "|cff00ccffRankForge|r"
-L["MINIMAP_TOOLTIP_L1"] = "Left Click: Open / Close window"
-L["MINIMAP_TOOLTIP_L2"] = "Right Click: Update all macros"
-L["MINIMAP_TOOLTIP_DRAG"] = "Drag: Move minimap button"
+    ["PROFILE_TITLE"] = "Profile Import / Export",
+    ["PROFILE_EXPORT_HINT"] = "Copy this Base64 string (Ctrl+C) to share your profile:",
+    ["PROFILE_IMPORT_HINT"] = "Paste a profile string here (Ctrl+V) and click Import:",
+    ["PROFILE_IMPORT_BTN"] = "Import Profile",
+    ["PROFILE_COPY_BTN"] = "Copy to Clipboard",
+    ["PROFILE_IMPORT_SUCCESS"] = "|cff00ccffRankForge:|r Profile successfully imported (%d macros)!",
+    ["PROFILE_IMPORT_INVALID"] = "|cffff3333RankForge Error:|r Invalid profile string!",
 
-L["RANK_WORD"] = "Rank"
+    ["MINIMAP_TOOLTIP_TITLE"] = "|cff00ccffRankForge|r",
+    ["MINIMAP_TOOLTIP_L1"] = "Left Click: Open / Close window",
+    ["MINIMAP_TOOLTIP_L2"] = "Right Click: Update all macros",
+    ["MINIMAP_TOOLTIP_DRAG"] = "Drag: Move minimap button",
 
---------------------------------------------------------------------------------
--- German (deDE) Localization
---------------------------------------------------------------------------------
-if locale == "deDE" then
-    L["SLASH_HELP_1"] = "|cff00ccffRankForge|r Befehle:"
-    L["SLASH_HELP_2"] = "/rf oder /rankforge - Öffnet die Benutzeroberfläche"
-    L["SLASH_HELP_3"] = "/rf update - Aktualisiert alle konfigurierten Makros sofort"
-    L["SLASH_HELP_TEST"] = "/rf test - Führt die automatische Test-Suite (Unit-Tests) aus"
-    L["SLASH_HELP_4"] = "/rf help - Zeigt diese Hilfe an"
+    ["RANK_WORD"] = "Rank",
+}
 
-    L["MACRO_SYNC_SUCCESS"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' erfolgreich aktualisiert."
-    L["MACRO_SYNC_ALL_SUCCESS"] = "|cff00ccffRankForge:|r Alle Makros aktualisiert (%d Makros synchronisiert)."
-    L["MACRO_CREATED"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' wurde neu erstellt."
-    L["MACRO_DELETED"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' wurde gelöscht."
-    L["MACRO_LIMIT_ACCOUNT_FULL"] = "|cffff3333RankForge Warnung:|r Allgemeine Makro-Slots sind voll (120/120)!"
-    L["MACRO_LIMIT_CHAR_FULL"] = "|cffff3333RankForge Warnung:|r Charakterspezifische Makro-Slots sind voll (18/18)!"
-    L["COMBAT_LOCKDOWN_QUEUED"] = "|cffffcc00RankForge:|r Makro-Aktualisierung im Kampf verzögert. Wird nach Kampfende ausgeführt."
-    L["COMBAT_LOCKDOWN_EXECUTED"] = "|cff00ccffRankForge:|r Warteschlange nach dem Kampf verarbeitet (%d Makros aktualisiert)."
+local STRINGS_DE = {
+    ["SLASH_HELP_1"] = "|cff00ccffRankForge|r Befehle:",
+    ["SLASH_HELP_2"] = "/rf oder /rankforge - Öffnet die Benutzeroberfläche",
+    ["SLASH_HELP_3"] = "/rf update - Aktualisiert alle konfigurierten Makros sofort",
+    ["SLASH_HELP_TEST"] = "/rf test - Führt die automatische Test-Suite (Unit-Tests) aus",
+    ["SLASH_HELP_4"] = "/rf help - Zeigt diese Hilfe an",
 
-    L["UI_TITLE"] = "RankForge - Downranking Makro Schmiede"
-    L["UI_CONFIGURED_MACROS"] = "Konfigurierte Makros"
-    L["UI_NEW_MACRO"] = "+ Neues Makro"
-    L["UI_DELETE_MACRO"] = "Löschen"
-    L["UI_SAVE_MACRO"] = "Speichern & Erstellen"
-    L["UI_PRESETS_BTN"] = "Vorlagen..."
-    L["UI_EXPORT_BTN"] = "Profil Import / Export"
-    L["UI_MACRO_NAME"] = "Makro-Name:"
-    L["UI_SPELL_NAME"] = "Basis-Zauber:"
-    L["UI_DROP_SPELL_HERE"] = "Zauber hierher ziehen\n(aus Zauberbuch)"
-    L["UI_SPELL_SELECT_DROPDOWN"] = "Oder aus Liste wählen:"
-    L["UI_STORAGE_LOCATION"] = "Speicherort:"
-    L["UI_STORAGE_ACCOUNT"] = "Allgemein (Account, 120 Slots)"
-    L["UI_STORAGE_CHAR"] = "Charakter (18 Slots)"
-    L["UI_FALLBACK_MODE"] = "Wenn Rang noch nicht gelernt:"
-    L["UI_FALLBACK_OMIT"] = "Modifikator weglassen bis gelernt"
-    L["UI_FALLBACK_RANK1"] = "Rang 1 als Fallback nutzen"
+    ["MACRO_SYNC_SUCCESS"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' erfolgreich aktualisiert.",
+    ["MACRO_SYNC_ALL_SUCCESS"] = "|cff00ccffRankForge:|r Alle Makros aktualisiert (%d Makros synchronisiert).",
+    ["MACRO_CREATED"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' wurde neu erstellt.",
+    ["MACRO_DELETED"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' wurde gelöscht.",
+    ["MACRO_LIMIT_ACCOUNT_FULL"] = "|cffff3333RankForge Warnung:|r Allgemeine Makro-Slots sind voll (120/120)!",
+    ["MACRO_LIMIT_CHAR_FULL"] = "|cffff3333RankForge Warnung:|r Charakterspezifische Makro-Slots sind voll (18/18)!",
+    ["COMBAT_LOCKDOWN_QUEUED"] = "|cffffcc00RankForge:|r Makro-Aktualisierung im Kampf verzögert. Wird nach Kampfende ausgeführt.",
+    ["COMBAT_LOCKDOWN_EXECUTED"] = "|cff00ccffRankForge:|r Warteschlange nach dem Kampf verarbeitet (%d Makros aktualisiert).",
 
-    L["UI_TARGETING_HEADER"] = "Zielbedingungen (Targeting)"
-    L["UI_TARGET_MOUSEOVER"] = "Mouseover (@mouseover)"
-    L["UI_TARGET_MOUSEOVER_STRICT"] = "Mouseover nur wenn existiert"
-    L["UI_TARGET_FOCUS"] = "Fokus-Ziel (@focus)"
-    L["UI_TARGET_TARGETOFTARGET"] = "Ziel des Ziels (@targettarget)"
-    L["UI_TARGET_SELFCAST"] = "Auto-Selfcast Fallback ([@player])"
-    L["UI_COND_HELP"] = "help"
-    L["UI_COND_HARM"] = "harm"
-    L["UI_COND_NODEAD"] = "nodead"
-    L["UI_UTILITY_HEADER"] = "Zusatz-Aktionen vor dem Zauber (Pre-Cast Utility)"
-    L["UI_USE_TRINKET_1"] = "Trinket 1 (/use 13)"
-    L["UI_USE_TRINKET_2"] = "Trinket 2 (/use 14)"
-    L["UI_USE_RACIAL"] = "Volksfähigkeit (Berserking etc.)"
-    L["UI_PRECAST_CUSTOM"] = "Zusätzliche Befehle (z. B. /cast Innerer Fokus, /use Trank, /click Button):"
-    L["UI_TARGET_CUSTOM"] = "Benutzerdefinierte Zielbedingung:"
+    ["UI_TITLE"] = "RankForge - Downranking Makro Schmiede",
+    ["UI_CONFIGURED_MACROS"] = "Konfigurierte Makros",
+    ["UI_NEW_MACRO"] = "+ Neues Makro",
+    ["UI_CLONE_BTN"] = "Makro duplizieren",
+    ["UI_DELETE_MACRO"] = "Löschen",
+    ["UI_SAVE_MACRO"] = "Speichern & Erstellen",
+    ["UI_PRESETS_BTN"] = "Vorlagen...",
+    ["UI_EXPORT_BTN"] = "Profil Import / Export",
+    ["MACRO_COPY_SUFFIX"] = "_Kopie",
+    ["MACRO_CLONED_SUCCESS"] = "|cff00ccffRankForge:|r Makro dupliziert: '|cffffd200%s|r'.",
 
-    L["UI_MODIFIERS_HEADER"] = "Tastenbelegung, Ränge & Ziel-Matrix (Reihenfolge mit Pfeiltasten änderbar)"
-    L["UI_RESET_SORT_BTN"] = "Standard-Reihenfolge"
-    L["UI_RESET_SORT_TOOLTIP"] = "Setzt die Modifikatoren auf die empfohlene Reihenfolge zurück (Doppel-Tasten zuerst, nomod zuletzt)."
-    L["UI_GRID_MOD"] = "Taste / Mod"
-    L["UI_GRID_RANK"] = "Rang"
-    L["UI_GRID_MO"] = "MO"
-    L["UI_GRID_FOCUS"] = "Fokus"
-    L["UI_GRID_TOT"] = "ToT"
-    L["UI_GRID_SELF"] = "Selbst"
-    L["UI_GRID_FILTER"] = "Filter (help/nodead)"
-    L["UI_GRID_ALTSPELL"] = "Alternativer Zauber"
-    L["UI_MOD_NOMOD"] = "Kein Modifikator (nomod)"
-    L["UI_MOD_SHIFT"] = "Shift"
-    L["UI_MOD_CTRL"] = "Strg / Ctrl"
-    L["UI_MOD_ALT"] = "Alt"
-    L["UI_MOD_SHIFT_CTRL"] = "Shift + Strg"
-    L["UI_MOD_SHIFT_ALT"] = "Shift + Alt"
-    L["UI_MOD_CTRL_ALT"] = "Strg + Alt"
+    ["UI_LANG_LABEL"] = "Sprache:",
+    ["UI_LANG_AUTO"] = "Auto (Client)",
+    ["UI_LANG_EN"] = "English",
+    ["UI_LANG_DE"] = "Deutsch",
 
-    L["UI_PREVIEW_HEADER"] = "Makro-Vorschau (Auf Leiste ziehbar):"
-    L["UI_CHAR_COUNT"] = "%d / 255 Zeichen"
-    L["UI_CHAR_COUNT_WARNING"] = "|cffff3333Warnung: Makro überschreitet 255 Zeichen!|r"
-    L["UI_DRAG_HINT"] = "Tipp: Ziehe das Icon direkt auf deine Aktionsleiste!"
-    L["UI_COPY_HINT"] = "|cff888888(Klick = Alles markieren für Strg+C)|r"
-    L["UI_SLOT_STATUS"] = "Allg.: %d/%d | Char: %d/%d"
-    L["UI_DEFAULT_MACRO_NAME"] = "DR_Neu"
+    ["UI_MACRO_NAME"] = "Makro-Name:",
+    ["UI_SPELL_NAME"] = "Basis-Zauber:",
+    ["UI_DROP_SPELL_HERE"] = "Zauber hierher ziehen\n(aus Zauberbuch)",
+    ["UI_SPELL_SELECT_DROPDOWN"] = "Oder aus Liste wählen:",
+    ["UI_STORAGE_LOCATION"] = "Speicherort:",
+    ["UI_STORAGE_ACCOUNT"] = "Allgemein (Account, 120 Slots)",
+    ["UI_STORAGE_CHAR"] = "Charakter (18 Slots)",
+    ["UI_FALLBACK_MODE"] = "Wenn Rang noch nicht gelernt:",
+    ["UI_FALLBACK_OMIT"] = "Modifikator weglassen bis gelernt" ,
+    ["UI_FALLBACK_RANK1"] = "Rang 1 als Fallback nutzen",
 
-    L["CONFIRM_DELETE_TITLE"] = "Makro wirklich löschen?"
-    L["CONFIRM_DELETE_TEXT"] = "Möchtest du das Makro '|cffffd200%s|r' wirklich löschen?\nEs wird auch aus deinem WoW-Makrofenster entfernt."
-    L["CONFIRM_YES"] = "Ja, löschen"
-    L["CONFIRM_NO"] = "Abbrechen"
+    ["UI_TARGETING_HEADER"] = "Zielbedingungen (Targeting)",
+    ["UI_TARGET_MOUSEOVER"] = "Mouseover (@mouseover)",
+    ["UI_TARGET_MOUSEOVER_STRICT"] = "Mouseover nur wenn existiert",
+    ["UI_TARGET_FOCUS"] = "Fokus-Ziel (@focus)",
+    ["UI_TARGET_TARGETOFTARGET"] = "Ziel des Ziels (@targettarget)",
+    ["UI_TARGET_SELFCAST"] = "Auto-Selfcast Fallback ([@player])",
+    ["UI_COND_HELP"] = "help",
+    ["UI_COND_HARM"] = "harm",
+    ["UI_COND_NODEAD"] = "nodead",
+    ["UI_UTILITY_HEADER"] = "Zusatz-Aktionen vor dem Zauber (Pre-Cast Utility)",
+    ["UI_USE_TRINKET_1"] = "Trinket 1 (/use 13)",
+    ["UI_USE_TRINKET_2"] = "Trinket 2 (/use 14)",
+    ["UI_USE_RACIAL"] = "Volksfähigkeit (Berserking etc.)",
+    ["UI_PRECAST_CUSTOM"] = "Zusätzliche Befehle (z. B. /cast Innerer Fokus, /use Trank, /click Button):",
+    ["UI_TARGET_CUSTOM"] = "Benutzerdefinierte Zielbedingung:",
 
-    L["PRESETS_TITLE"] = "Vorlagen auswählen"
-    L["PRESETS_APPLY"] = "Vorlage anwenden"
-    L["PRESETS_CLOSE"] = "Schließen"
+    ["UI_MODIFIERS_HEADER"] = "Tastenbelegung, Ränge & Ziel-Matrix (Reihenfolge mit Pfeiltasten änderbar)",
+    ["UI_RESET_SORT_BTN"] = "Standard-Reihenfolge",
+    ["UI_RESET_SORT_TOOLTIP"] = "Setzt die Modifikatoren auf die empfohlene Reihenfolge zurück (Doppel-Tasten zuerst, nomod zuletzt).",
+    ["UI_GRID_MOD"] = "Taste / Mod",
+    ["UI_GRID_RANK"] = "Rang",
+    ["UI_GRID_MO"] = "MO",
+    ["UI_GRID_FOCUS"] = "Fokus",
+    ["UI_GRID_TOT"] = "ToT",
+    ["UI_GRID_SELF"] = "Selbst",
+    ["UI_GRID_FILTER"] = "Filter (help/nodead)",
+    ["UI_GRID_ALTSPELL"] = "Alternativer Zauber",
+    ["UI_MOD_NOMOD"] = "Kein Modifikator (nomod)",
+    ["UI_MOD_SHIFT"] = "Shift",
+    ["UI_MOD_CTRL"] = "Strg / Ctrl",
+    ["UI_MOD_ALT"] = "Alt",
+    ["UI_MOD_SHIFT_CTRL"] = "Shift + Strg",
+    ["UI_MOD_SHIFT_ALT"] = "Shift + Alt",
+    ["UI_MOD_CTRL_ALT"] = "Strg + Alt",
 
-    L["PROFILE_TITLE"] = "Profil Import / Export"
-    L["PROFILE_EXPORT_HINT"] = "Kopiere diesen Base64-String (Strg+C), um dein Profil zu teilen:"
-    L["PROFILE_IMPORT_HINT"] = "Füge hier einen Profil-String ein (Strg+V) und klicke auf Importieren:"
-    L["PROFILE_IMPORT_BTN"] = "Profil importieren"
-    L["PROFILE_COPY_BTN"] = "In Zwischenablage kopieren"
-    L["PROFILE_IMPORT_SUCCESS"] = "|cff00ccffRankForge:|r Profil erfolgreich importiert (%d Makros)!"
-    L["PROFILE_IMPORT_INVALID"] = "|cffff3333RankForge Fehler:|r Ungültiger Profil-String!"
+    ["UI_PREVIEW_HEADER"] = "Makro-Vorschau (Auf Leiste ziehbar):",
+    ["UI_CHAR_COUNT"] = "%d / 255 Zeichen",
+    ["UI_CHAR_COUNT_WARNING"] = "|cffff3333Warnung: Makro überschreitet 255 Zeichen!|r",
+    ["UI_DRAG_HINT"] = "Tipp: Ziehe das Icon direkt auf deine Aktionsleiste!",
+    ["UI_COPY_HINT"] = "|cff888888(Klick = Alles markieren für Strg+C)|r",
+    ["UI_SLOT_STATUS"] = "Allg.: %d/%d | Char: %d/%d",
+    ["UI_DEFAULT_MACRO_NAME"] = "DR_Neu",
 
-    L["MINIMAP_TOOLTIP_TITLE"] = "|cff00ccffRankForge|r"
-    L["MINIMAP_TOOLTIP_L1"] = "Linksklick: Fenster öffnen / schließen"
-    L["MINIMAP_TOOLTIP_L2"] = "Rechtsklick: Alle Makros aktualisieren"
-    L["MINIMAP_TOOLTIP_DRAG"] = "Ziehen: Symbol um Minimap bewegen"
+    ["CONFIRM_DELETE_TITLE"] = "Makro wirklich löschen?",
+    ["CONFIRM_DELETE_TEXT"] = "Möchtest du das Makro '|cffffd200%s|r' wirklich löschen?\nEs wird auch aus deinem WoW-Makrofenster entfernt.",
+    ["CONFIRM_YES"] = "Ja, löschen",
+    ["CONFIRM_NO"] = "Abbrechen",
 
-    L["RANK_WORD"] = "Rang"
+    ["PRESETS_TITLE"] = "Vorlagen auswählen",
+    ["PRESETS_APPLY"] = "Vorlage anwenden",
+    ["PRESETS_CLOSE"] = "Schließen",
+
+    ["PROFILE_TITLE"] = "Profil Import / Export",
+    ["PROFILE_EXPORT_HINT"] = "Kopiere diesen Base64-String (Strg+C), um dein Profil zu teilen:",
+    ["PROFILE_IMPORT_HINT"] = "Füge hier einen Profil-String ein (Strg+V) und klicke auf Importieren:",
+    ["PROFILE_IMPORT_BTN"] = "Profil importieren",
+    ["PROFILE_COPY_BTN"] = "In Zwischenablage kopieren",
+    ["PROFILE_IMPORT_SUCCESS"] = "|cff00ccffRankForge:|r Profil erfolgreich importiert (%d Makros)!",
+    ["PROFILE_IMPORT_INVALID"] = "|cffff3333RankForge Fehler:|r Ungültiger Profil-String!",
+
+    ["MINIMAP_TOOLTIP_TITLE"] = "|cff00ccffRankForge|r",
+    ["MINIMAP_TOOLTIP_L1"] = "Linksklick: Fenster öffnen / schließen",
+    ["MINIMAP_TOOLTIP_L2"] = "Rechtsklick: Alle Makros aktualisieren",
+    ["MINIMAP_TOOLTIP_DRAG"] = "Ziehen: Symbol um Minimap bewegen",
+
+    ["RANK_WORD"] = "Rang",
+}
+
+function RF:SetLocale(chosenLocale)
+    wipe(L)
+    -- Load base English first
+    for k, v in pairs(STRINGS_EN) do
+        L[k] = v
+    end
+
+    local effectiveLocale = chosenLocale
+    if not effectiveLocale or effectiveLocale == "auto" then
+        effectiveLocale = GetLocale()
+    end
+
+    if effectiveLocale == "deDE" then
+        for k, v in pairs(STRINGS_DE) do
+            L[k] = v
+        end
+    end
+    RF.activeLocale = effectiveLocale
 end
+
+function RF:GetEffectiveLocale()
+    return RF.activeLocale or GetLocale() or "enUS"
+end
+
+-- Initialize default locale
+RF:SetLocale("auto")
