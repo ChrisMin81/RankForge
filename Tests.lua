@@ -645,6 +645,37 @@ RegisterTest("Macro Generation: 3 Ranks Power Word: Shield fits in 255 chars", f
     Assert(#body <= 255, string.format("Power Word: Shield macro must fit within 255 characters! Actual: %d", #body))
 end)
 
+RegisterTest("UI & Layout: Toggle-All column header functionality", function()
+    local cfg = {
+        macroName = "DR_ToggleTest",
+        spellName = "Renew",
+        modifiers = {
+            { key = "shift", enabled = true, targetMouseover = true, targetTarget = true, targetSelfcast = true, isHelp = true, isHarm = false, isNodead = true },
+            { key = "nomod", enabled = true, targetMouseover = false, targetTarget = true, targetSelfcast = true, isHelp = true, isHarm = false, isNodead = true }
+        }
+    }
+
+    -- Simulate ToggleAll on targetMouseover (some are true, some false -> should make all true)
+    local allTrue = true
+    for _, mod in ipairs(cfg.modifiers) do
+        if not mod.targetMouseover then allTrue = false break end
+    end
+    local targetVal = not allTrue
+    for _, mod in ipairs(cfg.modifiers) do mod.targetMouseover = targetVal end
+    AssertEquals(cfg.modifiers[1].targetMouseover, true, "Mod 1 should be true")
+    AssertEquals(cfg.modifiers[2].targetMouseover, true, "Mod 2 should be true")
+
+    -- Second toggle -> should turn all false
+    allTrue = true
+    for _, mod in ipairs(cfg.modifiers) do
+        if not mod.targetMouseover then allTrue = false break end
+    end
+    targetVal = not allTrue
+    for _, mod in ipairs(cfg.modifiers) do mod.targetMouseover = targetVal end
+    AssertEquals(cfg.modifiers[1].targetMouseover, false, "Mod 1 should now be false")
+    AssertEquals(cfg.modifiers[2].targetMouseover, false, "Mod 2 should now be false")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

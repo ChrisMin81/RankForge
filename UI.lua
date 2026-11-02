@@ -468,10 +468,32 @@ local function CreateMainUI()
     end)
     f.resetSortBtn = resetSortBtn
 
-    -- Column Headers for the Matrix Grid
+    -- Column Headers for the Matrix Grid with Toggle-All capability
     local gridHeader = CreateFrame("Frame", nil, editor)
     gridHeader:SetSize(755, 16)
     gridHeader:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -232)
+
+    local function ToggleAllModifiersField(field, mutuallyExclude)
+        if not currentMacro or not currentMacro.modifiers then return end
+        local allTrue = true
+        for _, mod in ipairs(currentMacro.modifiers) do
+            if not mod[field] then
+                allTrue = false
+                break
+            end
+        end
+        local targetVal = not allTrue
+        for _, mod in ipairs(currentMacro.modifiers) do
+            mod[field] = targetVal
+            if targetVal and mutuallyExclude then
+                for _, exField in ipairs(mutuallyExclude) do
+                    mod[exField] = false
+                end
+            end
+        end
+        RF:LoadModifiersIntoUI(currentMacro)
+        RF:UpdatePreview()
+    end
 
     local function CreateColHeader(x, text, tooltipTitle, tooltipDesc)
         local h = gridHeader:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
@@ -483,7 +505,7 @@ local function CreateMainUI()
             btn:SetScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_TOP")
                 GameTooltip:SetText(tooltipTitle, 1, 1, 1)
-                if tooltipDesc then GameTooltip:AddLine(tooltipDesc, 0.8, 0.8, 0.8, true) end
+                if tooltipDesc and tooltipDesc ~= "" then GameTooltip:AddLine(tooltipDesc, 0.8, 0.8, 0.8, true) end
                 GameTooltip:Show()
             end)
             btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -491,15 +513,70 @@ local function CreateMainUI()
         return h
     end
 
+    local function CreateToggleColHeader(x, text, tooltipTitle, tooltipDesc, onClick)
+        local btn = CreateFrame("Button", nil, gridHeader)
+        btn:SetPoint("LEFT", gridHeader, "LEFT", x, 0)
+        btn:SetHeight(16)
+
+        local fs = btn:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+        fs:SetPoint("LEFT", btn, "LEFT", 0, 0)
+        fs:SetText(text)
+        btn:SetWidth(fs:GetStringWidth() + 4)
+        btn.fs = fs
+
+        btn:SetScript("OnEnter", function(self)
+            fs:SetTextColor(1, 0.82, 0) -- Highlight gold
+            GameTooltip:SetOwner(self, "ANCHOR_TOP")
+            GameTooltip:SetText(tooltipTitle or text, 1, 1, 1)
+            if tooltipDesc and tooltipDesc ~= "" then
+                GameTooltip:AddLine(tooltipDesc, 0.8, 0.8, 0.8, true)
+            end
+            GameTooltip:AddLine(L["UI_TOGGLE_ALL_CLICK"] or "|cff00ff00[Click]|r Toggle all / none for this column", 0, 1, 0)
+            GameTooltip:Show()
+        end)
+
+        btn:SetScript("OnLeave", function(self)
+            fs:SetTextColor(0.6, 0.6, 0.6) -- Normal gray
+            GameTooltip:Hide()
+        end)
+
+        if onClick then
+            btn:SetScript("OnClick", function(self)
+                pcall(PlaySound, SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON or 856)
+                onClick()
+            end)
+        end
+
+        return btn
+    end
+
     f.colHeaders = {}
     f.colHeaders.mod    = CreateColHeader(40,  L["UI_GRID_MOD"])
     f.colHeaders.rank   = CreateColHeader(168, L["UI_GRID_RANK"])
-    f.colHeaders.mo     = CreateColHeader(266, L["UI_GRID_MO"], L["UI_GRID_MO_TOOLTIP_TITLE"], L["UI_GRID_MO_TOOLTIP_DESC"])
-    f.colHeaders.target = CreateColHeader(296, L["UI_GRID_TARGET"], L["UI_GRID_TARGET_TOOLTIP_TITLE"], L["UI_GRID_TARGET_TOOLTIP_DESC"])
-    f.colHeaders.focus  = CreateColHeader(326, L["UI_GRID_FOCUS"], L["UI_GRID_FOCUS_TOOLTIP_TITLE"], L["UI_GRID_FOCUS_TOOLTIP_DESC"])
-    f.colHeaders.tot    = CreateColHeader(356, L["UI_GRID_TOT"], L["UI_GRID_TOT_TOOLTIP_TITLE"], L["UI_GRID_TOT_TOOLTIP_DESC"])
-    f.colHeaders.self   = CreateColHeader(386, L["UI_GRID_SELF"], L["UI_GRID_SELF_TOOLTIP_TITLE"], L["UI_GRID_SELF_TOOLTIP_DESC"])
-    f.colHeaders.filter = CreateColHeader(420, L["UI_GRID_FILTER"], L["UI_GRID_FILTER"], "")
+    f.colHeaders.mo     = CreateToggleColHeader(266, L["UI_GRID_MO"], L["UI_GRID_MO_TOOLTIP_TITLE"], L["UI_GRID_MO_TOOLTIP_DESC"], function()
+        ToggleAllModifiersField("targetMouseover")
+    end)
+    f.colHeaders.target = CreateToggleColHeader(296, L["UI_GRID_TARGET"], L["UI_GRID_TARGET_TOOLTIP_TITLE"], L["UI_GRID_TARGET_TOOLTIP_DESC"], function()
+        ToggleAllModifiersField("targetTarget")
+    end)
+    f.colHeaders.focus  = CreateToggleColHeader(326, L["UI_GRID_FOCUS"], L["UI_GRID_FOCUS_TOOLTIP_TITLE"], L["UI_GRID_FOCUS_TOOLTIP_DESC"], function()
+        ToggleAllModifiersField("targetFocus")
+    end)
+    f.colHeaders.tot    = CreateToggleColHeader(356, L["UI_GRID_TOT"], L["UI_GRID_TOT_TOOLTIP_TITLE"], L["UI_GRID_TOT_TOOLTIP_DESC"], function()
+        ToggleAllModifiersField("targetToT")
+    end)
+    f.colHeaders.self   = CreateToggleColHeader(386, L["UI_GRID_SELF"], L["UI_GRID_SELF_TOOLTIP_TITLE"], L["UI_GRID_SELF_TOOLTIP_DESC"], function()
+        ToggleAllModifiersField("targetSelfcast")
+    end)
+    f.colHeaders.help   = CreateToggleColHeader(420, L["UI_COND_HELP"], L["UI_COND_HELP_TOOLTIP_TITLE"], L["UI_COND_HELP_TOOLTIP_DESC"], function()
+        ToggleAllModifiersField("isHelp", {"isHarm"})
+    end)
+    f.colHeaders.harm   = CreateToggleColHeader(462, L["UI_COND_HARM"], L["UI_COND_HARM_TOOLTIP_TITLE"], L["UI_COND_HARM_TOOLTIP_DESC"], function()
+        ToggleAllModifiersField("isHarm", {"isHelp", "targetSelfcast"})
+    end)
+    f.colHeaders.nodead = CreateToggleColHeader(508, L["UI_COND_NODEAD"], L["UI_COND_NODEAD_TOOLTIP_TITLE"], L["UI_COND_NODEAD_TOOLTIP_DESC"], function()
+        ToggleAllModifiersField("isNodead")
+    end)
     f.colHeaders.alt    = CreateColHeader(565, L["UI_GRID_ALTSPELL"])
 
     f.modRows = {}
@@ -1203,15 +1280,27 @@ function RF:RefreshUILabels()
     if f.deleteBtn then f.deleteBtn:SetText(L["UI_DELETE_MACRO"]) end
 
     if f.colHeaders then
-        if f.colHeaders.mod then f.colHeaders.mod:SetText(L["UI_GRID_MOD"]) end
-        if f.colHeaders.rank then f.colHeaders.rank:SetText(L["UI_GRID_RANK"]) end
-        if f.colHeaders.mo then f.colHeaders.mo:SetText(L["UI_GRID_MO"]) end
-        if f.colHeaders.target then f.colHeaders.target:SetText(L["UI_GRID_TARGET"]) end
-        if f.colHeaders.focus then f.colHeaders.focus:SetText(L["UI_GRID_FOCUS"]) end
-        if f.colHeaders.tot then f.colHeaders.tot:SetText(L["UI_GRID_TOT"]) end
-        if f.colHeaders.self then f.colHeaders.self:SetText(L["UI_GRID_SELF"]) end
-        if f.colHeaders.filter then f.colHeaders.filter:SetText(L["UI_GRID_FILTER"]) end
-        if f.colHeaders.alt then f.colHeaders.alt:SetText(L["UI_GRID_ALTSPELL"]) end
+        local function SetHeaderLabel(btnOrFs, text)
+            if not btnOrFs or not text then return end
+            if btnOrFs.fs then
+                btnOrFs.fs:SetText(text)
+                btnOrFs:SetWidth(btnOrFs.fs:GetStringWidth() + 4)
+            elseif btnOrFs.SetText then
+                btnOrFs:SetText(text)
+            end
+        end
+
+        SetHeaderLabel(f.colHeaders.mod, L["UI_GRID_MOD"])
+        SetHeaderLabel(f.colHeaders.rank, L["UI_GRID_RANK"])
+        SetHeaderLabel(f.colHeaders.mo, L["UI_GRID_MO"])
+        SetHeaderLabel(f.colHeaders.target, L["UI_GRID_TARGET"])
+        SetHeaderLabel(f.colHeaders.focus, L["UI_GRID_FOCUS"])
+        SetHeaderLabel(f.colHeaders.tot, L["UI_GRID_TOT"])
+        SetHeaderLabel(f.colHeaders.self, L["UI_GRID_SELF"])
+        SetHeaderLabel(f.colHeaders.help, L["UI_COND_HELP"])
+        SetHeaderLabel(f.colHeaders.harm, L["UI_COND_HARM"])
+        SetHeaderLabel(f.colHeaders.nodead, L["UI_COND_NODEAD"])
+        SetHeaderLabel(f.colHeaders.alt, L["UI_GRID_ALTSPELL"])
     end
 
     if f.modRows then
