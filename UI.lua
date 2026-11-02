@@ -421,13 +421,13 @@ local function CreateMainUI()
     end
 
     CreateColHeader(40,  L["UI_GRID_MOD"])
-    CreateColHeader(135, L["UI_GRID_RANK"])
-    CreateColHeader(240, L["UI_GRID_MO"], "Mouseover (@mouseover)", "Wirkt auf die Einheit unter dem Mauszeiger")
-    CreateColHeader(285, L["UI_GRID_FOCUS"], "Fokus-Ziel (@focus)", "Wirkt auf dein gesetztes Fokus-Ziel")
-    CreateColHeader(330, L["UI_GRID_TOT"], "Ziel des Ziels (@targettarget)", "Wirkt auf das Ziel deines aktuellen Ziels")
-    CreateColHeader(375, L["UI_GRID_SELF"], "Selbstzauber-Fallback (@player)", "Wirkt auf dich selbst, wenn kein anderes Ziel aktiv ist")
-    CreateColHeader(430, L["UI_GRID_FILTER"], "Ziel-Filter (help / nodead)", "Schränkt das Ziel auf freundlich ('help') und/oder lebendig ('nodead') ein")
-    CreateColHeader(555, L["UI_GRID_ALTSPELL"])
+    CreateColHeader(172, L["UI_GRID_RANK"])
+    CreateColHeader(282, L["UI_GRID_MO"], "Mouseover (@mouseover)", "Wirkt auf die Einheit unter dem Mauszeiger")
+    CreateColHeader(322, L["UI_GRID_FOCUS"], "Fokus-Ziel (@focus)", "Wirkt auf dein gesetztes Fokus-Ziel")
+    CreateColHeader(362, L["UI_GRID_TOT"], "Ziel des Ziels (@targettarget)", "Wirkt auf das Ziel deines aktuellen Ziels")
+    CreateColHeader(402, L["UI_GRID_SELF"], "Selbstzauber-Fallback (@player)", "Wirkt auf dich selbst, wenn kein anderes Ziel aktiv ist")
+    CreateColHeader(448, L["UI_GRID_FILTER"], "Ziel-Filter (help / nodead)", "Schränkt das Ziel auf freundlich ('help') und/oder lebendig ('nodead') ein")
+    CreateColHeader(575, L["UI_GRID_ALTSPELL"])
 
     f.modRows = {}
     local startY = -252
@@ -440,7 +440,7 @@ local function CreateMainUI()
 
         -- Up/Down order buttons using native WoW scroll button templates
         local upBtn = CreateFrame("Button", nil, row, "UIPanelScrollUpButtonTemplate")
-        upBtn:SetSize(18, 18)
+        upBtn:SetSize(16, 16)
         upBtn:SetPoint("LEFT", row, "LEFT", 0, 0)
         upBtn:SetScript("OnClick", function()
             RF:MoveModifierOrder(i, -1)
@@ -448,16 +448,17 @@ local function CreateMainUI()
         row.upBtn = upBtn
 
         local downBtn = CreateFrame("Button", nil, row, "UIPanelScrollDownButtonTemplate")
-        downBtn:SetSize(18, 18)
+        downBtn:SetSize(16, 16)
         downBtn:SetPoint("LEFT", upBtn, "RIGHT", 2, 0)
         downBtn:SetScript("OnClick", function()
             RF:MoveModifierOrder(i, 1)
         end)
         row.downBtn = downBtn
 
-        -- Enable Checkbox
+        -- Enable Checkbox (explicit size 20x20 to prevent default 32x32 template overlap)
         local enableCb = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
-        enableCb:SetPoint("LEFT", downBtn, "RIGHT", 4, 0)
+        enableCb:SetSize(20, 20)
+        enableCb:SetPoint("LEFT", downBtn, "RIGHT", 3, 0)
         enableCb:SetScript("OnClick", function(self)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].enabled = self:GetChecked()
@@ -466,22 +467,22 @@ local function CreateMainUI()
         end)
         row.enableCb = enableCb
 
-        -- Mod Label
+        -- Mod Label (anchored to enableCb RIGHT with generous width so text never overlaps)
         local modLabel = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        modLabel:SetPoint("LEFT", row, "LEFT", 62, 0)
-        modLabel:SetWidth(68)
+        modLabel:SetPoint("LEFT", enableCb, "RIGHT", 4, 0)
+        modLabel:SetWidth(105)
         modLabel:SetJustifyH("LEFT")
         row.modLabel = modLabel
 
         -- Rank Offset Selector
         local offsetLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        offsetLabel:SetPoint("LEFT", row, "LEFT", 132, 0)
-        offsetLabel:SetText("Rang:")
+        offsetLabel:SetPoint("LEFT", row, "LEFT", 170, 0)
+        offsetLabel:SetText((L["RANK_WORD"] or "Rank") .. ":")
         row.offsetLabel = offsetLabel
 
         local offsetEdit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
         offsetEdit:SetSize(22, 18)
-        offsetEdit:SetPoint("LEFT", row, "LEFT", 166, 0)
+        offsetEdit:SetPoint("LEFT", row, "LEFT", 208, 0)
         offsetEdit:SetAutoFocus(false)
         offsetEdit:SetNumeric(true)
         offsetEdit:SetMaxLetters(2)
@@ -496,7 +497,7 @@ local function CreateMainUI()
         row.offsetEdit = offsetEdit
 
         local descText = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-        descText:SetPoint("LEFT", row, "LEFT", 192, 0)
+        descText:SetPoint("LEFT", row, "LEFT", 234, 0)
         descText:SetWidth(44)
         descText:SetJustifyH("LEFT")
         row.descText = descText
@@ -520,31 +521,31 @@ local function CreateMainUI()
             return cb
         end
 
-        row.cbMo = CreateRowTargetCheck(240, "Mouseover (@mouseover)", "Wirkt auf die Einheit unter der Maus", function(checked)
+        row.cbMo = CreateRowTargetCheck(282, "Mouseover (@mouseover)", "Wirkt auf die Einheit unter der Maus", function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].targetMouseover = checked
             end
         end)
 
-        row.cbFocus = CreateRowTargetCheck(285, "Fokus-Ziel (@focus)", "Wirkt auf dein gesetztes Fokus-Ziel", function(checked)
+        row.cbFocus = CreateRowTargetCheck(322, "Fokus-Ziel (@focus)", "Wirkt auf dein gesetztes Fokus-Ziel", function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].targetFocus = checked
             end
         end)
 
-        row.cbToT = CreateRowTargetCheck(330, "Ziel des Ziels (@targettarget)", "Wirkt auf das Ziel deines aktuellen Ziels", function(checked)
+        row.cbToT = CreateRowTargetCheck(362, "Ziel des Ziels (@targettarget)", "Wirkt auf das Ziel deines aktuellen Ziels", function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].targetToT = checked
             end
         end)
 
-        row.cbSelfcast = CreateRowTargetCheck(375, "Auto-Selfcast Fallback (@player)", "Wirkt auf dich selbst", function(checked)
+        row.cbSelfcast = CreateRowTargetCheck(402, "Auto-Selfcast Fallback (@player)", "Wirkt auf dich selbst", function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].targetSelfcast = checked
             end
         end)
 
-        row.cbHelp = CreateRowTargetCheck(430, "help", "Nur auf freundliche Ziele wirken", function(checked)
+        row.cbHelp = CreateRowTargetCheck(448, "help", "Nur auf freundliche Ziele wirken", function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].isHelp = checked
                 if checked then currentMacro.modifiers[i].isHarm = false end
@@ -554,7 +555,7 @@ local function CreateMainUI()
         row.cbHelp.text:SetPoint("LEFT", row.cbHelp, "RIGHT", 1, 0)
         row.cbHelp.text:SetText("help")
 
-        row.cbNodead = CreateRowTargetCheck(485, "nodead", "Nur auf lebende Ziele wirken (keine Toten)", function(checked)
+        row.cbNodead = CreateRowTargetCheck(502, "nodead", "Nur auf lebende Ziele wirken (keine Toten)", function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].isNodead = checked
             end
@@ -566,7 +567,7 @@ local function CreateMainUI()
         -- Drop slot icon for Alt. Zauber
         local altDropSlot = CreateFrame("Button", nil, row, "BackdropTemplate")
         altDropSlot:SetSize(18, 18)
-        altDropSlot:SetPoint("LEFT", row, "LEFT", 555, 0)
+        altDropSlot:SetPoint("LEFT", row, "LEFT", 575, 0)
         altDropSlot:SetBackdrop({
             edgeFile = "Interface\\Buttons\\UI-Quickslot-Depress",
             edgeSize = 10,
@@ -581,15 +582,15 @@ local function CreateMainUI()
         row.altDropSlot = altDropSlot
 
         local customSpellEdit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
-        customSpellEdit:SetSize(140, 18)
-        customSpellEdit:SetPoint("LEFT", row, "LEFT", 577, 0)
+        customSpellEdit:SetSize(135, 18)
+        customSpellEdit:SetPoint("LEFT", row, "LEFT", 597, 0)
         customSpellEdit:SetAutoFocus(false)
         row.customSpellEdit = customSpellEdit
 
         -- Search / Picker button
         local searchBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         searchBtn:SetSize(22, 18)
-        searchBtn:SetPoint("LEFT", row, "LEFT", 722, 0)
+        searchBtn:SetPoint("LEFT", row, "LEFT", 736, 0)
         searchBtn:SetText("...")
         row.searchBtn = searchBtn
 
