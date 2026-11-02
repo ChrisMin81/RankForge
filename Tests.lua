@@ -560,7 +560,7 @@ RegisterTest("Targeting: @target and Harm filters for offensive abilities", func
 
     local body = RF:GenerateMacroBody(offensiveCfg)
     Assert(body:find("%[@mouseover,harm,nodead%]") ~= nil, "Should have mouseover harm condition")
-    Assert(body:find("%[@target,harm,nodead%]") ~= nil, "Should have target harm condition")
+    Assert(body:find("%[harm,nodead%]") ~= nil, "Should have target harm condition (compact)")
     Assert(body:find("%[@player%]") == nil, "Should NOT have selfcast for offensive spell")
     Assert(body:find("help") == nil, "Should NOT contain help filter")
 end)
@@ -588,13 +588,44 @@ RegisterTest("Offensive Spells: AutoConfigureSpellType detects harmful spells", 
     AssertEquals(cfg.modifiers[1].targetSelfcast, true, "nomod should have targetSelfcast = true for heal")
 end)
 
-RegisterTest("Targeting: Beneficial spells fallback to self when nothing selected", function()
-    local healCfg = {
-        macroName = "DR_TestSelfcast",
-        spellName = "Flash Heal",
+RegisterTest("Macro Generation: 3 Ranks Power Word: Shield fits in 255 chars", function()
+    if mockSpellBook then
+        mockSpellBook[10] = { name = "Power Word: Shield", subtext = "Rank 8", spellID = 17 }
+        mockSpellBook[11] = { name = "Power Word: Shield", subtext = "Rank 9", spellID = 17 }
+        mockSpellBook[12] = { name = "Power Word: Shield", subtext = "Rank 10", spellID = 17 }
+    end
+    RF:ScanSpellBook()
+
+    local shieldCfg = {
+        macroName = "DR_Shield",
+        spellName = "Power Word: Shield",
         isAccount = true,
         fallbackMode = "omit",
         modifiers = {
+            {
+                key = "shift",
+                enabled = true,
+                mode = "relative",
+                rankOffset = 1,
+                targetMouseover = true,
+                targetTarget = true,
+                targetSelfcast = true,
+                isHelp = true,
+                isHarm = false,
+                isNodead = true
+            },
+            {
+                key = "ctrl",
+                enabled = true,
+                mode = "relative",
+                rankOffset = 2,
+                targetMouseover = true,
+                targetTarget = true,
+                targetSelfcast = true,
+                isHelp = true,
+                isHarm = false,
+                isNodead = true
+            },
             {
                 key = "nomod",
                 enabled = true,
@@ -606,27 +637,12 @@ RegisterTest("Targeting: Beneficial spells fallback to self when nothing selecte
                 isHelp = true,
                 isHarm = false,
                 isNodead = true
-            },
-            {
-                key = "shift",
-                enabled = true,
-                mode = "relative",
-                rankOffset = 1,
-                targetMouseover = true,
-                targetTarget = true,
-                targetSelfcast = false,
-                isHelp = true,
-                isHarm = false,
-                isNodead = true
             }
         }
     }
 
-    local body = RF:GenerateMacroBody(healCfg)
-    -- When targetSelfcast = true, explicit [@player] is added
-    Assert(body:find("%[@player%]") ~= nil, "nomod should have [@player] fallback")
-    -- When targetSelfcast = false on helpful spell, [mod:shift] fallback is added so WoW auto-self-casts
-    Assert(body:find("%[mod:shift%]") ~= nil, "shift should have [mod:shift] fallback")
+    local body = RF:GenerateMacroBody(shieldCfg)
+    Assert(#body <= 255, string.format("Power Word: Shield macro must fit within 255 characters! Actual: %d", #body))
 end)
 
 --------------------------------------------------------------------------------

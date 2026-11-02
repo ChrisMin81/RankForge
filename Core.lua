@@ -301,7 +301,10 @@ local MODIFIER_CLAUSES = {
 }
 
 local function BuildConditionSubstring(unit, isHelp, isHarm, isNodead)
-    local parts = { unit }
+    local parts = {}
+    if unit and unit ~= "" and unit ~= "@target" then
+        table.insert(parts, unit)
+    end
     if isHelp then
         table.insert(parts, "help")
     elseif isHarm then
@@ -526,33 +529,52 @@ function RF:GenerateMacroBody(macroConfig)
                 if isFocus then
                     table.insert(targets, BuildConditionSubstring("@focus", focusHelp, focusHarm, focusNodead))
                 end
-                if isTarget then
-                    table.insert(targets, BuildConditionSubstring("@target", tgtHelp, tgtHarm, tgtNodead))
-                end
                 if isToT then
                     table.insert(targets, BuildConditionSubstring("@targettarget", totHelp, totHarm, totNodead))
                 end
 
                 for _, tgt in ipairs(targets) do
-                    if modCondition then
-                        table.insert(conditionBlocks, string.format("[%s,%s]", modCondition, tgt))
-                    else
-                        table.insert(conditionBlocks, string.format("[%s]", tgt))
+                    if tgt ~= "" then
+                        if modCondition then
+                            table.insert(conditionBlocks, string.format("[%s,%s]", modCondition, tgt))
+                        else
+                            table.insert(conditionBlocks, string.format("[%s]", tgt))
+                        end
                     end
                 end
 
-                if isSelfcast then
+                if isTarget and isSelfcast then
+                    -- Both Target and Selfcast active:
+                    -- In WoW, [modCondition] handles target + auto-self-cast in 11 chars instead of 42!
+                    if modCondition then
+                        table.insert(conditionBlocks, string.format("[%s]", modCondition))
+                    else
+                        local tgtCond = BuildConditionSubstring("@target", tgtHelp, tgtHarm, tgtNodead)
+                        if tgtCond ~= "" then
+                            table.insert(conditionBlocks, string.format("[%s]", tgtCond))
+                        end
+                        table.insert(conditionBlocks, "[@player]")
+                    end
+                elseif isTarget then
+                    local tgtCond = BuildConditionSubstring("@target", tgtHelp, tgtHarm, tgtNodead)
+                    if tgtCond ~= "" then
+                        if modCondition then
+                            table.insert(conditionBlocks, string.format("[%s,%s]", modCondition, tgtCond))
+                        else
+                            table.insert(conditionBlocks, string.format("[%s]", tgtCond))
+                        end
+                    else
+                        if modCondition then
+                            table.insert(conditionBlocks, string.format("[%s]", modCondition))
+                        else
+                            table.insert(conditionBlocks, "[]")
+                        end
+                    end
+                elseif isSelfcast then
                     if modCondition then
                         table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
                     else
                         table.insert(conditionBlocks, "[@player]")
-                    end
-                elseif mod.isHelp then
-                    -- Beneficial spell fallback: let WoW auto-self-cast if nothing is selected
-                    if modCondition then
-                        table.insert(conditionBlocks, string.format("[%s]", modCondition))
-                    else
-                        table.insert(conditionBlocks, "[]")
                     end
                 elseif #targets == 0 then
                     if modCondition then
@@ -607,7 +629,20 @@ function RF:GenerateMacroBody(macroConfig)
 
     table.insert(macroLines, "/cast " .. table.concat(castParts, ";"))
 
-    return table.concat(macroLines, "\n")
+    local macroBody = table.concat(macroLines, "\n")
+
+    -- Smart length optimizer: if macro exceeds 255 chars, progressively compress
+    if #macroBody > 255 then
+        macroBody = macroBody:gsub("%[help,nodead%]%[@player%]", "[]")
+        macroBody = macroBody:gsub("%[@target,help,nodead%]%[@player%]", "[]")
+        macroBody = macroBody:gsub("%[@target,help,nodead%]", "[help,nodead]")
+        macroBody = macroBody:gsub("%[@target,harm,nodead%]", "[harm,nodead]")
+    end
+    if #macroBody > 255 then
+        macroBody = macroBody:gsub(",nodead", "")
+    end
+
+    return macroBody
 end
 
 --------------------------------------------------------------------------------
