@@ -526,13 +526,13 @@ function RF:GenerateMacroBody(macroConfig)
             if spellInfo and spellInfo.hasRanks then
                 if targetRank >= 1 and targetRank <= maxRank then
                     spellToCast = baseSpell
-                    local sub = spellInfo.subtexts[targetRank] or string.format("%s %d", spellInfo.rankWord or L["RANK_WORD"], targetRank)
+                    local sub = (spellInfo.subtexts and spellInfo.subtexts[targetRank]) or string.format("%s %d", spellInfo.rankWord or L["RANK_WORD"], targetRank)
                     rankSubtext = sub
                 else
                     -- Rank not yet learned
                     if fallbackMode == "rank1" then
                         spellToCast = baseSpell
-                        local sub = spellInfo.subtexts[1] or string.format("%s 1", spellInfo.rankWord or L["RANK_WORD"])
+                        local sub = (spellInfo.subtexts and spellInfo.subtexts[1]) or string.format("%s 1", spellInfo.rankWord or L["RANK_WORD"])
                         rankSubtext = sub
                     else
                         -- omit modifier until learned
@@ -655,14 +655,17 @@ function RF:GenerateMacroBody(macroConfig)
                             table.insert(conditionBlocks, string.format("[%s]", tgtCond))
                         end
                         table.insert(conditionBlocks, "[@player]")
+                        table.insert(conditionBlocks, "[]")
                     end
                 elseif isTarget then
                     local tgtCond = BuildConditionSubstring("@target", tgtHelp, tgtHarm, tgtNodead)
                     if tgtCond ~= "" then
                         if modCondition then
                             table.insert(conditionBlocks, string.format("[%s,%s]", modCondition, tgtCond))
+                            table.insert(conditionBlocks, string.format("[%s]", modCondition))
                         else
                             table.insert(conditionBlocks, string.format("[%s]", tgtCond))
+                            table.insert(conditionBlocks, "[]")
                         end
                     else
                         if modCondition then
@@ -674,10 +677,21 @@ function RF:GenerateMacroBody(macroConfig)
                 elseif isSelfcast then
                     if modCondition then
                         table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
+                        table.insert(conditionBlocks, string.format("[%s]", modCondition))
                     else
                         table.insert(conditionBlocks, "[@player]")
+                        table.insert(conditionBlocks, "[]")
                     end
                 elseif #targets == 0 then
+                    if modCondition then
+                        table.insert(conditionBlocks, string.format("[%s]", modCondition))
+                    else
+                        table.insert(conditionBlocks, "[]")
+                    end
+                else
+                    -- Specific target unit(s) like @mouseover only (no explicit Target or Selfcast).
+                    -- For modifiers, add [modCondition] fallback so holding the modifier displays its tooltip on action bars.
+                    -- For nomod, add [] fallback so the action bar displays the default tooltip without mouseover!
                     if modCondition then
                         table.insert(conditionBlocks, string.format("[%s]", modCondition))
                     else
@@ -698,6 +712,22 @@ function RF:GenerateMacroBody(macroConfig)
     -- If no conditions were met or all omitted, fallback to base spell
     if #castParts == 0 then
         table.insert(castParts, baseSpell)
+    else
+        local hasNomod = false
+        for _, entry in ipairs(sortedMods) do
+            if entry.mod.key == "nomod" then
+                hasNomod = true
+                break
+            end
+        end
+        if not hasNomod then
+            local maxRankString = baseSpell
+            if spellInfo and spellInfo.hasRanks and maxRank > 0 then
+                local sub = (spellInfo.subtexts and spellInfo.subtexts[maxRank]) or string.format("%s %d", spellInfo.rankWord or L["RANK_WORD"], maxRank)
+                maxRankString = string.format("%s(%s)", baseSpell, sub)
+            end
+            table.insert(castParts, "[] " .. maxRankString)
+        end
     end
 
     local macroLines = {
@@ -734,7 +764,9 @@ function RF:GenerateMacroBody(macroConfig)
 
     -- Smart length optimizer: if macro exceeds 255 chars, progressively compress
     if #macroBody > 255 then
+        macroBody = macroBody:gsub("%[help,nodead%]%[@player%]%[%]", "[]")
         macroBody = macroBody:gsub("%[help,nodead%]%[@player%]", "[]")
+        macroBody = macroBody:gsub("%[@target,help,nodead%]%[@player%]%[%]", "[]")
         macroBody = macroBody:gsub("%[@target,help,nodead%]%[@player%]", "[]")
         macroBody = macroBody:gsub("%[@target,help,nodead%]", "[help,nodead]")
         macroBody = macroBody:gsub("%[@target,harm,nodead%]", "[harm,nodead]")

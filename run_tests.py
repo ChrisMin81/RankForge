@@ -147,6 +147,7 @@ def build_wow_environment(lua):
         function obj:SetHeight(h) self.height = h end
         function obj:GetWidth() return self.width or 100 end
         function obj:GetHeight() return self.height or 20 end
+        function obj:GetStringWidth() return 50 end
         function obj:SetPoint(...) end
         function obj:ClearAllPoints() end
         function obj:SetText(t) self.text = t end
@@ -180,6 +181,7 @@ def build_wow_environment(lua):
         function obj:LockHighlight() end
         function obj:UnlockHighlight() end
         function obj:SetAlpha(a) end
+        function obj:SetTextColor(...) end
         function obj:SetTexture(t) self.texture = t end
         function obj:SetColorTexture(...) end
         function obj:SetTexCoord(...) end

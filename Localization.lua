@@ -124,6 +124,8 @@ local STRINGS_EN = {
     ["UI_DRAG_HINT"] = "Tip: Drag the icon directly onto your action bar!",
     ["UI_COPY_HINT"] = "|cff888888(Click = Select all for Ctrl+C)|r",
     ["UI_SLOT_STATUS"] = "Gen.: %d/%d | Char: %d/%d",
+    ["UI_NO_SPELL"] = "(No spell)",
+    ["UI_LIST_TOOLTIP_MODS"] = "Modifiers configured: %d",
     ["UI_DEFAULT_MACRO_NAME"] = "DR_New",
 
     ["CONFIRM_DELETE_TITLE"] = "Delete Macro?",
@@ -261,6 +263,8 @@ local STRINGS_DE = {
     ["UI_DRAG_HINT"] = "Tipp: Ziehe das Icon direkt auf deine Aktionsleiste!",
     ["UI_COPY_HINT"] = "|cff888888(Klick = Alles markieren für Strg+C)|r",
     ["UI_SLOT_STATUS"] = "Allg.: %d/%d | Char: %d/%d",
+    ["UI_NO_SPELL"] = "(Kein Zauber)",
+    ["UI_LIST_TOOLTIP_MODS"] = "Konfigurierte Modifikatoren: %d",
     ["UI_DEFAULT_MACRO_NAME"] = "DR_Neu",
 
     ["CONFIRM_DELETE_TITLE"] = "Makro wirklich löschen?",

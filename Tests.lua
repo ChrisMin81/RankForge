@@ -695,6 +695,97 @@ RegisterTest("Sweet Spot: GetSpellSweetSpot calculates optimal mana efficiency r
     AssertEquals(fhLvl, 44, "Flash Heal sweet spot level should be 44")
 end)
 
+RegisterTest("Macro List UI: Displays both Macro Name and Spell Name with live update", function()
+    -- Prepare test macros
+    local profile = RF:GetActiveProfile()
+    profile.macros = {
+        {
+            macroName = "DR_Renew",
+            spellName = "Renew",
+            modifiers = {
+                { key = "nomod", enabled = true, rankOffset = 0 }
+            }
+        },
+        {
+            macroName = "DR_EmptySpell",
+            spellName = "",
+            modifiers = {}
+        }
+    }
+
+    RF:UpdateUI()
+    local f = RF.MainFrame
+    Assert(f ~= nil, "Main frame must exist")
+    Assert(f.listContent ~= nil, "listContent must exist")
+    Assert(f.listContent.buttons ~= nil, "listContent.buttons must exist")
+    Assert(#f.listContent.buttons >= 2, "At least 2 macro buttons should be created")
+
+    local btn1 = f.listContent.buttons[1]
+    Assert(btn1.nameText ~= nil, "Button 1 must have nameText")
+    Assert(btn1.subText ~= nil, "Button 1 must have subText")
+    AssertEquals(btn1.nameText:GetText(), "DR_Renew", "Button 1 nameText should be DR_Renew")
+    AssertEquals(btn1.subText:GetText(), "Renew", "Button 1 subText should be Renew")
+
+    local btn2 = f.listContent.buttons[2]
+    AssertEquals(btn2.nameText:GetText(), "DR_EmptySpell", "Button 2 nameText should be DR_EmptySpell")
+    AssertEquals(btn2.subText:GetText(), RF.L["UI_NO_SPELL"], "Button 2 subText should display fallback no spell string")
+
+    -- Test live update through RF:UpdateMacroListItem
+    local updatedCfg = {
+        macroName = "DR_Shield_Updated",
+        spellName = "Power Word: Shield",
+        modifiers = {}
+    }
+    RF:UpdateMacroListItem(btn1, updatedCfg, 1)
+    AssertEquals(btn1.nameText:GetText(), "DR_Shield_Updated", "nameText should update dynamically")
+    AssertEquals(btn1.subText:GetText(), "Power Word: Shield", "subText should update dynamically")
+end)
+
+RegisterTest("Macro Generation: Action Bar Tooltip & Cast Fallback when only Mouseover is active", function()
+    RF.knownSpells["Renew"] = {
+        name = "Renew",
+        maxRank = 10,
+        hasRanks = true,
+        rankWord = "Rank",
+        ranks = { [1] = true, [7] = true, [8] = true, [9] = true, [10] = true },
+        subtexts = { [1] = "Rank 1", [7] = "Rank 7", [8] = "Rank 8", [9] = "Rank 9", [10] = "Rank 10" }
+    }
+
+    -- Exactly as in the user's screenshot: MO checked, Target/Selfcast unchecked
+    local cfg = {
+        macroName = "DR_Renew",
+        spellName = "Renew",
+        modifiers = {
+            { key = "shift", enabled = true, mode = "relative", rankOffset = 1, targetMouseover = true, targetTarget = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+            { key = "ctrl",  enabled = true, mode = "relative", rankOffset = 2, targetMouseover = true, targetTarget = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+            { key = "alt",   enabled = true, mode = "relative", rankOffset = 3, targetMouseover = true, targetTarget = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0, targetMouseover = true, targetTarget = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+        }
+    }
+
+    local body = RF:GenerateMacroBody(cfg)
+    -- Must have [mod:alt] fallback so holding Alt shows the tooltip on action bars
+    Assert(body:find("%[mod:alt%]") ~= nil, "Alt clause must contain [mod:alt] fallback for tooltip")
+    -- Must have [] fallback on nomod so hovering the action bar without modifiers shows the tooltip
+    Assert(body:find("%[%] Renew") ~= nil, "nomod clause must contain [] fallback for action bar tooltip")
+    -- Total length must fit within 255 chars
+    Assert(#body <= 255, string.format("Macro length %d must be <= 255", #body))
+
+    -- Test case where ONLY Alt is enabled (no nomod): must still generate a [] fallback for normal cast & tooltip
+    local cfgOnlyAlt = {
+        macroName = "DR_Renew_AltOnly",
+        spellName = "Renew",
+        modifiers = {
+            { key = "alt", enabled = true, mode = "relative", rankOffset = 3, targetMouseover = true, targetTarget = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+            { key = "nomod", enabled = false }
+        }
+    }
+    local bodyOnlyAlt = RF:GenerateMacroBody(cfgOnlyAlt)
+    Assert(bodyOnlyAlt:find("%[mod:alt") ~= nil, "Must have alt modifier clause")
+    Assert(bodyOnlyAlt:find("%[%] Renew%(Rank 10%)") ~= nil, "Must automatically fallback to max rank for nomod")
+    Assert(#bodyOnlyAlt <= 255, "Alt-only macro length must be <= 255")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

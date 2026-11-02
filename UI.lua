@@ -222,7 +222,9 @@ local function CreateMainUI()
             RF:UpdatePreview()
             if selectedMacroIndex and f.listContent and f.listContent.buttons then
                 local b = f.listContent.buttons[selectedMacroIndex]
-                if b then b:SetText(self:GetText()) end
+                if b then
+                    RF:UpdateMacroListItem(b, currentMacro, selectedMacroIndex)
+                end
             end
         end
     end)
@@ -330,6 +332,12 @@ local function CreateMainUI()
         if userInput and currentMacro then
             currentMacro.spellName = self:GetText()
             RF:UpdatePreview()
+            if selectedMacroIndex and f.listContent and f.listContent.buttons then
+                local b = f.listContent.buttons[selectedMacroIndex]
+                if b then
+                    RF:UpdateMacroListItem(b, currentMacro, selectedMacroIndex)
+                end
+            end
         end
     end)
     spellEdit:SetScript("OnEnterPressed", function(self)
@@ -1240,6 +1248,51 @@ function RF:LoadModifiersIntoUI(macroConfig)
     end
 end
 
+function RF:UpdateMacroListItem(btn, macroCfg, index)
+    if not btn or not macroCfg then return end
+    btn.macroConfig = macroCfg
+    btn.macroIndex = index
+
+    local mName = macroCfg.macroName
+    if not mName or mName == "" then
+        mName = "Macro " .. (index or 1)
+    end
+    if btn.nameText then
+        btn.nameText:SetText(mName)
+    else
+        btn:SetText(mName)
+    end
+
+    local sName = macroCfg.spellName
+    if btn.subText then
+        if sName and sName ~= "" then
+            btn.subText:SetText(sName)
+            if btn.subText.SetTextColor then
+                btn.subText:SetTextColor(0.65, 0.78, 0.95)
+            end
+        else
+            btn.subText:SetText(L["UI_NO_SPELL"] or "(No spell)")
+            if btn.subText.SetTextColor then
+                btn.subText:SetTextColor(0.5, 0.5, 0.5)
+            end
+        end
+    end
+
+    local tex = nil
+    if sName and sName ~= "" then
+        local spellInfo = RF:GetSpellRanksInfo(sName)
+        if spellInfo and spellInfo.spellID then
+            tex = GetSpellTexture(spellInfo.spellID)
+        end
+        if not tex then
+            tex = GetSpellTexture(sName)
+        end
+    end
+    if btn.icon then
+        btn.icon:SetTexture(tex or "Interface\\Icons\\INV_Misc_QuestionMark")
+    end
+end
+
 function RF:LoadMacroIntoEditor(macroConfig)
     if macroConfig then
         RF:EnsureAllModifiers(macroConfig)
@@ -1274,9 +1327,8 @@ function RF:LoadMacroIntoEditor(macroConfig)
 
     if selectedMacroIndex and f.listContent and f.listContent.buttons then
         local b = f.listContent.buttons[selectedMacroIndex]
-        if b and b.icon then
-            b.icon:SetTexture(tex)
-            b:SetText(macroConfig.macroName or "")
+        if b then
+            RF:UpdateMacroListItem(b, macroConfig, selectedMacroIndex)
         end
     end
 
@@ -1373,6 +1425,15 @@ function RF:RefreshUILabels()
         UIDropDownMenu_SetText(f.langDropdown, curText)
     end
 
+    if f.listContent and f.listContent.buttons then
+        local macros = RF:GetMacrosList()
+        for idx, b in ipairs(f.listContent.buttons) do
+            if macros[idx] then
+                RF:UpdateMacroListItem(b, macros[idx], idx)
+            end
+        end
+    end
+
     if currentMacro then
         RF:LoadMacroIntoEditor(currentMacro)
     end
@@ -1402,7 +1463,7 @@ function RF:UpdateUI()
     end
 
     local yOffset = 0
-    local btnHeight = 28
+    local btnHeight = 34
 
     for i, macroCfg in ipairs(macros) do
         local btn = listContent.buttons[i]
@@ -1411,37 +1472,45 @@ function RF:UpdateUI()
             btn:SetSize(185, btnHeight)
 
             local icon = btn:CreateTexture(nil, "ARTWORK")
-            icon:SetSize(20, 20)
+            icon:SetSize(24, 24)
             icon:SetPoint("LEFT", btn, "LEFT", 5, 0)
             icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
             btn.icon = icon
 
             local fs = btn:GetFontString()
             if fs then
-                fs:ClearAllPoints()
-                fs:SetPoint("LEFT", icon, "RIGHT", 6, 0)
-                fs:SetPoint("RIGHT", btn, "RIGHT", -4, 0)
-                fs:SetJustifyH("LEFT")
+                fs:Hide()
+            end
+
+            local nameText = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+            nameText:SetPoint("TOPLEFT", icon, "TOPRIGHT", 6, -1)
+            nameText:SetPoint("RIGHT", btn, "RIGHT", -6, 0)
+            nameText:SetHeight(14)
+            nameText:SetJustifyH("LEFT")
+            btn.nameText = nameText
+
+            local subText = btn:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+            subText:SetPoint("BOTTOMLEFT", icon, "BOTTOMRIGHT", 6, 2)
+            subText:SetPoint("RIGHT", btn, "RIGHT", -6, 0)
+            subText:SetHeight(12)
+            subText:SetJustifyH("LEFT")
+            btn.subText = subText
+
+            local origSetText = btn.SetText
+            function btn:SetText(txt)
+                if self.nameText then
+                    self.nameText:SetText(txt)
+                end
+                if origSetText then
+                    origSetText(self, "")
+                end
             end
 
             listContent.buttons[i] = btn
         end
 
         btn:SetPoint("TOPLEFT", listContent, "TOPLEFT", 0, -yOffset)
-        btn:SetText(macroCfg.macroName or ("Macro " .. i))
-
-        -- Resolve spell icon for list button
-        local tex = nil
-        if macroCfg.spellName and macroCfg.spellName ~= "" then
-            local spellInfo = RF:GetSpellRanksInfo(macroCfg.spellName)
-            if spellInfo and spellInfo.spellID then
-                tex = GetSpellTexture(spellInfo.spellID)
-            end
-            if not tex then
-                tex = GetSpellTexture(macroCfg.spellName)
-            end
-        end
-        btn.icon:SetTexture(tex or "Interface\\Icons\\INV_Misc_QuestionMark")
+        RF:UpdateMacroListItem(btn, macroCfg, i)
 
         -- Highlight currently selected macro button
         if i == selectedMacroIndex then
@@ -1451,6 +1520,32 @@ function RF:UpdateUI()
         end
 
         btn:Show()
+
+        btn:SetScript("OnEnter", function(self)
+            local cfg = self.macroConfig or macroCfg
+            if not cfg then return end
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:ClearLines()
+            GameTooltip:AddLine(cfg.macroName or ("Macro " .. i), 1, 0.82, 0)
+            if cfg.spellName and cfg.spellName ~= "" then
+                GameTooltip:AddLine(cfg.spellName, 0.7, 0.8, 1)
+            else
+                GameTooltip:AddLine(L["UI_NO_SPELL"] or "(No spell)", 0.5, 0.5, 0.5)
+            end
+            local activeMods = 0
+            if cfg.modifiers then
+                for _, m in pairs(cfg.modifiers) do
+                    if m and m.enabled ~= false and ((m.offset and m.offset > 0) or m.customRank or m.altSpell) then
+                        activeMods = activeMods + 1
+                    end
+                end
+            end
+            GameTooltip:AddLine(string.format(L["UI_LIST_TOOLTIP_MODS"] or "Modifiers configured: %d", activeMods), 0.6, 0.6, 0.6, true)
+            GameTooltip:Show()
+        end)
+        btn:SetScript("OnLeave", function(self)
+            GameTooltip:Hide()
+        end)
 
         btn:SetScript("OnClick", function()
             selectedMacroIndex = i
