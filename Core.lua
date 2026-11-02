@@ -72,50 +72,72 @@ function RF:ScanSpellBook()
 
         -- Check modern C_SpellBook API first
         if C_SpellBook and C_SpellBook.GetSpellBookItemName then
-            spellName = C_SpellBook.GetSpellBookItemName(i, Enum.SpellBookSpellBank.Player)
-            if C_SpellBook.GetSpellBookItemSubtext then
-                subtext = C_SpellBook.GetSpellBookItemSubtext(i, Enum.SpellBookSpellBank.Player)
-            end
-            if C_SpellBook.GetSpellBookItemType then
-                local itemType, actionID, sID = C_SpellBook.GetSpellBookItemType(i, Enum.SpellBookSpellBank.Player)
-                spellID = sID or actionID
+            local ok, n = pcall(C_SpellBook.GetSpellBookItemName, i, Enum.SpellBookSpellBank.Player)
+            if ok and n and n ~= "" then
+                spellName = n
+                if C_SpellBook.GetSpellBookItemSubtext then
+                    local okSub, sub = pcall(C_SpellBook.GetSpellBookItemSubtext, i, Enum.SpellBookSpellBank.Player)
+                    if okSub and sub and sub ~= "" then
+                        subtext = sub
+                    end
+                end
+                if C_SpellBook.GetSpellBookItemType then
+                    local okType, itemType, actionID, sID = pcall(C_SpellBook.GetSpellBookItemType, i, Enum.SpellBookSpellBank.Player)
+                    if okType then
+                        spellID = sID or actionID
+                    end
+                end
             end
         end
 
         -- Check legacy GetSpellBookItemName fallback
         if (not spellName or spellName == "") and GetSpellBookItemName then
-            local n, sub = GetSpellBookItemName(i, BOOKTYPE_SPELL or "spell")
-            spellName = n
-            if sub and sub ~= "" then
-                subtext = sub
-            end
-            if GetSpellBookItemInfo then
-                local itemType, id = GetSpellBookItemInfo(i, BOOKTYPE_SPELL or "spell")
-                spellID = id or spellID
-            end
-        end
-
-        -- Query slot subtext if missing
-        if (not subtext or subtext == "") and GetSpellSubtext then
-            subtext = GetSpellSubtext(i, BOOKTYPE_SPELL or "spell")
-        end
-
-        -- Query ID subtext if missing
-        if (not subtext or subtext == "") and spellID then
-            if C_Spell and C_Spell.GetSpellSubtext then
-                subtext = C_Spell.GetSpellSubtext(spellID)
-            elseif GetSpellSubtext then
-                subtext = GetSpellSubtext(spellID)
+            local ok, n, sub = pcall(GetSpellBookItemName, i, BOOKTYPE_SPELL or "spell")
+            if ok and n and n ~= "" then
+                spellName = n
+                if sub and sub ~= "" then
+                    subtext = sub
+                end
+                if GetSpellBookItemInfo then
+                    local okInfo, itemType, id = pcall(GetSpellBookItemInfo, i, BOOKTYPE_SPELL or "spell")
+                    if okInfo then
+                        spellID = id
+                    end
+                end
             end
         end
 
         if not spellName or spellName == "" then
             consecutiveEmpty = consecutiveEmpty + 1
-            if consecutiveEmpty >= 30 and i > 50 then
+            if consecutiveEmpty >= 30 and i > 40 then
                 break
             end
         else
             consecutiveEmpty = 0
+
+            -- Query slot subtext if missing (only for valid spell slots!)
+            if (not subtext or subtext == "") and GetSpellSubtext then
+                local ok, res = pcall(GetSpellSubtext, i, BOOKTYPE_SPELL or "spell")
+                if ok and res and res ~= "" then
+                    subtext = res
+                end
+            end
+
+            -- Query ID subtext if missing
+            if (not subtext or subtext == "") and spellID then
+                if C_Spell and C_Spell.GetSpellSubtext then
+                    local ok, res = pcall(C_Spell.GetSpellSubtext, spellID)
+                    if ok and res and res ~= "" then
+                        subtext = res
+                    end
+                elseif GetSpellSubtext then
+                    local ok, res = pcall(GetSpellSubtext, spellID)
+                    if ok and res and res ~= "" then
+                        subtext = res
+                    end
+                end
+            end
+
             local rankNum = ParseRankNumber(subtext)
             local rankWord = (subtext and subtext:match("^(%a+)")) or L["RANK_WORD"]
 
