@@ -25,6 +25,7 @@ L["SLASH_HELP_TEST"] = "/rf test - Run automated test suite (Unit-Tests)"
 L["SLASH_HELP_4"] = "/rf help - Show this help message"
 
 L["MACRO_SYNC_SUCCESS"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' successfully updated."
+L["MACRO_SYNC_ALL_SUCCESS"] = "|cff00ccffRankForge:|r All macros updated (%d macros synced)."
 L["MACRO_CREATED"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' created."
 L["MACRO_DELETED"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' deleted."
 L["MACRO_LIMIT_ACCOUNT_FULL"] = "|cffff3333RankForge Warning:|r General macro slots are full (120/120)!"
@@ -128,6 +129,7 @@ if locale == "deDE" then
     L["SLASH_HELP_4"] = "/rf help - Zeigt diese Hilfe an"
 
     L["MACRO_SYNC_SUCCESS"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' erfolgreich aktualisiert."
+    L["MACRO_SYNC_ALL_SUCCESS"] = "|cff00ccffRankForge:|r Alle Makros aktualisiert (%d Makros synchronisiert)."
     L["MACRO_CREATED"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' wurde neu erstellt."
     L["MACRO_DELETED"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' wurde gelöscht."
     L["MACRO_LIMIT_ACCOUNT_FULL"] = "|cffff3333RankForge Warnung:|r Allgemeine Makro-Slots sind voll (120/120)!"

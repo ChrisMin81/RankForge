@@ -456,6 +456,43 @@ RegisterTest("UI & Layout: Preview box is selectable EditBox", function()
     end
 end)
 
+RegisterTest("Macro Sync: SyncAllMacros updates macros upon new rank learned", function()
+    if mockSpellBook then
+        mockSpellBook[1] = { name = "Flash Heal", subtext = "Rank 1", spellID = 2061 }
+        mockSpellBook[2] = { name = "Flash Heal", subtext = "Rank 2", spellID = 2061 }
+        mockSpellBook[3] = { name = "Flash Heal", subtext = "Rank 3", spellID = 2061 }
+        mockSpellBook[4] = { name = "Flash Heal", subtext = "Rank 4", spellID = 2061 }
+    end
+
+    local cfg = {
+        macroName = "DR_TestFH",
+        spellName = "Flash Heal",
+        isAccount = true,
+        fallbackMode = "omit",
+        modifiers = {
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0 },
+            { key = "shift", enabled = true, mode = "relative", rankOffset = 1 },
+        }
+    }
+    local macros = RF:GetMacrosList()
+    table.insert(macros, cfg)
+
+    -- Initial sync
+    RF:SyncAllMacros(true)
+    local bodyBefore = RF:GenerateMacroBody(cfg)
+    Assert(bodyBefore:find("Flash Heal%(Rank 4%)") ~= nil, "Should cast Rank 4 as highest")
+
+    -- Simulate learning Rank 5
+    if mockSpellBook then
+        mockSpellBook[5] = { name = "Flash Heal", subtext = "Rank 5", spellID = 2061 }
+    end
+
+    RF:SyncAllMacros(true)
+    local bodyAfter = RF:GenerateMacroBody(cfg)
+    Assert(bodyAfter:find("Flash Heal%(Rank 5%)") ~= nil, "Should cast Rank 5 after update")
+    Assert(bodyAfter:find("Flash Heal%(Rank 4%)") ~= nil, "Shift should now cast Rank 4")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

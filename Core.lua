@@ -44,45 +44,78 @@ end
 function RF:ScanSpellBook()
     wipe(RF.knownSpells)
 
-    local numSpellTabs = 2
-    if GetNumSpellTabs then
-        numSpellTabs = GetNumSpellTabs()
-    end
-
-    local totalSpells = 0
-    for tab = 1, numSpellTabs do
-        local name, texture, offset, numSpells = nil, nil, 0, 0
-        if GetSpellTabInfo then
-            name, texture, offset, numSpells = GetSpellTabInfo(tab)
+    local maxSlot = 0
+    if C_SpellBook and C_SpellBook.GetNumSpellBookSkillLines and C_SpellBook.GetSpellBookSkillLineInfo then
+        local numLines = C_SpellBook.GetNumSpellBookSkillLines()
+        for l = 1, (numLines or 0) do
+            local lineInfo = C_SpellBook.GetSpellBookSkillLineInfo(l)
+            if lineInfo and lineInfo.itemIndexOffset and lineInfo.numSpellBookItems then
+                local endSlot = lineInfo.itemIndexOffset + lineInfo.numSpellBookItems
+                if endSlot > maxSlot then maxSlot = endSlot end
+            end
         end
-        totalSpells = totalSpells + (numSpells or 0)
+    elseif GetNumSpellTabs and GetSpellTabInfo then
+        local numTabs = GetNumSpellTabs()
+        for t = 1, (numTabs or 0) do
+            local _, _, offset, numSpells = GetSpellTabInfo(t)
+            if offset and numSpells then
+                local endSlot = offset + numSpells
+                if endSlot > maxSlot then maxSlot = endSlot end
+            end
+        end
     end
-    if totalSpells == 0 then totalSpells = 300 end
+    if maxSlot < 300 then maxSlot = 500 end
 
-    for i = 1, totalSpells do
+    local consecutiveEmpty = 0
+    for i = 1, maxSlot do
         local spellName, subtext, spellID = nil, nil, nil
 
         -- Check modern C_SpellBook API first
         if C_SpellBook and C_SpellBook.GetSpellBookItemName then
-            spellName, subtext = C_SpellBook.GetSpellBookItemName(i, Enum.SpellBookSpellBank.Player)
-            local itemType, id = C_SpellBook.GetSpellBookItemType(i, Enum.SpellBookSpellBank.Player)
-            spellID = id
-        elseif GetSpellBookItemName then
-            spellName, subtext = GetSpellBookItemName(i, BOOKTYPE_SPELL or "spell")
-            local itemType, id = GetSpellBookItemInfo(i, BOOKTYPE_SPELL or "spell")
-            spellID = id
+            spellName = C_SpellBook.GetSpellBookItemName(i, Enum.SpellBookSpellBank.Player)
+            if C_SpellBook.GetSpellBookItemSubtext then
+                subtext = C_SpellBook.GetSpellBookItemSubtext(i, Enum.SpellBookSpellBank.Player)
+            end
+            if C_SpellBook.GetSpellBookItemType then
+                local itemType, actionID, sID = C_SpellBook.GetSpellBookItemType(i, Enum.SpellBookSpellBank.Player)
+                spellID = sID or actionID
+            end
         end
 
-        if spellName and spellName ~= "" then
-            -- Query subtext if missing
-            if not subtext or subtext == "" then
-                if C_Spell and C_Spell.GetSpellSubtext and spellID then
-                    subtext = C_Spell.GetSpellSubtext(spellID)
-                elseif GetSpellSubtext then
-                    subtext = GetSpellSubtext(i, BOOKTYPE_SPELL or "spell")
-                end
+        -- Check legacy GetSpellBookItemName fallback
+        if (not spellName or spellName == "") and GetSpellBookItemName then
+            local n, sub = GetSpellBookItemName(i, BOOKTYPE_SPELL or "spell")
+            spellName = n
+            if sub and sub ~= "" then
+                subtext = sub
             end
+            if GetSpellBookItemInfo then
+                local itemType, id = GetSpellBookItemInfo(i, BOOKTYPE_SPELL or "spell")
+                spellID = id or spellID
+            end
+        end
 
+        -- Query slot subtext if missing
+        if (not subtext or subtext == "") and GetSpellSubtext then
+            subtext = GetSpellSubtext(i, BOOKTYPE_SPELL or "spell")
+        end
+
+        -- Query ID subtext if missing
+        if (not subtext or subtext == "") and spellID then
+            if C_Spell and C_Spell.GetSpellSubtext then
+                subtext = C_Spell.GetSpellSubtext(spellID)
+            elseif GetSpellSubtext then
+                subtext = GetSpellSubtext(spellID)
+            end
+        end
+
+        if not spellName or spellName == "" then
+            consecutiveEmpty = consecutiveEmpty + 1
+            if consecutiveEmpty >= 30 and i > 50 then
+                break
+            end
+        else
+            consecutiveEmpty = 0
             local rankNum = ParseRankNumber(subtext)
             local rankWord = (subtext and subtext:match("^(%a+)")) or L["RANK_WORD"]
 
@@ -157,6 +190,9 @@ end
 -- Active Profile Helpers
 --------------------------------------------------------------------------------
 function RF:GetActiveProfile()
+    RankForgeDB = RankForgeDB or { profiles = {} }
+    RankForgeDB.profiles = RankForgeDB.profiles or {}
+    RankForgeCharDB = RankForgeCharDB or {}
     local profileName = RankForgeCharDB.activeProfile or "Default"
     if not RankForgeDB.profiles[profileName] then
         RankForgeDB.profiles[profileName] = { macros = {} }
@@ -516,19 +552,41 @@ function RF:FindMacroIndex(macroName)
     local numAccount, numCharacter = GetNumMacros()
     local maxAccount = MAX_ACCOUNT_MACROS or 120
 
-    -- Search account macros (1 to numAccount)
-    for i = 1, numAccount do
-        local name, icon = GetMacroInfo(i)
+    -- 1. Search account macros (1 to numAccount)
+    local accLimit = (numAccount and numAccount > 0) and numAccount or maxAccount
+    for i = 1, accLimit do
+        local name, icon, body, isLocal = GetMacroInfo(i)
         if name and name:lower() == macroName:lower() then
-            return i, true
+            local isAcc = true
+            if isLocal ~= nil then
+                isAcc = not isLocal
+            end
+            return i, isAcc
         end
     end
 
-    -- Search character macros (maxAccount + 1 to maxAccount + numCharacter)
-    for i = maxAccount + 1, maxAccount + numCharacter do
-        local name, icon = GetMacroInfo(i)
+    -- 2. Search character macros (maxAccount + 1 to maxAccount + numCharacter)
+    local charLimit = (numCharacter and numCharacter > 0) and numCharacter or 36
+    for i = maxAccount + 1, maxAccount + charLimit do
+        local name, icon, body, isLocal = GetMacroInfo(i)
         if name and name:lower() == macroName:lower() then
-            return i, false
+            local isAcc = false
+            if isLocal ~= nil then
+                isAcc = not isLocal
+            end
+            return i, isAcc
+        end
+    end
+
+    -- 3. Fallback scan across all slots 1 to 200
+    for i = 1, 200 do
+        local name, icon, body, isLocal = GetMacroInfo(i)
+        if name and name:lower() == macroName:lower() then
+            local isAcc = (i <= maxAccount)
+            if isLocal ~= nil then
+                isAcc = not isLocal
+            end
+            return i, isAcc
         end
     end
 
@@ -556,6 +614,9 @@ function RF:SyncMacro(macroConfig, silent)
     local existingIndex, existingIsAccount = RF:FindMacroIndex(macroName)
 
     if existingIndex then
+        local _, currIcon = GetMacroInfo(existingIndex)
+        local targetIcon = currIcon or icon
+
         if existingIsAccount ~= isAccount then
             -- Storage location changed (Account <-> Character tab)! Move macro
             local freeSlots, used, maxSlots = RF:GetAvailableMacroSlots(isAccount)
@@ -566,14 +627,14 @@ function RF:SyncMacro(macroConfig, silent)
             end
 
             DeleteMacro(existingIndex)
-            local newIndex = CreateMacro(macroName, icon, macroBody, not isAccount)
+            local newIndex = CreateMacro(macroName, targetIcon, macroBody, not isAccount)
             if not silent then
                 print(string.format(L["MACRO_CREATED"], macroName))
             end
             return true, "moved", newIndex
         else
             -- Macro already exists in correct tab: update body
-            EditMacro(existingIndex, macroName, icon, macroBody)
+            EditMacro(existingIndex, macroName, targetIcon, macroBody)
             if not silent then
                 print(string.format(L["MACRO_SYNC_SUCCESS"], macroName))
             end
@@ -614,8 +675,13 @@ function RF:SyncAllMacros(silent)
         if success then count = count + 1 end
     end
 
-    if not silent and count > 0 then
-        print(string.format(L["COMBAT_LOCKDOWN_EXECUTED"], count))
+    if not silent then
+        local msg = L["MACRO_SYNC_ALL_SUCCESS"] or "|cff00ccffRankForge:|r %d macros updated."
+        print(string.format(msg, count))
+    end
+
+    if RF.UpdateUI and RF.MainFrame and RF.MainFrame:IsShown() then
+        RF:UpdateUI()
     end
 end
 

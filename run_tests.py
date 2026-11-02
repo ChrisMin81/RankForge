@@ -83,6 +83,28 @@ def build_wow_environment(lua):
     function PickupMacro(idx) end
 
     -- Spell API mocks
+    mockSpellBook = {}
+    function GetNumSpellTabs() return 1 end
+    function GetSpellTabInfo(tab) return "General", "", 0, #mockSpellBook end
+    function GetSpellBookItemName(idx, bank)
+        if mockSpellBook[idx] then
+            return mockSpellBook[idx].name, mockSpellBook[idx].subtext
+        end
+        return nil, nil
+    end
+    function GetSpellBookItemInfo(idx, bank)
+        if mockSpellBook[idx] then
+            return "SPELL", mockSpellBook[idx].spellID
+        end
+        return nil, nil
+    end
+    function GetSpellSubtext(idx, bank)
+        if type(idx) == "number" and mockSpellBook[idx] then
+            return mockSpellBook[idx].subtext
+        end
+        return nil
+    end
+
     function GetSpellInfo(id)
         if id == 139 then return "Renew", "", "Interface\\\\Icons\\\\Spell_Holy_Renew" end
         if id == 2061 then return "Flash Heal", "", "Interface\\\\Icons\\\\Spell_Holy_FlashHeal" end
