@@ -311,6 +311,7 @@ local function CreateMainUI()
                 if currentMacro.macroName == "" or currentMacro.macroName:match("^DR_") then
                     currentMacro.macroName = "DR_" .. spellName:gsub("%s+", "")
                 end
+                RF:AutoConfigureSpellType(currentMacro, spellName)
                 RF:LoadMacroIntoEditor(currentMacro)
             end
         end
@@ -354,6 +355,7 @@ local function CreateMainUI()
                 if currentMacro.macroName == "" or currentMacro.macroName:match("^DR_") then
                     currentMacro.macroName = "DR_" .. chosen:gsub("%s+", "")
                 end
+                RF:AutoConfigureSpellType(currentMacro, chosen)
                 RF:LoadMacroIntoEditor(currentMacro)
             end
         end
@@ -491,13 +493,14 @@ local function CreateMainUI()
 
     f.colHeaders = {}
     f.colHeaders.mod    = CreateColHeader(40,  L["UI_GRID_MOD"])
-    f.colHeaders.rank   = CreateColHeader(172, L["UI_GRID_RANK"])
-    f.colHeaders.mo     = CreateColHeader(282, L["UI_GRID_MO"], "Mouseover (@mouseover)", "Wirkt auf die Einheit unter dem Mauszeiger")
-    f.colHeaders.focus  = CreateColHeader(322, L["UI_GRID_FOCUS"], "Fokus-Ziel (@focus)", "Wirkt auf dein gesetztes Fokus-Ziel")
-    f.colHeaders.tot    = CreateColHeader(362, L["UI_GRID_TOT"], "Ziel des Ziels (@targettarget)", "Wirkt auf das Ziel deines aktuellen Ziels")
-    f.colHeaders.self   = CreateColHeader(402, L["UI_GRID_SELF"], "Selbstzauber-Fallback (@player)", "Wirkt auf dich selbst, wenn kein anderes Ziel aktiv ist")
-    f.colHeaders.filter = CreateColHeader(448, L["UI_GRID_FILTER"], "Ziel-Filter (help / nodead)", "Schränkt das Ziel auf freundlich ('help') und/oder lebendig ('nodead') ein")
-    f.colHeaders.alt    = CreateColHeader(575, L["UI_GRID_ALTSPELL"])
+    f.colHeaders.rank   = CreateColHeader(168, L["UI_GRID_RANK"])
+    f.colHeaders.mo     = CreateColHeader(266, L["UI_GRID_MO"], L["UI_GRID_MO_TOOLTIP_TITLE"], L["UI_GRID_MO_TOOLTIP_DESC"])
+    f.colHeaders.target = CreateColHeader(296, L["UI_GRID_TARGET"], L["UI_GRID_TARGET_TOOLTIP_TITLE"], L["UI_GRID_TARGET_TOOLTIP_DESC"])
+    f.colHeaders.focus  = CreateColHeader(326, L["UI_GRID_FOCUS"], L["UI_GRID_FOCUS_TOOLTIP_TITLE"], L["UI_GRID_FOCUS_TOOLTIP_DESC"])
+    f.colHeaders.tot    = CreateColHeader(356, L["UI_GRID_TOT"], L["UI_GRID_TOT_TOOLTIP_TITLE"], L["UI_GRID_TOT_TOOLTIP_DESC"])
+    f.colHeaders.self   = CreateColHeader(386, L["UI_GRID_SELF"], L["UI_GRID_SELF_TOOLTIP_TITLE"], L["UI_GRID_SELF_TOOLTIP_DESC"])
+    f.colHeaders.filter = CreateColHeader(420, L["UI_GRID_FILTER"], L["UI_GRID_FILTER"], "")
+    f.colHeaders.alt    = CreateColHeader(565, L["UI_GRID_ALTSPELL"])
 
     f.modRows = {}
     local startY = -252
@@ -546,13 +549,13 @@ local function CreateMainUI()
 
         -- Rank Offset Selector
         local offsetLabel = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        offsetLabel:SetPoint("LEFT", row, "LEFT", 170, 0)
+        offsetLabel:SetPoint("LEFT", row, "LEFT", 168, 0)
         offsetLabel:SetText((L["RANK_WORD"] or "Rank") .. ":")
         row.offsetLabel = offsetLabel
 
         local offsetEdit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
         offsetEdit:SetSize(22, 18)
-        offsetEdit:SetPoint("LEFT", row, "LEFT", 208, 0)
+        offsetEdit:SetPoint("LEFT", row, "LEFT", 204, 0)
         offsetEdit:SetAutoFocus(false)
         offsetEdit:SetNumeric(true)
         offsetEdit:SetMaxLetters(2)
@@ -567,8 +570,8 @@ local function CreateMainUI()
         row.offsetEdit = offsetEdit
 
         local descText = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-        descText:SetPoint("LEFT", row, "LEFT", 234, 0)
-        descText:SetWidth(44)
+        descText:SetPoint("LEFT", row, "LEFT", 228, 0)
+        descText:SetWidth(36)
         descText:SetJustifyH("LEFT")
         row.descText = descText
 
@@ -580,7 +583,7 @@ local function CreateMainUI()
             cb:SetScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_TOP")
                 GameTooltip:SetText(tooltipTitle, 1, 1, 1)
-                if tooltipDesc then GameTooltip:AddLine(tooltipDesc, 0.8, 0.8, 0.8, true) end
+                if tooltipDesc and tooltipDesc ~= "" then GameTooltip:AddLine(tooltipDesc, 0.8, 0.8, 0.8, true) end
                 GameTooltip:Show()
             end)
             cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -591,41 +594,66 @@ local function CreateMainUI()
             return cb
         end
 
-        row.cbMo = CreateRowTargetCheck(282, "Mouseover (@mouseover)", "Wirkt auf die Einheit unter der Maus", function(checked)
+        row.cbMo = CreateRowTargetCheck(266, L["UI_GRID_MO_TOOLTIP_TITLE"], L["UI_GRID_MO_TOOLTIP_DESC"], function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].targetMouseover = checked
             end
         end)
 
-        row.cbFocus = CreateRowTargetCheck(322, "Fokus-Ziel (@focus)", "Wirkt auf dein gesetztes Fokus-Ziel", function(checked)
+        row.cbTarget = CreateRowTargetCheck(296, L["UI_GRID_TARGET_TOOLTIP_TITLE"], L["UI_GRID_TARGET_TOOLTIP_DESC"], function(checked)
+            if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
+                currentMacro.modifiers[i].targetTarget = checked
+            end
+        end)
+
+        row.cbFocus = CreateRowTargetCheck(326, L["UI_GRID_FOCUS_TOOLTIP_TITLE"], L["UI_GRID_FOCUS_TOOLTIP_DESC"], function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].targetFocus = checked
             end
         end)
 
-        row.cbToT = CreateRowTargetCheck(362, "Ziel des Ziels (@targettarget)", "Wirkt auf das Ziel deines aktuellen Ziels", function(checked)
+        row.cbToT = CreateRowTargetCheck(356, L["UI_GRID_TOT_TOOLTIP_TITLE"], L["UI_GRID_TOT_TOOLTIP_DESC"], function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].targetToT = checked
             end
         end)
 
-        row.cbSelfcast = CreateRowTargetCheck(402, "Auto-Selfcast Fallback (@player)", "Wirkt auf dich selbst", function(checked)
+        row.cbSelfcast = CreateRowTargetCheck(386, L["UI_GRID_SELF_TOOLTIP_TITLE"], L["UI_GRID_SELF_TOOLTIP_DESC"], function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].targetSelfcast = checked
             end
         end)
 
-        row.cbHelp = CreateRowTargetCheck(448, "help", "Nur auf freundliche Ziele wirken", function(checked)
+        row.cbHelp = CreateRowTargetCheck(420, L["UI_COND_HELP_TOOLTIP_TITLE"], L["UI_COND_HELP_TOOLTIP_DESC"], function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].isHelp = checked
-                if checked then currentMacro.modifiers[i].isHarm = false end
+                if checked then
+                    currentMacro.modifiers[i].isHarm = false
+                    if row.cbHarm then row.cbHarm:SetChecked(false) end
+                end
             end
         end)
         row.cbHelp.text = row.cbHelp:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         row.cbHelp.text:SetPoint("LEFT", row.cbHelp, "RIGHT", 1, 0)
         row.cbHelp.text:SetText("help")
 
-        row.cbNodead = CreateRowTargetCheck(502, "nodead", "Nur auf lebende Ziele wirken (keine Toten)", function(checked)
+        row.cbHarm = CreateRowTargetCheck(462, L["UI_COND_HARM_TOOLTIP_TITLE"], L["UI_COND_HARM_TOOLTIP_DESC"], function(checked)
+            if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
+                currentMacro.modifiers[i].isHarm = checked
+                if checked then
+                    currentMacro.modifiers[i].isHelp = false
+                    if row.cbHelp then row.cbHelp:SetChecked(false) end
+                    -- Mutually exclude selfcast when harm is selected
+                    currentMacro.modifiers[i].targetSelfcast = false
+                    if row.cbSelfcast then row.cbSelfcast:SetChecked(false) end
+                end
+            end
+        end)
+        row.cbHarm.text = row.cbHarm:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        row.cbHarm.text:SetPoint("LEFT", row.cbHarm, "RIGHT", 1, 0)
+        row.cbHarm.text:SetText("harm")
+
+        row.cbNodead = CreateRowTargetCheck(508, L["UI_COND_NODEAD_TOOLTIP_TITLE"], L["UI_COND_NODEAD_TOOLTIP_DESC"], function(checked)
             if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 currentMacro.modifiers[i].isNodead = checked
             end
@@ -637,7 +665,7 @@ local function CreateMainUI()
         -- Drop slot icon for Alt. Zauber
         local altDropSlot = CreateFrame("Button", nil, row, "BackdropTemplate")
         altDropSlot:SetSize(18, 18)
-        altDropSlot:SetPoint("LEFT", row, "LEFT", 575, 0)
+        altDropSlot:SetPoint("LEFT", row, "LEFT", 565, 0)
         altDropSlot:SetBackdrop({
             edgeFile = "Interface\\Buttons\\UI-Quickslot-Depress",
             edgeSize = 10,
@@ -652,15 +680,15 @@ local function CreateMainUI()
         row.altDropSlot = altDropSlot
 
         local customSpellEdit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
-        customSpellEdit:SetSize(135, 18)
-        customSpellEdit:SetPoint("LEFT", row, "LEFT", 597, 0)
+        customSpellEdit:SetSize(142, 18)
+        customSpellEdit:SetPoint("LEFT", row, "LEFT", 587, 0)
         customSpellEdit:SetAutoFocus(false)
         row.customSpellEdit = customSpellEdit
 
         -- Search / Picker button
         local searchBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
         searchBtn:SetSize(22, 18)
-        searchBtn:SetPoint("LEFT", row, "LEFT", 736, 0)
+        searchBtn:SetPoint("LEFT", row, "LEFT", 733, 0)
         searchBtn:SetText("...")
         row.searchBtn = searchBtn
 
@@ -958,13 +986,13 @@ local function GetModifierDisplayName(key)
 end
 
 local DEFAULT_MODIFIERS_LIST = {
-    { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3, customSpell = "", targetMouseover = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4, customSpell = "", targetMouseover = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5, customSpell = "", targetMouseover = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1, customSpell = "", targetMouseover = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2, customSpell = "", targetMouseover = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "alt",        enabled = true,  mode = "relative", rankOffset = 2, customSpell = "", targetMouseover = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0, customSpell = "", targetMouseover = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
+    { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+    { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+    { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+    { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+    { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+    { key = "alt",        enabled = true,  mode = "relative", rankOffset = 2, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+    { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
 }
 
 function RF:EnsureAllModifiers(macroConfig)
@@ -973,6 +1001,7 @@ function RF:EnsureAllModifiers(macroConfig)
     for _, mod in ipairs(macroConfig.modifiers) do
         hasKey[mod.key] = true
         if mod.targetMouseover == nil then mod.targetMouseover = (macroConfig.targetMouseover ~= false) end
+        if mod.targetTarget == nil then mod.targetTarget = true end
         if mod.targetFocus == nil then mod.targetFocus = (macroConfig.targetFocus or false) end
         if mod.targetToT == nil then mod.targetToT = (macroConfig.targetToT or false) end
         if mod.targetSelfcast == nil then mod.targetSelfcast = (mod.key == "nomod") end
@@ -989,6 +1018,7 @@ function RF:EnsureAllModifiers(macroConfig)
                 rankOffset = def.rankOffset,
                 customSpell = "",
                 targetMouseover = def.targetMouseover,
+                targetTarget = def.targetTarget,
                 targetFocus = def.targetFocus,
                 targetToT = def.targetToT,
                 targetSelfcast = def.targetSelfcast,
@@ -1025,6 +1055,7 @@ function RF:CreateNewMacroConfig()
             rankOffset = def.rankOffset,
             customSpell = "",
             targetMouseover = def.targetMouseover,
+            targetTarget = def.targetTarget,
             targetFocus = def.targetFocus,
             targetToT = def.targetToT,
             targetSelfcast = def.targetSelfcast,
@@ -1060,10 +1091,12 @@ function RF:LoadModifiersIntoUI(macroConfig)
 
             -- Grid Targeting Checkboxes per Row
             if row.cbMo then row.cbMo:SetChecked(modData.targetMouseover ~= false) end
+            if row.cbTarget then row.cbTarget:SetChecked(modData.targetTarget ~= false) end
             if row.cbFocus then row.cbFocus:SetChecked(modData.targetFocus == true) end
             if row.cbToT then row.cbToT:SetChecked(modData.targetToT == true) end
             if row.cbSelfcast then row.cbSelfcast:SetChecked(modData.targetSelfcast == true) end
-            if row.cbHelp then row.cbHelp:SetChecked(modData.isHelp ~= false) end
+            if row.cbHelp then row.cbHelp:SetChecked(modData.isHelp == true) end
+            if row.cbHarm then row.cbHarm:SetChecked(modData.isHarm == true) end
             if row.cbNodead then row.cbNodead:SetChecked(modData.isNodead ~= false) end
 
             local cSpell = modData.customSpell or ""
@@ -1173,6 +1206,7 @@ function RF:RefreshUILabels()
         if f.colHeaders.mod then f.colHeaders.mod:SetText(L["UI_GRID_MOD"]) end
         if f.colHeaders.rank then f.colHeaders.rank:SetText(L["UI_GRID_RANK"]) end
         if f.colHeaders.mo then f.colHeaders.mo:SetText(L["UI_GRID_MO"]) end
+        if f.colHeaders.target then f.colHeaders.target:SetText(L["UI_GRID_TARGET"]) end
         if f.colHeaders.focus then f.colHeaders.focus:SetText(L["UI_GRID_FOCUS"]) end
         if f.colHeaders.tot then f.colHeaders.tot:SetText(L["UI_GRID_TOT"]) end
         if f.colHeaders.self then f.colHeaders.self:SetText(L["UI_GRID_SELF"]) end

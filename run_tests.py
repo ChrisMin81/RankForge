@@ -121,6 +121,20 @@ def build_wow_environment(lua):
         return "Priest", "PRIEST"
     end
 
+    function IsHarmfulSpell(name)
+        if name == "Mind Blast" or name == "Shadow Word: Pain" or name == "Smite" or name == "Frostbolt" then
+            return true
+        end
+        return false
+    end
+
+    function IsHelpfulSpell(name)
+        if name == "Flash Heal" or name == "Greater Heal" or name == "Renew" or name == "Power Word: Shield" then
+            return true
+        end
+        return false
+    end
+
     -- Frame UI Mocks
     local function CreateDummyObject(name, objType)
         local obj = { name = name, type = objType, visible = false }

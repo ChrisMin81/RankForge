@@ -534,6 +534,60 @@ RegisterTest("Macro Sync: SyncAllMacros updates macros upon new rank learned", f
     Assert(bodyAfter:find("Flash Heal%(Rank 4%)") ~= nil, "Shift should now cast Rank 4")
 end)
 
+RegisterTest("Targeting: @target and Harm filters for offensive abilities", function()
+    local offensiveCfg = {
+        macroName = "DR_MindBlast",
+        spellName = "Mind Blast",
+        isAccount = true,
+        fallbackMode = "omit",
+        modifiers = {
+            {
+                key = "nomod",
+                enabled = true,
+                mode = "relative",
+                rankOffset = 0,
+                targetMouseover = true,
+                targetTarget = true,
+                targetFocus = false,
+                targetToT = false,
+                targetSelfcast = false,
+                isHelp = false,
+                isHarm = true,
+                isNodead = true
+            }
+        }
+    }
+
+    local body = RF:GenerateMacroBody(offensiveCfg)
+    Assert(body:find("%[@mouseover,harm,nodead%]") ~= nil, "Should have mouseover harm condition")
+    Assert(body:find("%[@target,harm,nodead%]") ~= nil, "Should have target harm condition")
+    Assert(body:find("%[@player%]") == nil, "Should NOT have selfcast for offensive spell")
+    Assert(body:find("help") == nil, "Should NOT contain help filter")
+end)
+
+RegisterTest("Offensive Spells: AutoConfigureSpellType detects harmful spells", function()
+    local cfg = {
+        macroName = "DR_TestOffensive",
+        spellName = "Mind Blast",
+        modifiers = {
+            { key = "nomod", enabled = true, isHelp = true, isHarm = false, targetSelfcast = true, targetTarget = true },
+            { key = "shift", enabled = true, isHelp = true, isHarm = false, targetSelfcast = false, targetTarget = true }
+        }
+    }
+
+    RF:AutoConfigureSpellType(cfg, "Mind Blast")
+    AssertEquals(cfg.modifiers[1].isHarm, true, "nomod should have isHarm = true")
+    AssertEquals(cfg.modifiers[1].isHelp, false, "nomod should have isHelp = false")
+    AssertEquals(cfg.modifiers[1].targetSelfcast, false, "nomod should have targetSelfcast = false")
+    AssertEquals(cfg.modifiers[1].targetTarget, true, "nomod should have targetTarget = true")
+
+    -- Test healing spell switches back
+    RF:AutoConfigureSpellType(cfg, "Flash Heal")
+    AssertEquals(cfg.modifiers[1].isHarm, false, "nomod should have isHarm = false for heal")
+    AssertEquals(cfg.modifiers[1].isHelp, true, "nomod should have isHelp = true for heal")
+    AssertEquals(cfg.modifiers[1].targetSelfcast, true, "nomod should have targetSelfcast = true for heal")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

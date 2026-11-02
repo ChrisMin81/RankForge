@@ -209,6 +209,58 @@ function RF:GetLearnedSpellList()
     return list
 end
 
+function RF:IsSpellHarmful(spellName)
+    if not spellName or spellName == "" then return false end
+    if C_Spell and C_Spell.IsSpellHarmful then
+        local ok, res = pcall(C_Spell.IsSpellHarmful, spellName)
+        if ok and res ~= nil then return res end
+    end
+    if IsHarmfulSpell then
+        local ok, res = pcall(IsHarmfulSpell, spellName)
+        if ok and res ~= nil then return res end
+    end
+    return false
+end
+
+function RF:IsSpellHelpful(spellName)
+    if not spellName or spellName == "" then return false end
+    if C_Spell and C_Spell.IsSpellHelpful then
+        local ok, res = pcall(C_Spell.IsSpellHelpful, spellName)
+        if ok and res ~= nil then return res end
+    end
+    if IsHelpfulSpell then
+        local ok, res = pcall(IsHelpfulSpell, spellName)
+        if ok and res ~= nil then return res end
+    end
+    return false
+end
+
+function RF:AutoConfigureSpellType(macroConfig, spellName)
+    if not macroConfig or not macroConfig.modifiers then return end
+    local isHarm = RF:IsSpellHarmful(spellName)
+    local isHelp = RF:IsSpellHelpful(spellName)
+
+    if isHarm and not isHelp then
+        for _, mod in ipairs(macroConfig.modifiers) do
+            mod.isHelp = false
+            mod.isHarm = true
+            mod.targetSelfcast = false
+            mod.targetTarget = true
+        end
+    elseif isHelp and not isHarm then
+        for _, mod in ipairs(macroConfig.modifiers) do
+            mod.isHelp = true
+            mod.isHarm = false
+            if mod.key == "nomod" then
+                mod.targetSelfcast = true
+            else
+                mod.targetSelfcast = false
+            end
+            mod.targetTarget = true
+        end
+    end
+end
+
 --------------------------------------------------------------------------------
 -- Active Profile Helpers
 --------------------------------------------------------------------------------
@@ -414,36 +466,60 @@ function RF:GenerateMacroBody(macroConfig)
                     table.insert(conditionBlocks, custom)
                 end
             else
-                local isMo = (mod.targetMouseover ~= nil) and mod.targetMouseover or (macroConfig.targetMouseover or false)
-                local isFocus = (mod.targetFocus ~= nil) and mod.targetFocus or (macroConfig.targetFocus or false)
-                local isToT = (mod.targetToT ~= nil) and mod.targetToT or (macroConfig.targetToT or false)
-                local isSelfcast = (mod.targetSelfcast ~= nil) and mod.targetSelfcast or (macroConfig.targetSelfcast or false)
+                local isMo = (macroConfig.targetMouseover ~= false)
+                if mod.targetMouseover ~= nil then isMo = mod.targetMouseover end
+
+                local isTarget = true
+                if mod.targetTarget ~= nil then isTarget = mod.targetTarget end
+
+                local isFocus = (macroConfig.targetFocus or false)
+                if mod.targetFocus ~= nil then isFocus = mod.targetFocus end
+
+                local isToT = (macroConfig.targetToT or false)
+                if mod.targetToT ~= nil then isToT = mod.targetToT end
+
+                local isSelfcast = (macroConfig.targetSelfcast or false)
+                if mod.targetSelfcast ~= nil then isSelfcast = mod.targetSelfcast end
 
                 local function ResolveFilter(unitKey, cfgHelp, cfgHarm, cfgNodead)
-                    local h = true
+                    local h = false
+                    local ha = false
+                    local nd = true
+
                     if mod.isHelp ~= nil then
-                        h = mod.isHelp
+                        h = (mod.isHelp == true)
                     elseif cfgHelp ~= nil then
-                        h = (cfgHelp ~= false and not cfgHarm)
+                        h = (cfgHelp == true and not cfgHarm)
+                    else
+                        h = true
                     end
 
-                    local ha = false
                     if mod.isHarm ~= nil then
-                        ha = mod.isHarm
+                        ha = (mod.isHarm == true)
                     elseif cfgHarm ~= nil then
                         ha = (cfgHarm == true)
+                    else
+                        ha = false
                     end
 
-                    local nd = true
                     if mod.isNodead ~= nil then
-                        nd = mod.isNodead
+                        nd = (mod.isNodead == true)
                     elseif cfgNodead ~= nil then
                         nd = (cfgNodead ~= false)
+                    else
+                        nd = true
                     end
+
+                    -- Help and harm are mutually exclusive!
+                    if h and ha then
+                        ha = false
+                    end
+
                     return h, ha, nd
                 end
 
                 local moHelp, moHarm, moNodead = ResolveFilter("mo", macroConfig.targetMouseoverHelp, macroConfig.targetMouseoverHarm, macroConfig.targetMouseoverNodead)
+                local tgtHelp, tgtHarm, tgtNodead = ResolveFilter("target", macroConfig.targetHelp, macroConfig.targetHarm, macroConfig.targetNodead)
                 local focusHelp, focusHarm, focusNodead = ResolveFilter("focus", macroConfig.targetFocusHelp, macroConfig.targetFocusHarm, macroConfig.targetFocusNodead)
                 local totHelp, totHarm, totNodead = ResolveFilter("tot", macroConfig.targetToTHelp, macroConfig.targetToTHarm, macroConfig.targetToTNodead)
 
@@ -453,6 +529,9 @@ function RF:GenerateMacroBody(macroConfig)
                 end
                 if isFocus then
                     table.insert(targets, BuildConditionSubstring("@focus", focusHelp, focusHarm, focusNodead))
+                end
+                if isTarget then
+                    table.insert(targets, BuildConditionSubstring("@target", tgtHelp, tgtHarm, tgtNodead))
                 end
                 if isToT then
                     table.insert(targets, BuildConditionSubstring("@targettarget", totHelp, totHarm, totNodead))
@@ -466,45 +545,18 @@ function RF:GenerateMacroBody(macroConfig)
                     end
                 end
 
-                if isMo then
-                    if isSelfcast then
-                        local parts = {}
-                        if moHelp then table.insert(parts, "help") elseif moHarm then table.insert(parts, "harm") end
-                        if moNodead then table.insert(parts, "nodead") end
-                        local fallbackCond = table.concat(parts, ",")
-
-                        if fallbackCond ~= "" then
-                            if modCondition then
-                                table.insert(conditionBlocks, string.format("[%s,%s]", modCondition, fallbackCond))
-                                table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
-                            else
-                                table.insert(conditionBlocks, string.format("[%s]", fallbackCond))
-                                table.insert(conditionBlocks, "[@player]")
-                            end
-                        else
-                            if modCondition then
-                                table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
-                            else
-                                table.insert(conditionBlocks, "[@player]")
-                            end
-                        end
-                    else
-                        if modCondition then
-                            table.insert(conditionBlocks, string.format("[%s]", modCondition))
-                        else
-                            table.insert(conditionBlocks, "[]")
-                        end
-                    end
-                elseif isSelfcast then
+                if isSelfcast then
                     if modCondition then
                         table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
                     else
                         table.insert(conditionBlocks, "[@player]")
                     end
-                elseif modCondition then
-                    table.insert(conditionBlocks, string.format("[%s]", modCondition))
-                else
-                    table.insert(conditionBlocks, "[]")
+                elseif #targets == 0 then
+                    if modCondition then
+                        table.insert(conditionBlocks, string.format("[%s]", modCondition))
+                    else
+                        table.insert(conditionBlocks, "[]")
+                    end
                 end
             end
 
@@ -785,6 +837,7 @@ function RF:CloneMacro(macroConfig)
                 rankOffset = mod.rankOffset or 0,
                 customSpell = mod.customSpell or "",
                 targetMouseover = mod.targetMouseover,
+                targetTarget = mod.targetTarget,
                 targetFocus = mod.targetFocus,
                 targetToT = mod.targetToT,
                 targetSelfcast = mod.targetSelfcast,
