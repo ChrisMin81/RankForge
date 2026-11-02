@@ -954,7 +954,7 @@ function RF:DeleteMacro(macroConfig, deleteFromWoW)
         end
     end
 
-    if RF.UpdateUI then
+    if RF.UpdateUI and RF.MainFrame and RF.MainFrame:IsShown() then
         RF:UpdateUI()
     end
 end
@@ -1097,7 +1097,7 @@ EventFrame:SetScript("OnEvent", function(self, event, arg1, ...)
             RF:ScanSpellBook()
             if not InCombatLockdown() then
                 RF:SyncAllMacros(true)
-                if RF.UpdateUI then
+                if RF.UpdateUI and RF.MainFrame and RF.MainFrame:IsShown() then
                     RF:UpdateUI()
                 end
             else

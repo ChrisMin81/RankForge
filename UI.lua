@@ -34,6 +34,7 @@ local function CreateMainUI()
     if RF.MainFrame then return RF.MainFrame end
 
     local f = CreateFrame("Frame", "RankForgeMainFrame", UIParent, "BackdropTemplate")
+    f:Hide() -- Hidden by default on start / reload
     f:SetSize(1040, 720)
     f:SetPoint("CENTER")
     f:SetMovable(true)
@@ -44,6 +45,16 @@ local function CreateMainUI()
     f:SetClampedToScreen(true)
     f:SetFrameStrata("HIGH")
     f:SetToplevel(true)
+
+    if UISpecialFrames then
+        local found = false
+        for _, name in ipairs(UISpecialFrames) do
+            if name == "RankForgeMainFrame" then found = true break end
+        end
+        if not found then
+            table.insert(UISpecialFrames, "RankForgeMainFrame")
+        end
+    end
 
     -- Backdrop
     f:SetBackdrop({
@@ -69,6 +80,9 @@ local function CreateMainUI()
     -- Close Button
     local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
     closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -5, -5)
+    closeBtn:SetScript("OnClick", function()
+        f:Hide()
+    end)
 
     -- Language Selection Dropdown
     local langDropdown = CreateFrame("Frame", "RankForgeLanguageDropdown", f, "UIDropDownMenuTemplate")

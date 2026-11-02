@@ -786,6 +786,29 @@ RegisterTest("Macro Generation: Action Bar Tooltip & Cast Fallback when only Mou
     Assert(#bodyOnlyAlt <= 255, "Alt-only macro length must be <= 255")
 end)
 
+RegisterTest("UI Lifecycle: Main frame starts hidden and only opens via ToggleUI", function()
+    if RF.MainFrame then
+        RF.MainFrame:Hide()
+    end
+
+    RF:ToggleUI()
+    Assert(RF.MainFrame:IsShown(), "Main frame should be shown after ToggleUI")
+
+    RF:ToggleUI()
+    AssertFalse(RF.MainFrame:IsShown(), "Main frame should be hidden after second ToggleUI")
+
+    local inSpecial = false
+    if UISpecialFrames then
+        for _, name in ipairs(UISpecialFrames) do
+            if name == "RankForgeMainFrame" then
+                inSpecial = true
+                break
+            end
+        end
+    end
+    AssertTrue(inSpecial, "RankForgeMainFrame must be in UISpecialFrames for Escape closing")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

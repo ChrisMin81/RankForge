@@ -18,6 +18,8 @@ def build_wow_environment(lua):
     _G["RankForgeCharDB"] = {}
     _G["StaticPopupDialogs"] = {}
     _G["SlashCmdList"] = {}
+    _G["UISpecialFrames"] = {}
+    UISpecialFrames = _G["UISpecialFrames"]
 
     function GetLocale() return "enUS" end
     function GetTime() return os.clock() end
