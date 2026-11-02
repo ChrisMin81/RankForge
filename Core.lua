@@ -251,11 +251,7 @@ function RF:AutoConfigureSpellType(macroConfig, spellName)
         for _, mod in ipairs(macroConfig.modifiers) do
             mod.isHelp = true
             mod.isHarm = false
-            if mod.key == "nomod" then
-                mod.targetSelfcast = true
-            else
-                mod.targetSelfcast = false
-            end
+            mod.targetSelfcast = true
             mod.targetTarget = true
         end
     end
@@ -550,6 +546,13 @@ function RF:GenerateMacroBody(macroConfig)
                         table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
                     else
                         table.insert(conditionBlocks, "[@player]")
+                    end
+                elseif mod.isHelp then
+                    -- Beneficial spell fallback: let WoW auto-self-cast if nothing is selected
+                    if modCondition then
+                        table.insert(conditionBlocks, string.format("[%s]", modCondition))
+                    else
+                        table.insert(conditionBlocks, "[]")
                     end
                 elseif #targets == 0 then
                     if modCondition then

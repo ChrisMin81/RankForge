@@ -588,6 +588,47 @@ RegisterTest("Offensive Spells: AutoConfigureSpellType detects harmful spells", 
     AssertEquals(cfg.modifiers[1].targetSelfcast, true, "nomod should have targetSelfcast = true for heal")
 end)
 
+RegisterTest("Targeting: Beneficial spells fallback to self when nothing selected", function()
+    local healCfg = {
+        macroName = "DR_TestSelfcast",
+        spellName = "Flash Heal",
+        isAccount = true,
+        fallbackMode = "omit",
+        modifiers = {
+            {
+                key = "nomod",
+                enabled = true,
+                mode = "relative",
+                rankOffset = 0,
+                targetMouseover = true,
+                targetTarget = true,
+                targetSelfcast = true,
+                isHelp = true,
+                isHarm = false,
+                isNodead = true
+            },
+            {
+                key = "shift",
+                enabled = true,
+                mode = "relative",
+                rankOffset = 1,
+                targetMouseover = true,
+                targetTarget = true,
+                targetSelfcast = false,
+                isHelp = true,
+                isHarm = false,
+                isNodead = true
+            }
+        }
+    }
+
+    local body = RF:GenerateMacroBody(healCfg)
+    -- When targetSelfcast = true, explicit [@player] is added
+    Assert(body:find("%[@player%]") ~= nil, "nomod should have [@player] fallback")
+    -- When targetSelfcast = false on helpful spell, [mod:shift] fallback is added so WoW auto-self-casts
+    Assert(body:find("%[mod:shift%]") ~= nil, "shift should have [mod:shift] fallback")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

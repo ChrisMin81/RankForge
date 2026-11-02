@@ -986,12 +986,12 @@ local function GetModifierDisplayName(key)
 end
 
 local DEFAULT_MODIFIERS_LIST = {
-    { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
-    { key = "alt",        enabled = true,  mode = "relative", rankOffset = 2, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = false, isHelp = true, isHarm = false, isNodead = true },
+    { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
+    { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
+    { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
+    { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
+    { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
+    { key = "alt",        enabled = true,  mode = "relative", rankOffset = 2, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
     { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0, customSpell = "", targetMouseover = true, targetTarget = true, targetFocus = false, targetToT = false, targetSelfcast = true,  isHelp = true, isHarm = false, isNodead = true },
 }
 
@@ -1004,7 +1004,7 @@ function RF:EnsureAllModifiers(macroConfig)
         if mod.targetTarget == nil then mod.targetTarget = true end
         if mod.targetFocus == nil then mod.targetFocus = (macroConfig.targetFocus or false) end
         if mod.targetToT == nil then mod.targetToT = (macroConfig.targetToT or false) end
-        if mod.targetSelfcast == nil then mod.targetSelfcast = (mod.key == "nomod") end
+        if mod.targetSelfcast == nil then mod.targetSelfcast = (mod.isHarm ~= true) end
         if mod.isHelp == nil then mod.isHelp = true end
         if mod.isHarm == nil then mod.isHarm = false end
         if mod.isNodead == nil then mod.isNodead = true end
