@@ -48,7 +48,10 @@
 - Vollständige Ränge- und Leveltabellen für alle relevanten Heiler und Caster (Priester, Paladin, Schamane, Druide, Magier, Hexenmeister).
 - Vollständig zweisprachig (Deutsch und Englisch) mit automatischer Client-Erkennung.
 
-### 🛡️ Sicherheit & Profile
+### 🛡️ Sicherheit, Charakter-Filter & Profile
+- **Charakterspezifische Filterung:** Mit der Checkbox `[x] Nur dieser Charakter` oberhalb der Makroliste werden nur Makros angezeigt, die zu deinem aktuellen Charakter bzw. deiner Klasse gehören. Deaktiviere die Checkbox jederzeit, um alle Makros accountweit einzusehen.
+- **Standard-Speicherort:** Neue Makros werden standardmäßig im **charakterspezifischen Tab (18 Slots)** angelegt, um die 120 allgemeinen Account-Slots nicht zu überfüllen.
+- **Debug-Modus (Auto-Öffnen):** Über den Schalter `Debug (Auto-Öffnen)` in der Titelleiste oder via `/rf debug` öffnet sich RankForge nach jedem `/reload` oder Login automatisch.
 - **Kampf-Schutz (`InCombatLockdown`):** Verhindert UI-Fehler oder Taint im Kampf. Änderungen und Updates werden bei Kampfende (`PLAYER_REGEN_ENABLED`) sicher angewendet.
 - **Account vs. Charakter:** Wähle flexibel, ob Makros im allgemeinen (Account) oder im charakterspezifischen Makro-Tab gespeichert werden.
 - **Base64 Profil-System:** Importiere und exportiere Makro-Sets für Twinks oder zum Teilen mit Gildenmitgliedern.
@@ -61,6 +64,8 @@
 | :--- | :--- |
 | `/rf` oder `/rankforge` | Öffnet / schließt die grafische Benutzeroberfläche |
 | `/rf update` | Erzwingt eine sofortige Überprüfung und Aktualisierung aller Makros |
+| `/rf debug` | Schaltet den Debug-Modus (automatisches Öffnen nach Reload/Login) um |
+| `/rf test` | Führt die integrierte Unit-Test-Suite aus |
 | `/rf help` | Zeigt eine Übersicht aller verfügbaren Befehle im Chat an |
 
 ---

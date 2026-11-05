@@ -22,6 +22,7 @@ local defaultDB = {
     locale = "auto",
     minimapPos = 215,
     showMinimap = true,
+    debugMode = false,
     profiles = {
         ["Default"] = {
             macros = {}
@@ -30,7 +31,8 @@ local defaultDB = {
 }
 
 local defaultCharDB = {
-    activeProfile = "Default"
+    activeProfile = "Default",
+    filterCurrentCharOnly = true
 }
 
 --------------------------------------------------------------------------------
@@ -502,6 +504,120 @@ RF.SpellRankLevels = {
     ["Rain of Fire"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=58, [7]=65, [8]=71, [9]=77 },
     ["Feuerregen"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=58, [7]=65, [8]=71, [9]=77 }
 }
+
+RF.SpellClassLookup = {
+    -- Priest
+    ["Renew"] = "PRIEST", ["Erneuerung"] = "PRIEST",
+    ["Flash Heal"] = "PRIEST", ["Blitzheilung"] = "PRIEST",
+    ["Greater Heal"] = "PRIEST", ["Große Heilung"] = "PRIEST",
+    ["Heal"] = "PRIEST", ["Heilung"] = "PRIEST",
+    ["Lesser Heal"] = "PRIEST", ["Geringes Heilen"] = "PRIEST", ["Geringe Heilung"] = "PRIEST",
+    ["Prayer of Healing"] = "PRIEST", ["Gebet der Heilung"] = "PRIEST",
+    ["Power Word: Shield"] = "PRIEST", ["Machtwort: Schild"] = "PRIEST",
+    ["Smite"] = "PRIEST", ["Heilige Pein"] = "PRIEST", ["Göttliche Pein"] = "PRIEST", ["Pein"] = "PRIEST",
+    ["Mind Blast"] = "PRIEST", ["Gedankenschlag"] = "PRIEST",
+    ["Shadow Word: Pain"] = "PRIEST", ["Schattenwort: Schmerz"] = "PRIEST",
+
+    -- Druid
+    ["Healing Touch"] = "DRUID", ["Heilende Berührung"] = "DRUID",
+    ["Regrowth"] = "DRUID", ["Nachwachsen"] = "DRUID",
+    ["Rejuvenation"] = "DRUID", ["Verjüngung"] = "DRUID",
+    ["Moonfire"] = "DRUID", ["Mondfeuer"] = "DRUID",
+    ["Wrath"] = "DRUID", ["Zorn"] = "DRUID",
+    ["Starfire"] = "DRUID", ["Sternenfeuer"] = "DRUID",
+
+    -- Paladin
+    ["Holy Light"] = "PALADIN", ["Heiliges Licht"] = "PALADIN",
+    ["Flash of Light"] = "PALADIN", ["Lichtblitz"] = "PALADIN",
+    ["Holy Shock"] = "PALADIN", ["Heiliger Schock"] = "PALADIN",
+    ["Consecration"] = "PALADIN", ["Weihe"] = "PALADIN",
+    ["Exorcism"] = "PALADIN", ["Exorzismus"] = "PALADIN",
+
+    -- Shaman
+    ["Healing Wave"] = "SHAMAN", ["Welle der Heilung"] = "SHAMAN",
+    ["Lesser Healing Wave"] = "SHAMAN", ["Geringe Welle der Heilung"] = "SHAMAN",
+    ["Chain Heal"] = "SHAMAN", ["Kettenheilung"] = "SHAMAN",
+    ["Lightning Bolt"] = "SHAMAN", ["Blitzschlag"] = "SHAMAN",
+    ["Chain Lightning"] = "SHAMAN", ["Kettenblitz"] = "SHAMAN",
+    ["Earth Shock"] = "SHAMAN", ["Erdschock"] = "SHAMAN",
+    ["Flame Shock"] = "SHAMAN", ["Flammenschock"] = "SHAMAN",
+    ["Frost Shock"] = "SHAMAN", ["Frostschock"] = "SHAMAN",
+
+    -- Mage
+    ["Frostbolt"] = "MAGE", ["Frostblitz"] = "MAGE",
+    ["Fireball"] = "MAGE", ["Feuerball"] = "MAGE",
+    ["Scorch"] = "MAGE", ["Sengen"] = "MAGE", ["Sengende Hitze"] = "MAGE",
+    ["Arcane Missiles"] = "MAGE", ["Arkane Geschosse"] = "MAGE",
+    ["Cone of Cold"] = "MAGE", ["Kältekegel"] = "MAGE",
+    ["Flamestrike"] = "MAGE", ["Flammenstoß"] = "MAGE",
+    ["Blizzard"] = "MAGE",
+
+    -- Warlock
+    ["Shadow Bolt"] = "WARLOCK", ["Schattenblitz"] = "WARLOCK",
+    ["Corruption"] = "WARLOCK", ["Verderbnis"] = "WARLOCK",
+    ["Immolate"] = "WARLOCK", ["Feuerbrand"] = "WARLOCK",
+    ["Curse of Agony"] = "WARLOCK", ["Fluch der Pein"] = "WARLOCK",
+    ["Drain Life"] = "WARLOCK", ["Blutsauger"] = "WARLOCK",
+    ["Hellfire"] = "WARLOCK", ["Höllenfeuer"] = "WARLOCK",
+    ["Rain of Fire"] = "WARLOCK", ["Feuerregen"] = "WARLOCK",
+}
+
+function RF:GetClassForSpell(spellName)
+    if not spellName or spellName == "" then return nil end
+    return RF.SpellClassLookup and RF.SpellClassLookup[spellName]
+end
+
+function RF:GetCurrentCharacterKey()
+    local charName = (UnitName and UnitName("player")) or "Unknown"
+    local realm = (GetRealmName and GetRealmName()) or ""
+    local _, charClass = nil, nil
+    if UnitClass then
+        local _, c = UnitClass("player")
+        charClass = c
+    end
+    if not charClass or charClass == "" then charClass = "PRIEST" end
+    return charName, realm, charClass
+end
+
+function RF:IsMacroForCurrentCharacter(macroConfig)
+    if not macroConfig then return true end
+    local charName, realm, charClass = RF:GetCurrentCharacterKey()
+
+    -- 1. Direct character name match
+    if macroConfig.character and macroConfig.character ~= "" then
+        if macroConfig.character == charName then
+            return true
+        end
+    end
+
+    -- 2. Class match
+    if macroConfig.class and macroConfig.class ~= "" and charClass and charClass ~= "" then
+        if macroConfig.class == charClass then
+            return true
+        end
+    end
+
+    -- 3. Spell class lookup
+    local spName = macroConfig.spellName
+    if (not spName or spName == "") and macroConfig.macroName then
+        spName = macroConfig.macroName:gsub("^DR_", "")
+    end
+    if spName and spName ~= "" then
+        local spellClass = RF:GetClassForSpell(spName)
+        if spellClass and charClass and spellClass == charClass then
+            return true
+        elseif spellClass and charClass and spellClass ~= charClass then
+            return false
+        end
+    end
+
+    -- 4. Untagged legacy macro with unknown spell class: visible by default
+    if (not macroConfig.character or macroConfig.character == "") and (not macroConfig.class or macroConfig.class == "") then
+        return true
+    end
+
+    return false
+end
 
 function RF:GetSpellSweetSpot(spellName)
     if not spellName or spellName == "" then
@@ -1114,7 +1230,7 @@ function RF:SyncMacro(macroConfig, silent)
     end
 
     local macroName = macroConfig.macroName
-    local isAccount = macroConfig.isAccount ~= false -- default true
+    local isAccount = (macroConfig.isAccount == true) -- default false (Character slot)
     local macroBody = RF:GenerateMacroBody(macroConfig)
     local icon = "INV_MISC_QUESTIONMARK"
 
@@ -1244,11 +1360,16 @@ function RF:CloneMacro(macroConfig)
         counter = counter + 1
     end
 
+    local charName, realm, charClass = RF:GetCurrentCharacterKey()
+
     -- Deep copy the macro configuration
     local cloned = {
         macroName = newName,
         spellName = macroConfig.spellName or "",
-        isAccount = (macroConfig.isAccount ~= false),
+        character = charName,
+        realm = realm,
+        class = macroConfig.class or charClass,
+        isAccount = (macroConfig.isAccount == true),
         fallbackMode = macroConfig.fallbackMode or "omit",
         targetMouseover = macroConfig.targetMouseover,
         customTarget = macroConfig.customTarget or "",
@@ -1292,10 +1413,13 @@ end
 function RF:ApplyInitialPresetsIfEmpty()
     local macros = RF:GetMacrosList()
     if #macros == 0 then
-        local _, classFileName = UnitClass("player")
-        if classFileName then
-            local presets = RF:GetPresetsForClass(classFileName)
+        local charName, realm, charClass = RF:GetCurrentCharacterKey()
+        if charClass then
+            local presets = RF:GetPresetsForClass(charClass)
             for _, preset in ipairs(presets) do
+                preset.class = charClass
+                preset.character = charName
+                preset.realm = realm
                 table.insert(macros, preset)
             end
             RF:SyncAllMacros(true)
@@ -1349,6 +1473,20 @@ EventFrame:SetScript("OnEvent", function(self, event, arg1, ...)
         end
         RF.isInitialized = true
 
+        if RankForgeDB and RankForgeDB.debugMode then
+            if C_Timer and C_Timer.After then
+                C_Timer.After(0.1, function()
+                    if RF.ToggleUI and (not RF.MainFrame or not RF.MainFrame:IsShown()) then
+                        RF:ToggleUI()
+                    end
+                end)
+            else
+                if RF.ToggleUI and (not RF.MainFrame or not RF.MainFrame:IsShown()) then
+                    RF:ToggleUI()
+                end
+            end
+        end
+
     elseif event == "PLAYER_REGEN_ENABLED" then
         if RF.queuedMacroUpdates then
             RF.queuedMacroUpdates = false
@@ -1383,6 +1521,17 @@ local function SlashHandler(msg)
 
     if msg == "update" or msg == "sync" then
         RF:SyncAllMacros(false)
+    elseif msg == "debug" then
+        RankForgeDB = RankForgeDB or {}
+        RankForgeDB.debugMode = not RankForgeDB.debugMode
+        if RankForgeDB.debugMode then
+            print(L["SLASH_DEBUG_ON"] or "|cff00ccffRankForge:|r Debug mode |cff00ff00ENABLED|r (Window will open automatically after reload).")
+        else
+            print(L["SLASH_DEBUG_OFF"] or "|cff00ccffRankForge:|r Debug mode |cffff2222DISABLED|r.")
+        end
+        if RF.MainFrame and RF.MainFrame.cbDebug then
+            RF.MainFrame.cbDebug:SetChecked(RankForgeDB.debugMode)
+        end
     elseif msg == "test" then
         if RF.RunAllTests then
             RF:RunAllTests()
@@ -1393,6 +1542,8 @@ local function SlashHandler(msg)
         print(L["SLASH_HELP_1"])
         print(L["SLASH_HELP_2"])
         print(L["SLASH_HELP_3"])
+        print(L["SLASH_HELP_5"])
+        print(L["SLASH_HELP_TEST"])
         print(L["SLASH_HELP_4"])
     else
         if RF.ToggleUI then

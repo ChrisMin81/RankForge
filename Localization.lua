@@ -19,7 +19,10 @@ local STRINGS_EN = {
     ["SLASH_HELP_2"] = "/rf or /rankforge - Toggle the user interface",
     ["SLASH_HELP_3"] = "/rf update - Immediately update all configured macros",
     ["SLASH_HELP_TEST"] = "/rf test - Run automated test suite (Unit-Tests)",
+    ["SLASH_HELP_5"] = "/rf debug - Toggle Debug Mode (auto-open after reload)",
     ["SLASH_HELP_4"] = "/rf help - Show this help message",
+    ["SLASH_DEBUG_ON"] = "|cff00ccffRankForge:|r Debug mode |cff00ff00ENABLED|r (Window will open automatically after reload).",
+    ["SLASH_DEBUG_OFF"] = "|cff00ccffRankForge:|r Debug mode |cffff2222DISABLED|r.",
 
     ["MACRO_SYNC_SUCCESS"] = "|cff00ccffRankForge:|r Macro '|cffffd200%s|r' successfully updated.",
     ["MACRO_SYNC_ALL_SUCCESS"] = "|cff00ccffRankForge:|r All macros updated (%d macros synced).",
@@ -32,6 +35,10 @@ local STRINGS_EN = {
 
     ["UI_TITLE"] = "RankForge - Downranking Macro Forge",
     ["UI_CONFIGURED_MACROS"] = "Configured Macros",
+    ["UI_FILTER_CURRENT_CHAR"] = "Current character only",
+    ["UI_FILTER_CURRENT_CHAR_TOOLTIP"] = "Filter macro list to show only macros for the current character and class. Uncheck to show all macros.",
+    ["UI_DEBUG_AUTO_OPEN"] = "Debug (Auto-Open)",
+    ["UI_DEBUG_AUTO_OPEN_TOOLTIP"] = "Debug Mode:\nWhen enabled, the RankForge window automatically opens after every /reload or login.",
     ["UI_NEW_MACRO"] = "+ New Macro",
     ["UI_CLONE_BTN"] = "Duplicate Macro",
     ["UI_DELETE_MACRO"] = "Delete",
@@ -174,7 +181,10 @@ local STRINGS_DE = {
     ["SLASH_HELP_2"] = "/rf oder /rankforge - Öffnet die Benutzeroberfläche",
     ["SLASH_HELP_3"] = "/rf update - Aktualisiert alle konfigurierten Makros sofort",
     ["SLASH_HELP_TEST"] = "/rf test - Führt die automatische Test-Suite (Unit-Tests) aus",
+    ["SLASH_HELP_5"] = "/rf debug - Debug-Modus umschalten (automatisches Öffnen nach Reload)",
     ["SLASH_HELP_4"] = "/rf help - Zeigt diese Hilfe an",
+    ["SLASH_DEBUG_ON"] = "|cff00ccffRankForge:|r Debug-Modus |cff00ff00AKTIV|r (Fenster öffnet automatisch nach Reload).",
+    ["SLASH_DEBUG_OFF"] = "|cff00ccffRankForge:|r Debug-Modus |cffff2222DEAKTIV|r.",
 
     ["MACRO_SYNC_SUCCESS"] = "|cff00ccffRankForge:|r Makro '|cffffd200%s|r' erfolgreich aktualisiert.",
     ["MACRO_SYNC_ALL_SUCCESS"] = "|cff00ccffRankForge:|r Alle Makros aktualisiert (%d Makros synchronisiert).",
@@ -187,6 +197,10 @@ local STRINGS_DE = {
 
     ["UI_TITLE"] = "RankForge - Downranking Makro Schmiede",
     ["UI_CONFIGURED_MACROS"] = "Konfigurierte Makros",
+    ["UI_FILTER_CURRENT_CHAR"] = "Nur dieser Charakter",
+    ["UI_FILTER_CURRENT_CHAR_TOOLTIP"] = "Filtert die Liste, um nur Makros für diesen Charakter bzw. diese Klasse anzuzeigen. Deaktivieren, um alle Makros zu sehen.",
+    ["UI_DEBUG_AUTO_OPEN"] = "Debug (Auto-Öffnen)",
+    ["UI_DEBUG_AUTO_OPEN_TOOLTIP"] = "Debug-Modus:\nWenn aktiviert, öffnet sich das RankForge-Fenster nach jedem /reload oder Einloggen automatisch.",
     ["UI_NEW_MACRO"] = "+ Neues Makro",
     ["UI_CLONE_BTN"] = "Makro duplizieren",
     ["UI_DELETE_MACRO"] = "Löschen",

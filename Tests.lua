@@ -941,6 +941,89 @@ RegisterTest("Utility: startattack and petattack checkboxes and macro generation
     end
 end)
 
+RegisterTest("Character Filtering: RF:IsMacroForCurrentCharacter and list filtering", function()
+    local charName, realm, charClass = RF:GetCurrentCharacterKey()
+    Assert(charClass ~= nil, "Character class must be known")
+
+    local priestMacro = { macroName = "DR_HeiligePein", spellName = "Heilige Pein", class = "PRIEST" }
+    local mageMacro = { macroName = "DR_Blizzard", spellName = "Blizzard", class = "MAGE" }
+    local warlockMacro = { macroName = "DR_Feuerbrand", spellName = "Feuerbrand", class = "WARLOCK" }
+
+    if charClass == "PRIEST" then
+        AssertEquals(RF:IsMacroForCurrentCharacter(priestMacro), true, "Priest macro should match Priest character")
+        AssertEquals(RF:IsMacroForCurrentCharacter(mageMacro), false, "Mage macro should not match Priest character")
+        AssertEquals(RF:IsMacroForCurrentCharacter(warlockMacro), false, "Warlock macro should not match Priest character")
+    end
+
+    -- Test UI Filtering
+    local profile = RF:GetActiveProfile()
+    profile.macros = { priestMacro, mageMacro, warlockMacro }
+    RankForgeCharDB = RankForgeCharDB or {}
+    RankForgeCharDB.filterCurrentCharOnly = true
+
+    RF:UpdateUI()
+    local f = RF.MainFrame
+    Assert(f ~= nil, "MainFrame must exist")
+    Assert(f.filterCharCb ~= nil, "filterCharCb must exist")
+    AssertEquals(f.filterCharCb:GetChecked(), true, "filterCharCb should be checked")
+
+    -- Count visible buttons
+    local visibleCount = 0
+    for _, btn in ipairs(f.listContent.buttons) do
+        if btn:IsShown() then
+            visibleCount = visibleCount + 1
+        end
+    end
+    AssertEquals(visibleCount, 1, "Only 1 macro should be visible with filter on")
+
+    -- Toggle filter off
+    RankForgeCharDB.filterCurrentCharOnly = false
+    RF:UpdateUI()
+    AssertEquals(f.filterCharCb:GetChecked(), false, "filterCharCb should be unchecked")
+
+    visibleCount = 0
+    for _, btn in ipairs(f.listContent.buttons) do
+        if btn:IsShown() then
+            visibleCount = visibleCount + 1
+        end
+    end
+    AssertEquals(visibleCount, 3, "All 3 macros should be visible with filter off")
+
+    -- Restore filter setting
+    RankForgeCharDB.filterCurrentCharOnly = true
+    RF:UpdateUI()
+end)
+
+RegisterTest("Default Character Slot & Debug Auto-Open Mode", function()
+    -- Verify new macro has isAccount == false (Character slot by default)
+    local profile = RF:GetActiveProfile()
+    profile.macros = {}
+    RF:CreateNewMacroConfig()
+    local macros = RF:GetMacrosList()
+    Assert(#macros >= 1, "New macro must be created")
+    local newMacro = macros[#macros]
+    AssertEquals(newMacro.isAccount, false, "New macro must default to character slot (isAccount = false)")
+
+    -- Verify UI dropdown reflects character slot
+    if RF.MainFrame and RF.MainFrame.storageDropdown then
+        RF:LoadMacroIntoEditor(newMacro)
+        local isAcc = (newMacro.isAccount == true)
+        AssertEquals(isAcc, false, "Editor storage dropdown state must reflect character slot")
+    end
+
+    -- Verify Debug Mode Checkbox & State
+    RankForgeDB = RankForgeDB or {}
+    RankForgeDB.debugMode = true
+    RF:UpdateUI()
+    local f = RF.MainFrame
+    Assert(f.cbDebug ~= nil, "Debug checkbox must exist")
+    AssertEquals(f.cbDebug:GetChecked(), true, "Debug checkbox must reflect debugMode = true")
+
+    RankForgeDB.debugMode = false
+    RF:UpdateUI()
+    AssertEquals(f.cbDebug:GetChecked(), false, "Debug checkbox must reflect debugMode = false")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

@@ -9,6 +9,16 @@ local L = RF.L
 local currentMacro = nil
 local selectedMacroIndex = 1
 
+function RF:GetSelectedMacroButton()
+    if not RF.MainFrame or not RF.MainFrame.listContent or not RF.MainFrame.listContent.buttons then return nil end
+    for _, btn in ipairs(RF.MainFrame.listContent.buttons) do
+        if btn:IsShown() and btn.macroIndex == selectedMacroIndex then
+            return btn
+        end
+    end
+    return nil
+end
+
 --------------------------------------------------------------------------------
 -- Confirmation Dialog for Deletion
 --------------------------------------------------------------------------------
@@ -89,6 +99,29 @@ local function CreateMainUI()
     langDropdown:SetPoint("RIGHT", closeBtn, "LEFT", 15, -2)
     UIDropDownMenu_SetWidth(langDropdown, 105)
 
+    -- Debug Mode Checkbox (Auto-Open on reload)
+    local cbDebug = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
+    cbDebug:SetSize(20, 20)
+    cbDebug:SetPoint("RIGHT", langDropdown, "LEFT", -110, 2)
+    local debugText = cbDebug:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    debugText:SetPoint("LEFT", cbDebug, "RIGHT", 2, 0)
+    debugText:SetText(L["UI_DEBUG_AUTO_OPEN"] or "Debug (Auto-Open)")
+    cbDebug.text = debugText
+    cbDebug:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:ClearLines()
+        GameTooltip:AddLine(L["UI_DEBUG_AUTO_OPEN"] or "Debug-Modus", 1, 1, 1)
+        GameTooltip:AddLine(L["UI_DEBUG_AUTO_OPEN_TOOLTIP"] or "Öffnet das RankForge-Fenster nach jedem /reload automatisch.", 0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end)
+    cbDebug:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    cbDebug:SetScript("OnClick", function(self)
+        if RankForgeDB then
+            RankForgeDB.debugMode = self:GetChecked()
+        end
+    end)
+    f.cbDebug = cbDebug
+
     local function LanguageDropdown_OnClick(btn)
         local val = btn.value
         UIDropDownMenu_SetSelectedValue(langDropdown, val)
@@ -147,13 +180,37 @@ local function CreateMainUI()
     leftPanel:SetBackdropColor(0.05, 0.05, 0.07, 0.8)
 
     local listHeader = leftPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightMedium")
-    listHeader:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 10, -10)
+    listHeader:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 10, -8)
     listHeader:SetText(L["UI_CONFIGURED_MACROS"])
     f.listHeader = listHeader
 
+    -- Filter Current Character Checkbox
+    local filterCharCb = CreateFrame("CheckButton", nil, leftPanel, "UICheckButtonTemplate")
+    filterCharCb:SetSize(18, 18)
+    filterCharCb:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 8, -26)
+    local filterText = filterCharCb:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    filterText:SetPoint("LEFT", filterCharCb, "RIGHT", 2, 0)
+    filterText:SetText(L["UI_FILTER_CURRENT_CHAR"] or "Nur dieser Charakter")
+    filterCharCb.text = filterText
+    filterCharCb:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:ClearLines()
+        GameTooltip:AddLine(L["UI_FILTER_CURRENT_CHAR"] or "Nur dieser Charakter", 1, 1, 1)
+        GameTooltip:AddLine(L["UI_FILTER_CURRENT_CHAR_TOOLTIP"] or "Filtert die Liste, um nur Makros für diesen Charakter bzw. diese Klasse anzuzeigen. Deaktivieren, um alle Makros zu sehen.", 0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end)
+    filterCharCb:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    filterCharCb:SetScript("OnClick", function(self)
+        if RankForgeCharDB then
+            RankForgeCharDB.filterCurrentCharOnly = self:GetChecked()
+        end
+        RF:UpdateUI()
+    end)
+    f.filterCharCb = filterCharCb
+
     -- Macro Scroll Frame
     local scrollFrame = CreateFrame("ScrollFrame", "RankForgeMacroListScroll", leftPanel, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 8, -32)
+    scrollFrame:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 8, -48)
     scrollFrame:SetPoint("BOTTOMRIGHT", leftPanel, "BOTTOMRIGHT", -26, 110)
 
     local listContent = CreateFrame("Frame", nil, scrollFrame)
@@ -234,11 +291,9 @@ local function CreateMainUI()
         if userInput and currentMacro then
             currentMacro.macroName = self:GetText()
             RF:UpdatePreview()
-            if selectedMacroIndex and f.listContent and f.listContent.buttons then
-                local b = f.listContent.buttons[selectedMacroIndex]
-                if b then
-                    RF:UpdateMacroListItem(b, currentMacro, selectedMacroIndex)
-                end
+            local b = RF:GetSelectedMacroButton()
+            if b then
+                RF:UpdateMacroListItem(b, currentMacro, selectedMacroIndex)
             end
         end
     end)
@@ -261,7 +316,7 @@ local function CreateMainUI()
     end
 
     local function StorageDropdown_Initialize()
-        local isAcc = (not currentMacro) or (currentMacro.isAccount ~= false)
+        local isAcc = (currentMacro and currentMacro.isAccount == true)
         local info = UIDropDownMenu_CreateInfo()
 
         info.text = L["UI_STORAGE_ACCOUNT"]
@@ -366,11 +421,9 @@ local function CreateMainUI()
         if userInput and currentMacro then
             currentMacro.spellName = self:GetText()
             RF:UpdatePreview()
-            if selectedMacroIndex and f.listContent and f.listContent.buttons then
-                local b = f.listContent.buttons[selectedMacroIndex]
-                if b then
-                    RF:UpdateMacroListItem(b, currentMacro, selectedMacroIndex)
-                end
+            local b = RF:GetSelectedMacroButton()
+            if b then
+                RF:UpdateMacroListItem(b, currentMacro, selectedMacroIndex)
             end
         end
     end)
@@ -1248,11 +1301,14 @@ function RF:EnsureAllModifiers(macroConfig)
 end
 
 function RF:CreateNewMacroConfig()
-    local _, classFileName = UnitClass("player")
+    local charName, realm, classFileName = RF:GetCurrentCharacterKey()
     local newCfg = {
         macroName = L["UI_DEFAULT_MACRO_NAME"] or "DR_New",
         spellName = "",
-        isAccount = true,
+        character = charName,
+        realm = realm,
+        class = classFileName,
+        isAccount = false,
         fallbackMode = "omit",
         targetMouseover = true,
         customTarget = "",
@@ -1399,7 +1455,7 @@ function RF:LoadMacroIntoEditor(macroConfig)
 
     f.nameEdit:SetText(macroConfig.macroName or "")
     f.spellEdit:SetText(macroConfig.spellName or "")
-    local isAcc = (macroConfig.isAccount ~= false)
+    local isAcc = (macroConfig.isAccount == true)
     UIDropDownMenu_SetSelectedValue(f.storageDropdown, isAcc and "account" or "char")
     UIDropDownMenu_SetText(f.storageDropdown, isAcc and L["UI_STORAGE_ACCOUNT"] or L["UI_STORAGE_CHAR"])
     f.fallbackCheck:SetChecked(macroConfig.fallbackMode == "rank1")
@@ -1426,11 +1482,9 @@ function RF:LoadMacroIntoEditor(macroConfig)
     f.dropSlot.icon:SetTexture(tex)
     f.previewIcon.icon:SetTexture(tex)
 
-    if selectedMacroIndex and f.listContent and f.listContent.buttons then
-        local b = f.listContent.buttons[selectedMacroIndex]
-        if b then
-            RF:UpdateMacroListItem(b, macroConfig, selectedMacroIndex)
-        end
+    local b = RF:GetSelectedMacroButton()
+    if b then
+        RF:UpdateMacroListItem(b, macroConfig, selectedMacroIndex)
     end
 
     RF:LoadModifiersIntoUI(macroConfig)
@@ -1526,11 +1580,26 @@ function RF:RefreshUILabels()
         UIDropDownMenu_SetText(f.langDropdown, curText)
     end
 
+    if f.filterCharCb then
+        if f.filterCharCb.text then
+            f.filterCharCb.text:SetText(L["UI_FILTER_CURRENT_CHAR"] or "Nur dieser Charakter")
+        end
+        local filterVal = (RankForgeCharDB and RankForgeCharDB.filterCurrentCharOnly ~= false)
+        f.filterCharCb:SetChecked(filterVal)
+    end
+
+    if f.cbDebug then
+        if f.cbDebug.text then
+            f.cbDebug.text:SetText(L["UI_DEBUG_AUTO_OPEN"] or "Debug (Auto-Open)")
+        end
+        f.cbDebug:SetChecked(RankForgeDB and RankForgeDB.debugMode == true)
+    end
+
     if f.listContent and f.listContent.buttons then
         local macros = RF:GetMacrosList()
-        for idx, b in ipairs(f.listContent.buttons) do
-            if macros[idx] then
-                RF:UpdateMacroListItem(b, macros[idx], idx)
+        for _, b in ipairs(f.listContent.buttons) do
+            if b:IsShown() and b.macroIndex and macros[b.macroIndex] then
+                RF:UpdateMacroListItem(b, macros[b.macroIndex], b.macroIndex)
             end
         end
     end
@@ -1555,6 +1624,40 @@ function RF:UpdateUI()
     -- Update Slot Status
     RF:UpdateSlotStatus()
 
+    -- Sync Checkbox states
+    local filterOnlyChar = (RankForgeCharDB and RankForgeCharDB.filterCurrentCharOnly ~= false)
+    if f.filterCharCb then
+        f.filterCharCb:SetChecked(filterOnlyChar)
+    end
+    if f.cbDebug then
+        f.cbDebug:SetChecked(RankForgeDB and RankForgeDB.debugMode == true)
+    end
+
+    -- Build visible macro entries based on character / class filter
+    local visibleMacros = {}
+    for i, macroCfg in ipairs(macros) do
+        if not filterOnlyChar or RF:IsMacroForCurrentCharacter(macroCfg) then
+            table.insert(visibleMacros, { index = i, macro = macroCfg })
+        end
+    end
+
+    -- Ensure selectedMacroIndex points to a visible macro
+    local selectedVisible = false
+    for _, entry in ipairs(visibleMacros) do
+        if entry.index == selectedMacroIndex then
+            selectedVisible = true
+            break
+        end
+    end
+
+    if not selectedVisible then
+        if #visibleMacros > 0 then
+            selectedMacroIndex = visibleMacros[1].index
+        else
+            selectedMacroIndex = nil
+        end
+    end
+
     -- Render Macro Buttons in Left List
     local listContent = f.listContent
     listContent.buttons = listContent.buttons or {}
@@ -1566,7 +1669,9 @@ function RF:UpdateUI()
     local yOffset = 0
     local btnHeight = 34
 
-    for i, macroCfg in ipairs(macros) do
+    for i, entry in ipairs(visibleMacros) do
+        local macroCfg = entry.macro
+        local origIdx = entry.index
         local btn = listContent.buttons[i]
         if not btn then
             btn = CreateFrame("Button", nil, listContent, "UIPanelButtonTemplate")
@@ -1601,11 +1706,13 @@ function RF:UpdateUI()
             listContent.buttons[i] = btn
         end
 
+        btn.macroIndex = origIdx
+        btn.macroConfig = macroCfg
         btn:SetPoint("TOPLEFT", listContent, "TOPLEFT", 0, -yOffset)
-        RF:UpdateMacroListItem(btn, macroCfg, i)
+        RF:UpdateMacroListItem(btn, macroCfg, origIdx)
 
         -- Highlight currently selected macro button
-        if i == selectedMacroIndex then
+        if origIdx == selectedMacroIndex then
             btn:LockHighlight()
         else
             btn:UnlockHighlight()
@@ -1618,7 +1725,7 @@ function RF:UpdateUI()
             if not cfg then return end
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
             GameTooltip:ClearLines()
-            GameTooltip:AddLine(cfg.macroName or ("Macro " .. i), 1, 0.82, 0)
+            GameTooltip:AddLine(cfg.macroName or ("Macro " .. origIdx), 1, 0.82, 0)
             if cfg.spellName and cfg.spellName ~= "" then
                 GameTooltip:AddLine(cfg.spellName, 0.7, 0.8, 1)
             else
@@ -1640,9 +1747,9 @@ function RF:UpdateUI()
         end)
 
         btn:SetScript("OnClick", function()
-            selectedMacroIndex = i
-            for idx, b in ipairs(listContent.buttons) do
-                if idx == i then
+            selectedMacroIndex = origIdx
+            for _, b in ipairs(listContent.buttons) do
+                if b.macroIndex == origIdx then
                     b:LockHighlight()
                 else
                     b:UnlockHighlight()
@@ -1656,10 +1763,7 @@ function RF:UpdateUI()
 
     listContent:SetHeight(math.max(yOffset, 10))
 
-    if #macros > 0 then
-        if not selectedMacroIndex or selectedMacroIndex > #macros then
-            selectedMacroIndex = 1
-        end
+    if selectedMacroIndex and macros[selectedMacroIndex] then
         RF:LoadMacroIntoEditor(macros[selectedMacroIndex])
     end
 end
