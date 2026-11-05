@@ -1038,6 +1038,17 @@ function RF:RunAllTests()
     failedCount = 0
     wipe(testResults)
 
+    local charName, realm, charClass = RF:GetCurrentCharacterKey()
+    local buildInfo = (GetBuildInfo and select(1, GetBuildInfo())) or "Unknown"
+    local timeStr = (date and date("%Y-%m-%d %H:%M:%S")) or "N/A"
+
+    local plainLines = {}
+    table.insert(plainLines, "========================================")
+    table.insert(plainLines, "RankForge Automated Test Suite Report")
+    table.insert(plainLines, string.format("Date: %s | Client: %s", timeStr, tostring(buildInfo)))
+    table.insert(plainLines, string.format("Realm: %s | Char: %s (%s)", tostring(realm or "Unknown"), tostring(charName or "Unknown"), tostring(charClass or "Unknown")))
+    table.insert(plainLines, "========================================")
+
     print("|cff00ccff========================================|r")
     print("|cff00ccffRankForge Unit & Integration Tests|r")
     print("|cff00ccff========================================|r")
@@ -1050,21 +1061,53 @@ function RF:RunAllTests()
             passedCount = passedCount + 1
             table.insert(testResults, { name = test.name, passed = true })
             print(string.format("  |cff00ff00[PASS]|r %s", test.name))
+            table.insert(plainLines, string.format("[PASS] %s", test.name))
         else
             failedCount = failedCount + 1
             table.insert(testResults, { name = test.name, passed = false, error = err })
             print(string.format("  |cffff2222[FAIL]|r %s: %s", test.name, tostring(err)))
+            table.insert(plainLines, string.format("[FAIL] %s: %s", test.name, tostring(err)))
         end
     end
 
     local elapsed = (debugprofilestop and (debugprofilestop() - startTime)) or 0
     print("|cff00ccff----------------------------------------|r")
+    local summaryStr = ""
     if failedCount == 0 then
-        print(string.format("|cff00ff00ALL TESTS PASSED!|r (%d / %d tests in %.1f ms)", passedCount, #TestSuite, elapsed))
+        summaryStr = string.format("ALL TESTS PASSED! (%d / %d tests in %.1f ms)", passedCount, #TestSuite, elapsed)
+        print(string.format("|cff00ff00%s|r", summaryStr))
     else
-        print(string.format("|cffff2222TESTS FAILED:|r %d passed, %d failed in %.1f ms", passedCount, failedCount, elapsed))
+        summaryStr = string.format("TESTS FAILED: %d passed, %d failed in %.1f ms", passedCount, failedCount, elapsed)
+        print(string.format("|cffff2222%s|r", summaryStr))
     end
     print("|cff00ccff========================================|r")
+
+    table.insert(plainLines, "----------------------------------------")
+    table.insert(plainLines, summaryStr)
+    table.insert(plainLines, "========================================")
+    local fullReport = table.concat(plainLines, "\n")
+
+    -- Save to SavedVariables (automatically written to WTF on /reload or exit)
+    RankForgeDB = RankForgeDB or {}
+    RankForgeDB.lastTestRun = {
+        date = timeStr,
+        client = buildInfo,
+        char = charName,
+        realm = realm,
+        class = charClass,
+        passed = passedCount,
+        failed = failedCount,
+        total = #TestSuite,
+        elapsedMs = elapsed,
+        report = fullReport,
+        results = testResults
+    }
+
+    -- Show copyable dialog in UI
+    if RF.ShowTestResultsDialog then
+        RF:ShowTestResultsDialog(fullReport)
+    end
+    print(RF.L["TEST_DIALOG_CHAT_NOTICE"] or "|cff00ccffRankForge:|r Test report window opened (Ctrl+C to copy). Saved to SavedVariables/RankForge.lua upon /reload.")
 
     return passedCount, failedCount, testResults
 end

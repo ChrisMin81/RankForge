@@ -1951,6 +1951,83 @@ function RF:OpenImportExportDialog()
 end
 
 --------------------------------------------------------------------------------
+-- Test Results Dialog (Copyable with Ctrl+C)
+--------------------------------------------------------------------------------
+function RF:ShowTestResultsDialog(reportText)
+    local d = RF.TestResultsDialog
+    if not d then
+        d = CreateFrame("Frame", "RankForgeTestResultsDialog", UIParent, "BackdropTemplate")
+        d:SetSize(620, 440)
+        d:SetPoint("CENTER")
+        d:SetMovable(true)
+        d:EnableMouse(true)
+        d:RegisterForDrag("LeftButton")
+        d:SetScript("OnDragStart", d.StartMoving)
+        d:SetScript("OnDragStop", d.StopMovingOrSizing)
+        d:SetFrameStrata("FULLSCREEN_DIALOG")
+        d:SetFrameLevel(600)
+        d:SetToplevel(true)
+
+        d:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true, tileSize = 32, edgeSize = 32,
+            insets = { left = 8, right = 8, top = 8, bottom = 8 }
+        })
+        d:SetBackdropColor(0.04, 0.04, 0.06, 1.0)
+
+        local bgTex = d:CreateTexture(nil, "BACKGROUND", nil, -5)
+        bgTex:SetPoint("TOPLEFT", d, "TOPLEFT", 10, -10)
+        bgTex:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -10, 10)
+        bgTex:SetColorTexture(0.05, 0.05, 0.08, 1.0)
+
+        local title = d:CreateFontString(nil, "OVERLAY", "GameFontHighlightMedium")
+        title:SetPoint("TOP", d, "TOP", 0, -16)
+        title:SetText(L["TEST_DIALOG_TITLE"] or "RankForge - Test Results")
+        d.title = title
+
+        local hint = d:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        hint:SetPoint("TOPLEFT", d, "TOPLEFT", 20, -42)
+        hint:SetPoint("RIGHT", d, "RIGHT", -20, 0)
+        hint:SetJustifyH("LEFT")
+        hint:SetText(L["TEST_DIALOG_HINT"] or "Press Ctrl+C to copy test report. Saved to SavedVariables/RankForge.lua on /reload:")
+        d.hint = hint
+
+        local scroll = CreateFrame("ScrollFrame", nil, d, "UIPanelScrollFrameTemplate")
+        scroll:SetPoint("TOPLEFT", d, "TOPLEFT", 20, -68)
+        scroll:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -38, 50)
+
+        local editBox = CreateFrame("EditBox", nil, scroll)
+        editBox:SetMultiLine(true)
+        editBox:SetAutoFocus(false)
+        editBox:SetFontObject("GameFontHighlightSmall")
+        editBox:SetWidth(540)
+        scroll:SetScrollChild(editBox)
+        d.editBox = editBox
+
+        editBox:SetScript("OnEscapePressed", function() d:Hide() end)
+
+        local closeBtn = CreateFrame("Button", nil, d, "UIPanelButtonTemplate")
+        closeBtn:SetSize(120, 24)
+        closeBtn:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -20, 15)
+        closeBtn:SetText(L["TEST_DIALOG_CLOSE"] or "Close")
+        closeBtn:SetScript("OnClick", function() d:Hide() end)
+
+        RF.TestResultsDialog = d
+    end
+
+    if d.title then d.title:SetText(L["TEST_DIALOG_TITLE"] or "RankForge - Test Results") end
+    if d.hint then d.hint:SetText(L["TEST_DIALOG_HINT"] or "Press Ctrl+C to copy test report. Saved to SavedVariables/RankForge.lua on /reload:") end
+    if d.editBox then
+        d.editBox:SetText(reportText or "")
+        d.editBox:SetFocus()
+        d.editBox:HighlightText()
+    end
+
+    d:Show()
+end
+
+--------------------------------------------------------------------------------
 -- Spell Search / Picker Popup Frame
 --------------------------------------------------------------------------------
 function RF:OpenSpellPicker(anchorEditBox, onSelectCallback)

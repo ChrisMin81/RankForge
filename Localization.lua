@@ -173,6 +173,11 @@ local STRINGS_EN = {
     ["MINIMAP_TOOLTIP_L2"] = "Right Click: Update all macros",
     ["MINIMAP_TOOLTIP_DRAG"] = "Drag: Move minimap button",
 
+    ["TEST_DIALOG_TITLE"] = "RankForge - Test Results (Unit Tests)",
+    ["TEST_DIALOG_HINT"] = "Press Ctrl+C to copy test report. Saved to SavedVariables/RankForge.lua on /reload:",
+    ["TEST_DIALOG_CLOSE"] = "Close",
+    ["TEST_DIALOG_CHAT_NOTICE"] = "|cff00ccffRankForge:|r Test report window opened (Ctrl+C to copy). Saved to SavedVariables/RankForge.lua upon /reload.",
+
     ["RANK_WORD"] = "Rank",
 }
 
@@ -334,6 +339,11 @@ local STRINGS_DE = {
     ["MINIMAP_TOOLTIP_L1"] = "Linksklick: Fenster öffnen / schließen",
     ["MINIMAP_TOOLTIP_L2"] = "Rechtsklick: Alle Makros aktualisieren",
     ["MINIMAP_TOOLTIP_DRAG"] = "Ziehen: Symbol um Minimap bewegen",
+
+    ["TEST_DIALOG_TITLE"] = "RankForge - Testbericht (Unit-Tests)",
+    ["TEST_DIALOG_HINT"] = "Drücke Strg+C zum Kopieren des Testberichts. Wird bei /reload in SavedVariables/RankForge.lua gespeichert:",
+    ["TEST_DIALOG_CLOSE"] = "Schließen",
+    ["TEST_DIALOG_CHAT_NOTICE"] = "|cff00ccffRankForge:|r Testbericht im Fenster geöffnet (Strg+C zum Kopieren). Wird bei /reload in SavedVariables/RankForge.lua gespeichert.",
 
     ["RANK_WORD"] = "Rang",
 }
