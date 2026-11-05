@@ -135,6 +135,7 @@ def build_wow_environment(lua):
         if id == 17 then return "Power Word: Shield", "", "Interface\\\\Icons\\\\Spell_Holy_PowerWordShield" end
         if id == 12 then return "Hot Foot (TEST)", "", "Interface\\\\Icons\\\\INV_Misc_QuestionMark" end
         if id == 10 then return "Blizzard", "", "Interface\\\\Icons\\\\Spell_Frost_IceStorm" end
+        if id == 116 then return "Frostbolt", "", "Interface\\\\Icons\\\\Spell_Frost_FrostBolt02" end
         if id == 589 then return "Schattenwort: Schmerz", "", "Interface\\\\Icons\\\\Spell_Shadow_ShadowWordPain" end
         return "Spell_" .. tostring(id), "", "Interface\\\\Icons\\\\INV_Misc_QuestionMark"
     end

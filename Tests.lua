@@ -1139,6 +1139,42 @@ RegisterTest("Smart Tooltip: Bare #showtooltip when no pre-cast commands, explic
     AssertEquals(linesTrinket[2], "/use 13")
 end)
 
+RegisterTest("Multi-Language: Cross-locale spell ID resolution and client language adaptation", function()
+    -- 1. Test Spell ID resolution across English and German names
+    local id1 = RF:ResolveSpellID("Flash Heal")
+    AssertEquals(id1, 2061, "Flash Heal must resolve to SpellID 2061")
+
+    local id2 = RF:ResolveSpellID("Blitzheilung")
+    AssertEquals(id2, 2061, "Blitzheilung must resolve to SpellID 2061")
+
+    local id3 = RF:ResolveSpellID("Shadow Word: Pain")
+    AssertEquals(id3, 589, "Shadow Word: Pain must resolve to SpellID 589")
+
+    local id4 = RF:ResolveSpellID("Schattenwort: Schmerz")
+    AssertEquals(id4, 589, "Schattenwort: Schmerz must resolve to SpellID 589")
+
+    local id5 = RF:ResolveSpellID("Frostbolt")
+    AssertEquals(id5, 116, "Frostbolt must resolve to SpellID 116")
+
+    -- 2. Test GetLocalizedSpellName
+    local locName, resolvedID = RF:GetLocalizedSpellName("Flash Heal", 2061)
+    Assert(locName ~= nil and locName ~= "", "Localized spell name must exist")
+    AssertEquals(resolvedID, 2061, "Resolved ID must match 2061")
+
+    -- 3. Test Macro generation with cross-language config
+    local cfg = {
+        macroName = "DR_LangTest",
+        spellName = "Flash Heal", -- English name configured
+        spellID = 2061,
+        modifiers = {
+            { key = "nomod", enabled = true, rankOffset = 0 }
+        }
+    }
+    local body = RF:GenerateMacroBody(cfg)
+    -- In test environment GetSpellInfo(2061) returns "Flash Heal"
+    Assert(body:find("Flash Heal") ~= nil, "Macro body must contain localized spell name")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

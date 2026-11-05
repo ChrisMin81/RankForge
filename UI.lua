@@ -359,6 +359,7 @@ local function CreateMainUI()
     local function ApplyBaseSpell(spellName)
         if not spellName or spellName == "" or not currentMacro then return end
         currentMacro.spellName = spellName
+        currentMacro.spellID = RF:ResolveSpellID(spellName)
         if currentMacro.macroName == "" or currentMacro.macroName:match("^DR_") then
             currentMacro.macroName = "DR_" .. spellName:gsub("%s+", "")
         end
@@ -447,6 +448,7 @@ local function CreateMainUI()
             self:SetText(chosen)
             if currentMacro then
                 currentMacro.spellName = chosen
+                currentMacro.spellID = RF:ResolveSpellID(chosen)
                 if currentMacro.macroName == "" or currentMacro.macroName:match("^DR_") then
                     currentMacro.macroName = "DR_" .. chosen:gsub("%s+", "")
                 end
@@ -1170,6 +1172,9 @@ local function CreateMainUI()
     saveBtn:SetText(L["UI_SAVE_MACRO"])
     saveBtn:SetScript("OnClick", function()
         if currentMacro then
+            if not currentMacro.spellID or currentMacro.spellID == 0 then
+                currentMacro.spellID = RF:ResolveSpellID(currentMacro.spellName)
+            end
             RF:SyncMacro(currentMacro, false)
             RF:UpdateUI()
         end
@@ -1415,7 +1420,11 @@ function RF:UpdateMacroListItem(btn, macroCfg, index)
         btn:SetText(mName)
     end
 
-    local sName = macroCfg.spellName
+    local sName, sID = RF:GetLocalizedSpellName(macroCfg.spellName, macroCfg.spellID)
+    if sID and not macroCfg.spellID then
+        macroCfg.spellID = sID
+    end
+
     if btn.subText then
         if sName and sName ~= "" then
             btn.subText:SetText(sName)
@@ -1432,12 +1441,12 @@ function RF:UpdateMacroListItem(btn, macroCfg, index)
 
     local tex = nil
     if sName and sName ~= "" then
-        local spellInfo = RF:GetSpellRanksInfo(sName)
+        local spellInfo = RF:GetSpellRanksInfo(macroCfg.spellID or sName)
         if spellInfo and spellInfo.spellID then
             tex = RF:GetSpellTexture(spellInfo.spellID)
         end
         if not tex or tex == "Interface\\Icons\\INV_Misc_QuestionMark" then
-            tex = RF:GetSpellTexture(sName)
+            tex = RF:GetSpellTexture(macroCfg.spellID or sName)
         end
     end
     if btn.icon then
@@ -1453,8 +1462,13 @@ function RF:LoadMacroIntoEditor(macroConfig)
     if not RF.MainFrame or not macroConfig then return end
     local f = RF.MainFrame
 
+    local locSpell, sID = RF:GetLocalizedSpellName(macroConfig.spellName, macroConfig.spellID)
+    if sID and not macroConfig.spellID then
+        macroConfig.spellID = sID
+    end
+
     f.nameEdit:SetText(macroConfig.macroName or "")
-    f.spellEdit:SetText(macroConfig.spellName or "")
+    f.spellEdit:SetText(locSpell or macroConfig.spellName or "")
     local isAcc = (macroConfig.isAccount == true)
     UIDropDownMenu_SetSelectedValue(f.storageDropdown, isAcc and "account" or "char")
     UIDropDownMenu_SetText(f.storageDropdown, isAcc and L["UI_STORAGE_ACCOUNT"] or L["UI_STORAGE_CHAR"])
@@ -1470,14 +1484,14 @@ function RF:LoadMacroIntoEditor(macroConfig)
     f.customTargetEdit:SetText(macroConfig.customTarget or "")
 
     -- Update icon
-    local spellInfo = RF:GetSpellRanksInfo(macroConfig.spellName)
+    local spellInfo = RF:GetSpellRanksInfo(macroConfig.spellID or locSpell or macroConfig.spellName)
     local tex = "Interface\\Icons\\INV_Misc_QuestionMark"
     if spellInfo and spellInfo.spellID then
         local t = RF:GetSpellTexture(spellInfo.spellID)
         if t then tex = t end
     end
     if not tex or tex == "Interface\\Icons\\INV_Misc_QuestionMark" then
-        tex = RF:GetSpellTexture(macroConfig.spellName)
+        tex = RF:GetSpellTexture(macroConfig.spellID or locSpell or macroConfig.spellName)
     end
     f.dropSlot.icon:SetTexture(tex)
     f.previewIcon.icon:SetTexture(tex)

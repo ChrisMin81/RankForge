@@ -206,17 +206,123 @@ function RF:ScanSpellBook()
                     entry.maxRank = 1
                 end
             end
+
+            -- Index by numeric spellID for instant multi-language matching
+            if spellID and spellID > 0 then
+                RF.knownSpellsByID = RF.knownSpellsByID or {}
+                RF.knownSpellsByID[spellID] = entry
+            end
         end
     end
 end
 
-function RF:GetSpellRanksInfo(spellName)
+--------------------------------------------------------------------------------
+-- Multi-Language & Spell ID Resolution
+--------------------------------------------------------------------------------
+function RF:ResolveSpellID(spellName)
     if not spellName or spellName == "" then return nil end
-    local info = RF.knownSpells[spellName]
+
+    -- 1. Check known spells scanned from spellbook
+    if RF.knownSpells and RF.knownSpells[spellName] and RF.knownSpells[spellName].spellID then
+        return RF.knownSpells[spellName].spellID
+    end
+
+    -- 2. Check cross-language catalog in Presets.lua (case-insensitive)
+    local lower = spellName:lower():trim()
+    if RF.SpellCatalog and RF.SpellCatalog[lower] then
+        return RF.SpellCatalog[lower]
+    end
+
+    -- 3. Query WoW API directly (in WoW, GetSpellInfo accepts spell name and returns spellID as 7th return value)
+    if C_Spell and C_Spell.GetSpellInfo then
+        local ok, info = pcall(C_Spell.GetSpellInfo, spellName)
+        if ok and info and info.spellID and info.spellID > 0 then
+            return info.spellID
+        end
+    end
+    if GetSpellInfo then
+        local ok, _, _, _, _, _, _, sID = pcall(GetSpellInfo, spellName)
+        if ok and sID and type(sID) == "number" and sID > 0 then
+            return sID
+        end
+    end
+
+    -- 4. Check Presets list
+    if RF.PresetSpells then
+        for class, list in pairs(RF.PresetSpells) do
+            for _, p in ipairs(list) do
+                if p.name and p.name:lower() == lower and p.spellID then
+                    return p.spellID
+                end
+            end
+        end
+    end
+
+    return nil
+end
+
+function RF:GetLocalizedSpellName(spellName, spellID)
+    if (not spellID or spellID == 0) and spellName and spellName ~= "" then
+        spellID = RF:ResolveSpellID(spellName)
+    end
+
+    if spellID and type(spellID) == "number" and spellID > 0 then
+        -- Query current client language for this spellID
+        if C_Spell and C_Spell.GetSpellInfo then
+            local ok, info = pcall(C_Spell.GetSpellInfo, spellID)
+            if ok and info and info.name and info.name ~= "" then
+                return info.name, spellID
+            end
+        end
+        if GetSpellInfo then
+            local ok, name = pcall(GetSpellInfo, spellID)
+            if ok and name and name ~= "" and type(name) == "string" then
+                return name, spellID
+            end
+        end
+    end
+
+    return spellName or "", spellID
+end
+
+function RF:GetSpellRanksInfo(spellNameOrID)
+    if not spellNameOrID or spellNameOrID == "" then return nil end
+    local info = nil
+
+    if type(spellNameOrID) == "number" then
+        info = RF.knownSpellsByID and RF.knownSpellsByID[spellNameOrID]
+        if not info then
+            local locName = RF:GetLocalizedSpellName(nil, spellNameOrID)
+            if locName and locName ~= "" then
+                info = RF.knownSpells[locName]
+            end
+        end
+    else
+        info = RF.knownSpells[spellNameOrID]
+        if not info then
+            -- Try resolving localized name if given an English or foreign name
+            local locName, sID = RF:GetLocalizedSpellName(spellNameOrID)
+            if locName and locName ~= spellNameOrID then
+                info = RF.knownSpells[locName]
+            end
+            if not info and sID then
+                info = RF.knownSpellsByID and RF.knownSpellsByID[sID]
+            end
+        end
+    end
+
     if not info then
         -- Refresh scan if not found
         RF:ScanSpellBook()
-        info = RF.knownSpells[spellName]
+        if type(spellNameOrID) == "number" then
+            info = RF.knownSpellsByID and RF.knownSpellsByID[spellNameOrID]
+        else
+            info = RF.knownSpells[spellNameOrID]
+            if not info then
+                local locName = RF:GetLocalizedSpellName(spellNameOrID)
+                if locName then info = RF.knownSpells[locName] end
+            end
+        end
     end
     return info
 end
@@ -994,8 +1100,13 @@ function RF:GenerateMacroBody(macroConfig)
         return "#showtooltip\n/cast " .. (macroConfig and macroConfig.spellName or "")
     end
 
-    local baseSpell = macroConfig.spellName
-    local spellInfo = RF:GetSpellRanksInfo(baseSpell)
+    -- Dynamically resolve localized spell name for current game client language
+    local baseSpell, sID = RF:GetLocalizedSpellName(macroConfig.spellName, macroConfig.spellID)
+    if sID and not macroConfig.spellID then
+        macroConfig.spellID = sID
+    end
+
+    local spellInfo = RF:GetSpellRanksInfo(sID or baseSpell)
     local maxRank = spellInfo and spellInfo.maxRank or 1
     local fallbackMode = macroConfig.fallbackMode or "omit" -- "omit" or "rank1"
 
@@ -1034,7 +1145,7 @@ function RF:GenerateMacroBody(macroConfig)
         local rankSubtext = nil
 
         if mod.mode == "custom" and mod.customSpell and mod.customSpell ~= "" then
-            spellToCast = mod.customSpell
+            spellToCast = RF:GetLocalizedSpellName(mod.customSpell, mod.customSpellID)
         else
             -- Relative mode
             local offset = tonumber(mod.rankOffset) or 0
