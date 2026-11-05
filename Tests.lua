@@ -1093,6 +1093,52 @@ RegisterTest("Drag & Drop: Left macro list button draggable to action bars", fun
     RF:UpdateUI()
 end)
 
+RegisterTest("Smart Tooltip: Bare #showtooltip when no pre-cast commands, explicit spell when pre-cast active", function()
+    -- Case 1: Pure downranking macro without pre-cast utilities
+    local cfgPure = {
+        macroName = "DR_PureTest",
+        spellName = "Geringes Heilen",
+        modifiers = {
+            { key = "nomod", enabled = true, rankOffset = 0 }
+        }
+    }
+    local bodyPure = RF:GenerateMacroBody(cfgPure)
+    local linesPure = {}
+    for l in bodyPure:gmatch("[^\r\n]+") do table.insert(linesPure, l) end
+    AssertEquals(linesPure[1], "#showtooltip", "Must be bare #showtooltip when no pre-cast utilities are present")
+    Assert(linesPure[2]:find("/cast") ~= nil, "Second line should directly be /cast")
+
+    -- Case 2: Macro with /startattack
+    local cfgAttack = {
+        macroName = "DR_AttackTest2",
+        spellName = "Geringes Heilen",
+        startAttack = true,
+        modifiers = {
+            { key = "nomod", enabled = true, rankOffset = 0 }
+        }
+    }
+    local bodyAttack = RF:GenerateMacroBody(cfgAttack)
+    local linesAttack = {}
+    for l in bodyAttack:gmatch("[^\r\n]+") do table.insert(linesAttack, l) end
+    AssertEquals(linesAttack[1], "#showtooltip Geringes Heilen", "Must specify spell name when /startattack is present")
+    AssertEquals(linesAttack[2], "/startattack")
+
+    -- Case 3: Macro with Trinket 1
+    local cfgTrinket = {
+        macroName = "DR_TrinketTest",
+        spellName = "Geringes Heilen",
+        useTrinket1 = true,
+        modifiers = {
+            { key = "nomod", enabled = true, rankOffset = 0 }
+        }
+    }
+    local bodyTrinket = RF:GenerateMacroBody(cfgTrinket)
+    local linesTrinket = {}
+    for l in bodyTrinket:gmatch("[^\r\n]+") do table.insert(linesTrinket, l) end
+    AssertEquals(linesTrinket[1], "#showtooltip Geringes Heilen", "Must specify spell name when trinket /use 13 is present")
+    AssertEquals(linesTrinket[2], "/use 13")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

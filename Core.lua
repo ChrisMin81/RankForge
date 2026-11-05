@@ -1247,31 +1247,23 @@ function RF:GenerateMacroBody(macroConfig)
         end
     end
 
-    local tooltipHeader = "#showtooltip"
-    if baseSpell and baseSpell ~= "" then
-        tooltipHeader = "#showtooltip " .. baseSpell
-    end
-
-    local macroLines = {
-        tooltipHeader
-    }
-
+    local preCastLines = {}
     if macroConfig.startAttack then
-        table.insert(macroLines, "/startattack")
+        table.insert(preCastLines, "/startattack")
     end
     if macroConfig.petAttack then
-        table.insert(macroLines, "/petattack")
+        table.insert(preCastLines, "/petattack")
     end
     if macroConfig.useTrinket1 then
-        table.insert(macroLines, "/use 13")
+        table.insert(preCastLines, "/use 13")
     end
     if macroConfig.useTrinket2 then
-        table.insert(macroLines, "/use 14")
+        table.insert(preCastLines, "/use 14")
     end
     if macroConfig.useRacial then
         local racial = RF:GetPlayerRacialSpell()
         if racial then
-            table.insert(macroLines, "/cast " .. racial)
+            table.insert(preCastLines, "/cast " .. racial)
         end
     end
     if macroConfig.preCastLines and macroConfig.preCastLines:trim() ~= "" then
@@ -1281,9 +1273,25 @@ function RF:GenerateMacroBody(macroConfig)
                 if not clean:match("^/") then
                     clean = "/use " .. clean
                 end
-                table.insert(macroLines, clean)
+                table.insert(preCastLines, clean)
             end
         end
+    end
+
+    -- Write spell name in #showtooltip ONLY when pre-cast commands (/startattack, /use etc.) precede /cast.
+    -- When no pre-cast commands exist, bare "#showtooltip" lets WoW dynamically evaluate the /cast conditions
+    -- (showing the exact rank / spell for the currently held modifier) and saves precious characters!
+    local tooltipHeader = "#showtooltip"
+    if #preCastLines > 0 and baseSpell and baseSpell ~= "" then
+        tooltipHeader = "#showtooltip " .. baseSpell
+    end
+
+    local macroLines = {
+        tooltipHeader
+    }
+
+    for _, line in ipairs(preCastLines) do
+        table.insert(macroLines, line)
     end
 
     table.insert(macroLines, "/cast " .. table.concat(castParts, ";"))
@@ -1587,7 +1595,13 @@ function RF:RecoverMacrosFromWoW()
         if name:match("^DR_Test") or name:match("^DR_CloneTest") or name == "DR_New" then return nil end
 
         -- Extract spellName from #showtooltip or /cast
-        local spellName = body:match("#showtooltip%s+([^\r\n]+)")
+        local spellName = body:match("#showtooltip[ \t]+([^\r\n]+)")
+        if not spellName or spellName == "" then
+            spellName = body:match("/[cC][aA][sS][tT]%s+.-%]%s*([^%(%[\r\n;]+)")
+        end
+        if not spellName or spellName == "" then
+            spellName = body:match("/[cC][aA][sS][tT]%s+([^%(%[\r\n;]+)")
+        end
         if not spellName or spellName == "" then
             spellName = body:match("/cast%s+.-([%a%s]+)%(Rang")
         end
