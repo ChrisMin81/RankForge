@@ -88,6 +88,12 @@ def build_wow_environment(lua):
     mockSpellBook = {}
     function GetNumSpellTabs() return 1 end
     function GetSpellTabInfo(tab) return "General", "", 0, #mockSpellBook end
+    function GetSpellName(idx, bank)
+        if mockSpellBook[idx] then
+            return mockSpellBook[idx].name, mockSpellBook[idx].subtext
+        end
+        return nil, nil
+    end
     function GetSpellBookItemName(idx, bank)
         if mockSpellBook[idx] then
             return mockSpellBook[idx].name, mockSpellBook[idx].subtext
@@ -105,6 +111,20 @@ def build_wow_environment(lua):
             return mockSpellBook[idx].subtext
         end
         return nil
+    end
+
+    mockCursor = nil
+    function GetCursorInfo()
+        if mockCursor then
+            return mockCursor[1], mockCursor[2], mockCursor[3]
+        end
+        return nil
+    end
+    function ClearCursor()
+        mockCursor = nil
+    end
+    function GetActionInfo(slot)
+        return "spell", 139
     end
 
     function GetSpellInfo(id)

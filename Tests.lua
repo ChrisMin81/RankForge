@@ -809,6 +809,43 @@ RegisterTest("UI Lifecycle: Main frame starts hidden and only opens via ToggleUI
     AssertTrue(inSpecial, "RankForgeMainFrame must be in UISpecialFrames for Escape closing")
 end)
 
+RegisterTest("Drag & Drop: Spell extraction from cursor (3.3.5a, modern and action bars)", function()
+    -- Mock spellbook entry 1 as "Renew"
+    mockSpellBook[1] = { name = "Renew", subtext = "Rank 1", spellID = 139 }
+
+    -- 1. 3.3.5a style: {"spell", 1, "spell"} (spellbook slot index + bookType string)
+    mockCursor = { "spell", 1, "spell" }
+    local sp1 = RF:GetSpellFromCursor()
+    AssertEquals(sp1, "Renew", "Should resolve spell name from 3.3.5a spellbook slot index")
+    Assert(mockCursor == nil, "Cursor should be cleared after extraction")
+
+    -- 2. Modern style: {"spell", 139} (numeric spell ID)
+    mockCursor = { "spell", 139, nil }
+    local sp2 = RF:GetSpellFromCursor()
+    AssertEquals(sp2, "Renew", "Should resolve spell name from spellID")
+    Assert(mockCursor == nil, "Cursor should be cleared after extraction")
+
+    -- 3. Action bar style: {"action", 1}
+    mockCursor = { "action", 1, nil }
+    local sp3 = RF:GetSpellFromCursor()
+    AssertEquals(sp3, "Renew", "Should resolve spell name from action slot")
+    Assert(mockCursor == nil, "Cursor should be cleared after extraction")
+
+    -- 4. Test dropping onto UI base spell slot / spellEdit
+    if RF.MainFrame and RF.MainFrame.spellEdit then
+        local cfg = {
+            macroName = "DR_Test",
+            spellName = "",
+            modifiers = {}
+        }
+        RF:LoadMacroIntoEditor(cfg)
+        mockCursor = { "spell", 1, "spell" }
+        RF.MainFrame.dropSlot:GetScript("OnReceiveDrag")(RF.MainFrame.dropSlot)
+        AssertEquals(cfg.spellName, "Renew", "Base spell slot should update currentMacro.spellName")
+        AssertEquals(RF.MainFrame.spellEdit:GetText(), "Renew", "spellEdit text should update to Renew")
+    end
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

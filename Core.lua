@@ -91,7 +91,7 @@ function RF:ScanSpellBook()
             end
         end
 
-        -- Check legacy GetSpellBookItemName fallback
+        -- Check legacy GetSpellBookItemName fallback (Cataclysm+)
         if (not spellName or spellName == "") and GetSpellBookItemName then
             local ok, n, sub = pcall(GetSpellBookItemName, i, BOOKTYPE_SPELL or "spell")
             if ok and n and n ~= "" then
@@ -99,12 +99,25 @@ function RF:ScanSpellBook()
                 if sub and sub ~= "" then
                     subtext = sub
                 end
-                if GetSpellBookItemInfo then
-                    local okInfo, itemType, id = pcall(GetSpellBookItemInfo, i, BOOKTYPE_SPELL or "spell")
-                    if okInfo then
-                        spellID = id
-                    end
+            end
+        end
+
+        -- Check WotLK 3.3.5a / Vanilla / TBC GetSpellName fallback
+        if (not spellName or spellName == "") and GetSpellName then
+            local ok, n, sub = pcall(GetSpellName, i, BOOKTYPE_SPELL or "spell")
+            if ok and n and n ~= "" then
+                spellName = n
+                if sub and sub ~= "" then
+                    subtext = sub
                 end
+            end
+        end
+
+        -- Query slot item info for spellID across 3.3.5a and legacy versions
+        if (not spellID or spellID == 0) and GetSpellBookItemInfo then
+            local okInfo, itemType, id = pcall(GetSpellBookItemInfo, i, BOOKTYPE_SPELL or "spell")
+            if okInfo and id then
+                spellID = id
             end
         end
 
@@ -234,6 +247,102 @@ function RF:GetSpellTexture(nameOrID)
     end
 
     return "Interface\\Icons\\INV_Misc_QuestionMark"
+end
+
+function RF:GetSpellFromCursor()
+    if not GetCursorInfo then return nil end
+    local infoType, info1, info2 = GetCursorInfo()
+    if not infoType then return nil end
+
+    local spellName = nil
+
+    if infoType == "spell" then
+        local bookType = (type(info2) == "string" and info2 ~= "") and info2 or (BOOKTYPE_SPELL or "spell")
+
+        -- 1. In WoW 3.3.5a / Classic: info1 is numeric spellbook slot index, info2 is bookType string ("spell")
+        if type(info1) == "number" and (type(info2) == "string" or not info2) then
+            -- Try GetSpellName (WotLK 3.3.5a / Vanilla / TBC)
+            if GetSpellName then
+                local ok, name = pcall(GetSpellName, info1, bookType)
+                if ok and name and name ~= "" then
+                    spellName = name
+                end
+            end
+
+            -- Try GetSpellBookItemName (Cataclysm+)
+            if (not spellName or spellName == "") and GetSpellBookItemName then
+                local ok, name = pcall(GetSpellBookItemName, info1, bookType)
+                if ok and name and name ~= "" then
+                    spellName = name
+                end
+            end
+
+            -- Try GetSpellBookItemInfo to get spellID, then GetSpellInfo
+            if (not spellName or spellName == "") and GetSpellBookItemInfo then
+                local ok, itemType, sID = pcall(GetSpellBookItemInfo, info1, bookType)
+                if ok and sID then
+                    if GetSpellInfo then
+                        local ok2, name = pcall(GetSpellInfo, sID)
+                        if ok2 and name and name ~= "" then
+                            spellName = name
+                        end
+                    end
+                end
+            end
+        end
+
+        -- 2. In modern WoW or when info2 is a numeric spellID
+        if not spellName or spellName == "" then
+            if type(info2) == "number" then
+                if C_Spell and C_Spell.GetSpellInfo then
+                    local ok, info = pcall(C_Spell.GetSpellInfo, info2)
+                    if ok and info and info.name then spellName = info.name end
+                elseif GetSpellInfo then
+                    local ok, name = pcall(GetSpellInfo, info2)
+                    if ok and name and name ~= "" then spellName = name end
+                end
+            end
+        end
+
+        -- 3. If info1 is directly a numeric spellID or string spell name
+        if not spellName or spellName == "" then
+            if type(info1) == "number" then
+                if C_Spell and C_Spell.GetSpellInfo then
+                    local ok, info = pcall(C_Spell.GetSpellInfo, info1)
+                    if ok and info and info.name then spellName = info.name end
+                elseif GetSpellInfo then
+                    local ok, name = pcall(GetSpellInfo, info1)
+                    if ok and name and name ~= "" then spellName = name end
+                end
+            elseif type(info1) == "string" and info1 ~= "" then
+                spellName = info1
+            end
+        end
+
+    elseif infoType == "action" then
+        -- Dragged from action bar slot
+        if type(info1) == "number" and GetActionInfo then
+            local actionType, id = GetActionInfo(info1)
+            if actionType == "spell" and id then
+                if C_Spell and C_Spell.GetSpellInfo then
+                    local ok, info = pcall(C_Spell.GetSpellInfo, id)
+                    if ok and info and info.name then spellName = info.name end
+                elseif GetSpellInfo then
+                    local ok, name = pcall(GetSpellInfo, id)
+                    if ok and name and name ~= "" then spellName = name end
+                end
+            end
+        end
+    end
+
+    if spellName and spellName ~= "" then
+        if ClearCursor then
+            pcall(ClearCursor)
+        end
+        return spellName
+    end
+
+    return nil
 end
 
 function RF:IsSpellHarmful(spellName)

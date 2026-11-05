@@ -301,47 +301,67 @@ local function CreateMainUI()
     dropSlotIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
     dropSlot.icon = dropSlotIcon
 
-    local dropSlotText = editor:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    dropSlotText:SetPoint("LEFT", dropSlot, "RIGHT", 8, 0)
-    dropSlotText:SetText(L["UI_DROP_SPELL_HERE"])
-    f.dropSlotText = dropSlotText
+    local function ApplyBaseSpell(spellName)
+        if not spellName or spellName == "" or not currentMacro then return end
+        currentMacro.spellName = spellName
+        if currentMacro.macroName == "" or currentMacro.macroName:match("^DR_") then
+            currentMacro.macroName = "DR_" .. spellName:gsub("%s+", "")
+        end
+        RF:AutoConfigureSpellType(currentMacro, spellName)
+        RF:LoadMacroIntoEditor(currentMacro)
+    end
+
+    local function HandleBaseSpellDrop()
+        local spellName = RF:GetSpellFromCursor()
+        if spellName then
+            ApplyBaseSpell(spellName)
+            return true
+        end
+        return false
+    end
 
     -- Handle Drag & Drop spell onto drop slot
-    dropSlot:SetScript("OnReceiveDrag", function(self)
-        local infoType, info1, info2 = GetCursorInfo()
-        if infoType == "spell" then
-            local spellName = nil
-            if C_Spell and C_Spell.GetSpellInfo and info2 then
-                local info = C_Spell.GetSpellInfo(info2)
-                spellName = info and info.name
-            elseif GetSpellInfo and info2 then
-                spellName = GetSpellInfo(info2)
-            end
-            if not spellName and info1 then
-                spellName = GetSpellBookItemName(info1, BOOKTYPE_SPELL or "spell")
-            end
-
-            if spellName and currentMacro then
-                ClearCursor()
-                currentMacro.spellName = spellName
-                if currentMacro.macroName == "" or currentMacro.macroName:match("^DR_") then
-                    currentMacro.macroName = "DR_" .. spellName:gsub("%s+", "")
-                end
-                RF:AutoConfigureSpellType(currentMacro, spellName)
-                RF:LoadMacroIntoEditor(currentMacro)
-            end
+    dropSlot:SetScript("OnReceiveDrag", HandleBaseSpellDrop)
+    dropSlot:SetScript("OnClick", function(self)
+        if not HandleBaseSpellDrop() then
+            RF:OpenSpellPicker(f.spellEdit, ApplyBaseSpell)
         end
     end)
-    dropSlot:SetScript("OnClick", function(self)
-        self:GetScript("OnReceiveDrag")(self)
-    end)
     f.dropSlot = dropSlot
+
+    -- Clickable and drop-friendly label next to drop slot
+    local dropSlotBtn = CreateFrame("Button", nil, editor)
+    dropSlotBtn:SetPoint("LEFT", dropSlot, "RIGHT", 4, 0)
+    dropSlotBtn:SetSize(130, 26)
+    dropSlotBtn:SetScript("OnReceiveDrag", HandleBaseSpellDrop)
+    dropSlotBtn:SetScript("OnClick", function(self)
+        if not HandleBaseSpellDrop() then
+            RF:OpenSpellPicker(f.spellEdit, ApplyBaseSpell)
+        end
+    end)
+    local dropSlotText = dropSlotBtn:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+    dropSlotText:SetPoint("LEFT", dropSlotBtn, "LEFT", 4, 0)
+    dropSlotText:SetText(L["UI_DROP_SPELL_HERE"])
+    f.dropSlotText = dropSlotText
+    f.dropSlotBtn = dropSlotBtn
 
     -- Spell Name Manual Input
     local spellEdit = CreateFrame("EditBox", nil, editor, "InputBoxTemplate")
     spellEdit:SetSize(140, 20)
-    spellEdit:SetPoint("LEFT", dropSlotText, "RIGHT", 15, 0)
+    spellEdit:SetPoint("LEFT", dropSlotBtn, "RIGHT", 10, 0)
     spellEdit:SetAutoFocus(false)
+    spellEdit:SetScript("OnReceiveDrag", HandleBaseSpellDrop)
+    spellEdit:SetScript("OnMouseDown", function(self, button)
+        if button == "LeftButton" then
+            local infoType = GetCursorInfo and GetCursorInfo()
+            if infoType == "spell" or infoType == "action" then
+                if HandleBaseSpellDrop() then
+                    self:ClearFocus()
+                    return
+                end
+            end
+        end
+    end)
     spellEdit:SetScript("OnTextChanged", function(self, userInput)
         if userInput and currentMacro then
             currentMacro.spellName = self:GetText()
@@ -858,36 +878,33 @@ local function CreateMainUI()
 
         -- Drag and drop onto DropSlot
         local function HandleSpellDrop()
-            local infoType, info1, info2 = GetCursorInfo()
-            if infoType == "spell" then
-                local spellName = nil
-                if C_Spell and C_Spell.GetSpellInfo and info2 then
-                    local info = C_Spell.GetSpellInfo(info2)
-                    spellName = info and info.name
-                elseif GetSpellInfo and info2 then
-                    spellName = GetSpellInfo(info2)
-                end
-                if not spellName and info1 then
-                    spellName = GetSpellBookItemName(info1, BOOKTYPE_SPELL or "spell")
-                end
-                if spellName then
-                    ClearCursor()
-                    ApplySpellToModifier(spellName)
-                end
+            local spellName = RF:GetSpellFromCursor()
+            if spellName then
+                ApplySpellToModifier(spellName)
+                return true
             end
+            return false
         end
 
         altDropSlot:SetScript("OnReceiveDrag", HandleSpellDrop)
         altDropSlot:SetScript("OnClick", function(self)
-            local infoType = GetCursorInfo()
-            if infoType == "spell" then
-                HandleSpellDrop()
-            else
+            if not HandleSpellDrop() then
                 RF:OpenSpellPicker(customSpellEdit, ApplySpellToModifier)
             end
         end)
 
         customSpellEdit:SetScript("OnReceiveDrag", HandleSpellDrop)
+        customSpellEdit:SetScript("OnMouseDown", function(self, button)
+            if button == "LeftButton" then
+                local infoType = GetCursorInfo and GetCursorInfo()
+                if infoType == "spell" or infoType == "action" then
+                    if HandleSpellDrop() then
+                        self:ClearFocus()
+                        return
+                    end
+                end
+            end
+        end)
         customSpellEdit:SetScript("OnTextChanged", function(self, userInput)
             if userInput and currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 local text = self:GetText():trim()
