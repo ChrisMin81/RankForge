@@ -294,6 +294,8 @@ RegisterTest("Macro Generation: Pre-Cast Utility (Trinkets, Racials, Potions)", 
     local cfg = {
         macroName = "DR_UtilityTest",
         spellName = "Flash Heal",
+        startAttack = true,
+        petAttack = true,
         useTrinket1 = true,
         useTrinket2 = true,
         preCastLines = "/use Super Mana Potion\n/cast Inner Focus",
@@ -302,6 +304,8 @@ RegisterTest("Macro Generation: Pre-Cast Utility (Trinkets, Racials, Potions)", 
         }
     }
     local body = RF:GenerateMacroBody(cfg)
+    Assert(body:find("/startattack") ~= nil, "Must contain /startattack")
+    Assert(body:find("/petattack") ~= nil, "Must contain /petattack")
     Assert(body:find("/use 13") ~= nil, "Must contain /use 13")
     Assert(body:find("/use 14") ~= nil, "Must contain /use 14")
     Assert(body:find("/use Super Mana Potion") ~= nil, "Must contain potion line")
@@ -465,6 +469,8 @@ RegisterTest("Macro Cloning: CloneMacro creates deep copy with unique name", fun
         fallbackMode = "rank1",
         targetMouseover = true,
         useTrinket1 = true,
+        startAttack = true,
+        petAttack = true,
         modifiers = {
             { key = "shift", enabled = true, mode = "relative", rankOffset = 2, targetMouseover = true, isHelp = true, isNodead = true },
             { key = "nomod", enabled = true, mode = "relative", rankOffset = 0, targetMouseover = true, isHelp = true, isNodead = true }
@@ -478,6 +484,8 @@ RegisterTest("Macro Cloning: CloneMacro creates deep copy with unique name", fun
     AssertEquals(cloned.isAccount, false)
     AssertEquals(cloned.fallbackMode, "rank1")
     AssertEquals(cloned.useTrinket1, true)
+    AssertEquals(cloned.startAttack, true)
+    AssertEquals(cloned.petAttack, true)
     AssertEquals(#cloned.modifiers, 2)
     AssertEquals(cloned.modifiers[1].rankOffset, 2)
 
@@ -897,6 +905,32 @@ RegisterTest("Spell Database: Multi-class spell rank tables support", function()
             Assert(ranks ~= nil and type(ranks) == "table", string.format("Spell %s for %s must exist in SpellRankLevels", sp, cls.name))
             Assert(ranks[1] ~= nil and ranks[1] >= 1, string.format("Spell %s must have rank 1 level defined", sp))
         end
+    end
+end)
+
+RegisterTest("Utility: startattack and petattack checkboxes and macro generation", function()
+    local cfg = {
+        macroName = "DR_AttackTest",
+        spellName = "Frostbolt",
+        startAttack = true,
+        petAttack = true,
+        modifiers = {
+            { key = "nomod", enabled = true, rankOffset = 0 }
+        }
+    }
+    local body = RF:GenerateMacroBody(cfg)
+    local lines = {}
+    for l in body:gmatch("[^\r\n]+") do table.insert(lines, l) end
+    AssertEquals(lines[1], "#showtooltip")
+    AssertEquals(lines[2], "/startattack")
+    AssertEquals(lines[3], "/petattack")
+    Assert(lines[4]:find("/cast") ~= nil, "Cast line must follow utility commands")
+
+    -- Test with UI elements
+    if RF.MainFrame and RF.MainFrame.cbStartAttack and RF.MainFrame.cbPetAttack then
+        RF:LoadMacroIntoEditor(cfg)
+        AssertEquals(RF.MainFrame.cbStartAttack:GetChecked(), true)
+        AssertEquals(RF.MainFrame.cbPetAttack:GetChecked(), true)
     end
 end)
 

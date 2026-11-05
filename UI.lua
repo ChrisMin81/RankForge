@@ -425,12 +425,21 @@ local function CreateMainUI()
     ----------------------------------------------------------------------------
     -- Pre-Cast Utility: Trinkets & Racials
     ----------------------------------------------------------------------------
-    local function CreateTargetCheck(text, x, y, key)
+    local function CreateTargetCheck(text, x, y, key, tooltipTitle, tooltipDesc)
         local cb = CreateFrame("CheckButton", nil, editor, "UICheckButtonTemplate")
         cb:SetPoint("TOPLEFT", editor, "TOPLEFT", x, y)
         cb.text = cb:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         cb.text:SetPoint("LEFT", cb, "RIGHT", 2, 0)
         cb.text:SetText(text)
+        if tooltipTitle then
+            cb:SetScript("OnEnter", function(self)
+                GameTooltip:SetOwner(self, "ANCHOR_TOP")
+                GameTooltip:SetText(tooltipTitle, 1, 0.82, 0)
+                if tooltipDesc then GameTooltip:AddLine(tooltipDesc, 0.8, 0.8, 0.8, true) end
+                GameTooltip:Show()
+            end)
+            cb:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        end
         cb:SetScript("OnClick", function(self)
             if currentMacro then
                 currentMacro[key] = self:GetChecked()
@@ -439,6 +448,9 @@ local function CreateMainUI()
         end)
         return cb
     end
+
+    f.cbStartAttack = CreateTargetCheck(L["UI_START_ATTACK"] or "Start Attack (/startattack)", 220, -90, "startAttack", "/startattack", L["UI_START_ATTACK_DESC"])
+    f.cbPetAttack   = CreateTargetCheck(L["UI_PET_ATTACK"] or "Pet Attack (/petattack)", 440, -90, "petAttack", "/petattack", L["UI_PET_ATTACK_DESC"])
 
     f.cbTrinket1  = CreateTargetCheck(L["UI_USE_TRINKET_1"], 15, -114, "useTrinket1")
     f.cbTrinket2  = CreateTargetCheck(L["UI_USE_TRINKET_2"], 175, -114, "useTrinket2")
@@ -1248,6 +1260,8 @@ function RF:CreateNewMacroConfig()
         useTrinket1 = false,
         useTrinket2 = false,
         useRacial = false,
+        startAttack = false,
+        petAttack = false,
         preCastLines = "",
         modifiers = {}
     }
@@ -1390,6 +1404,8 @@ function RF:LoadMacroIntoEditor(macroConfig)
     UIDropDownMenu_SetText(f.storageDropdown, isAcc and L["UI_STORAGE_ACCOUNT"] or L["UI_STORAGE_CHAR"])
     f.fallbackCheck:SetChecked(macroConfig.fallbackMode == "rank1")
 
+    f.cbStartAttack:SetChecked(macroConfig.startAttack or false)
+    f.cbPetAttack:SetChecked(macroConfig.petAttack or false)
     f.cbTrinket1:SetChecked(macroConfig.useTrinket1 or false)
     f.cbTrinket2:SetChecked(macroConfig.useTrinket2 or false)
     f.cbRacial:SetChecked(macroConfig.useRacial or false)

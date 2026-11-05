@@ -970,6 +970,12 @@ function RF:GenerateMacroBody(macroConfig)
         "#showtooltip"
     }
 
+    if macroConfig.startAttack then
+        table.insert(macroLines, "/startattack")
+    end
+    if macroConfig.petAttack then
+        table.insert(macroLines, "/petattack")
+    end
     if macroConfig.useTrinket1 then
         table.insert(macroLines, "/use 13")
     end
@@ -1231,6 +1237,8 @@ function RF:CloneMacro(macroConfig)
         useTrinket1 = macroConfig.useTrinket1 or false,
         useTrinket2 = macroConfig.useTrinket2 or false,
         useRacial = macroConfig.useRacial or false,
+        startAttack = macroConfig.startAttack or false,
+        petAttack = macroConfig.petAttack or false,
         preCastLines = macroConfig.preCastLines or "",
         modifiers = {}
     }
