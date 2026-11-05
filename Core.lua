@@ -355,8 +355,61 @@ function RF:GetSpellFromCursor()
     return nil
 end
 
+local HARMFUL_SPELLS = {
+    ["Mind Blast"] = true, ["Gedankenschlag"] = true,
+    ["Shadow Word: Pain"] = true, ["Schattenwort: Schmerz"] = true,
+    ["Smite"] = true, ["Heilige Pein"] = true, ["Göttliche Pein"] = true,
+    ["Holy Fire"] = true, ["Heiliges Feuer"] = true,
+    ["Mana Burn"] = true, ["Manabrand"] = true,
+    ["Frostbolt"] = true, ["Frostblitz"] = true,
+    ["Fireball"] = true, ["Feuerball"] = true,
+    ["Scorch"] = true, ["Sengen"] = true, ["Sengende Hitze"] = true,
+    ["Arcane Missiles"] = true, ["Arkane Geschosse"] = true,
+    ["Cone of Cold"] = true, ["Kältekegel"] = true,
+    ["Flamestrike"] = true, ["Flammenstoß"] = true,
+    ["Blizzard"] = true,
+    ["Shadow Bolt"] = true, ["Schattenblitz"] = true,
+    ["Corruption"] = true, ["Verderbnis"] = true,
+    ["Immolate"] = true, ["Feuerbrand"] = true,
+    ["Curse of Agony"] = true, ["Fluch der Pein"] = true,
+    ["Drain Life"] = true, ["Blutsauger"] = true,
+    ["Hellfire"] = true, ["Höllenfeuer"] = true,
+    ["Rain of Fire"] = true, ["Feuerregen"] = true,
+    ["Moonfire"] = true, ["Mondfeuer"] = true,
+    ["Wrath"] = true, ["Zorn"] = true,
+    ["Starfire"] = true, ["Sternenfeuer"] = true,
+    ["Lightning Bolt"] = true, ["Blitzschlag"] = true,
+    ["Chain Lightning"] = true, ["Kettenblitz"] = true,
+    ["Earth Shock"] = true, ["Erdschock"] = true,
+    ["Flame Shock"] = true, ["Flammenschock"] = true,
+    ["Frost Shock"] = true, ["Frostschock"] = true,
+    ["Exorcism"] = true, ["Exorzismus"] = true,
+    ["Consecration"] = true, ["Weihe"] = true,
+}
+
+local HELPFUL_SPELLS = {
+    ["Renew"] = true, ["Erneuerung"] = true,
+    ["Flash Heal"] = true, ["Blitzheilung"] = true,
+    ["Greater Heal"] = true, ["Große Heilung"] = true,
+    ["Heal"] = true, ["Heilung"] = true,
+    ["Lesser Heal"] = true, ["Geringes Heilen"] = true, ["Geringe Heilung"] = true,
+    ["Prayer of Healing"] = true, ["Gebet der Heilung"] = true,
+    ["Power Word: Shield"] = true, ["Machtwort: Schild"] = true,
+    ["Healing Touch"] = true, ["Heilende Berührung"] = true,
+    ["Regrowth"] = true, ["Nachwachsen"] = true,
+    ["Rejuvenation"] = true, ["Verjüngung"] = true,
+    ["Holy Light"] = true, ["Heiliges Licht"] = true,
+    ["Flash of Light"] = true, ["Lichtblitz"] = true,
+    ["Holy Shock"] = true, ["Heiliger Schock"] = true,
+    ["Healing Wave"] = true, ["Welle der Heilung"] = true,
+    ["Lesser Healing Wave"] = true, ["Geringe Welle der Heilung"] = true,
+    ["Chain Heal"] = true, ["Kettenheilung"] = true,
+}
+
 function RF:IsSpellHarmful(spellName)
     if not spellName or spellName == "" then return false end
+    if HARMFUL_SPELLS[spellName] then return true end
+    if HELPFUL_SPELLS[spellName] then return false end
     if C_Spell and C_Spell.IsSpellHarmful then
         local ok, res = pcall(C_Spell.IsSpellHarmful, spellName)
         if ok and res ~= nil then return res end
@@ -370,6 +423,8 @@ end
 
 function RF:IsSpellHelpful(spellName)
     if not spellName or spellName == "" then return false end
+    if HELPFUL_SPELLS[spellName] then return true end
+    if HARMFUL_SPELLS[spellName] then return false end
     if C_Spell and C_Spell.IsSpellHelpful then
         local ok, res = pcall(C_Spell.IsSpellHelpful, spellName)
         if ok and res ~= nil then return res end
@@ -631,13 +686,13 @@ function RF:IsMacroForCurrentCharacter(macroConfig)
     return false
 end
 
-function RF:GetSpellSweetSpot(spellName)
+function RF:GetSpellSweetSpot(spellName, customLevel)
     if not spellName or spellName == "" then
         return 0, 1, 60
     end
     local spellInfo = RF.knownSpells[spellName]
     local maxRank = (spellInfo and spellInfo.maxRank and spellInfo.maxRank > 0) and spellInfo.maxRank or 1
-    local playerLevel = (UnitLevel and UnitLevel("player")) or 60
+    local playerLevel = customLevel or (UnitLevel and UnitLevel("player")) or 60
 
     local rankLevels = RF.SpellRankLevels[spellName]
     if not rankLevels then
@@ -665,14 +720,14 @@ function RF:GetSpellSweetSpot(spellName)
     return offset, optimalRank, reqLvl
 end
 
-function RF:GetDownrankingEfficiency(spellName, rankOffset, targetRank)
+function RF:GetDownrankingEfficiency(spellName, rankOffset, targetRank, customLevel)
     if not spellName or spellName == "" then
         return 100, "green", "100%", 60, L["UI_EFFICIENCY_FULL"] or "Volle Effizienz"
     end
 
     local spellInfo = RF.knownSpells and RF.knownSpells[spellName]
     local maxRank = (spellInfo and spellInfo.maxRank and spellInfo.maxRank > 0) and spellInfo.maxRank or 1
-    local playerLevel = (UnitLevel and UnitLevel("player")) or 60
+    local playerLevel = customLevel or (UnitLevel and UnitLevel("player")) or 60
 
     local rank = targetRank
     if not rank then
