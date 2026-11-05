@@ -209,6 +209,33 @@ function RF:GetLearnedSpellList()
     return list
 end
 
+function RF:GetSpellTexture(nameOrID)
+    if not nameOrID or nameOrID == "" then
+        return "Interface\\Icons\\INV_Misc_QuestionMark"
+    end
+
+    -- Modern WoW (9.0+ / 10.0+ / 11.0+)
+    if C_Spell and C_Spell.GetSpellTexture then
+        local ok, res = pcall(C_Spell.GetSpellTexture, nameOrID)
+        if ok and res then return res end
+    end
+
+    -- Universal WoW: GetSpellInfo accepts BOTH spellID number AND spellName string
+    -- and returns the icon texture as its 3rd return value without requiring a 2nd argument.
+    if GetSpellInfo then
+        local ok, _, _, icon = pcall(GetSpellInfo, nameOrID)
+        if ok and icon then return icon end
+    end
+
+    -- Legacy string fallback (in 3.3.5a GetSpellTexture only accepts string)
+    if type(nameOrID) == "string" and GetSpellTexture then
+        local ok, res = pcall(GetSpellTexture, nameOrID)
+        if ok and res then return res end
+    end
+
+    return "Interface\\Icons\\INV_Misc_QuestionMark"
+end
+
 function RF:IsSpellHarmful(spellName)
     if not spellName or spellName == "" then return false end
     if C_Spell and C_Spell.IsSpellHarmful then

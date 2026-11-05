@@ -40,8 +40,8 @@ local function CreateMainUI()
     f:SetMovable(true)
     f:EnableMouse(true)
     f:RegisterForDrag("LeftButton")
-    f:SetScript("OnDragStart", f.StartMoving)
-    f:SetScript("OnDragStop", f.StopMovingOrSizing)
+    f:SetScript("OnDragStart", function(self) self:StartMoving() end)
+    f:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
     f:SetClampedToScreen(true)
     f:SetFrameStrata("HIGH")
     f:SetToplevel(true)
@@ -845,7 +845,7 @@ local function CreateMainUI()
                 end
             else
                 customSpellEdit:SetText(spellName)
-                local tex = GetSpellTexture(spellName) or "Interface\\Icons\\INV_Misc_QuestionMark"
+                local tex = RF:GetSpellTexture(spellName) or "Interface\\Icons\\INV_Misc_QuestionMark"
                 altDropIcon:SetTexture(tex)
                 altDropIcon:SetAlpha(1.0)
                 if currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
@@ -893,7 +893,7 @@ local function CreateMainUI()
                 local text = self:GetText():trim()
                 currentMacro.modifiers[i].customSpell = text
                 currentMacro.modifiers[i].mode = (text ~= "") and "custom" or "relative"
-                local tex = (text ~= "") and GetSpellTexture(text) or "Interface\\Icons\\INV_Misc_QuestionMark"
+                local tex = (text ~= "") and RF:GetSpellTexture(text) or "Interface\\Icons\\INV_Misc_QuestionMark"
                 altDropIcon:SetTexture(tex or "Interface\\Icons\\INV_Misc_QuestionMark")
                 altDropIcon:SetAlpha((text ~= "") and 1.0 or 0.6)
                 RF:UpdatePreview()
@@ -1251,7 +1251,7 @@ function RF:LoadModifiersIntoUI(macroConfig)
 
             local cSpell = modData.customSpell or ""
             row.customSpellEdit:SetText(cSpell)
-            local tex = (cSpell ~= "") and GetSpellTexture(cSpell) or "Interface\\Icons\\INV_Misc_QuestionMark"
+            local tex = (cSpell ~= "") and RF:GetSpellTexture(cSpell) or "Interface\\Icons\\INV_Misc_QuestionMark"
             if row.altDropSlot and row.altDropSlot.icon then
                 row.altDropSlot.icon:SetTexture(tex or "Interface\\Icons\\INV_Misc_QuestionMark")
                 row.altDropSlot.icon:SetAlpha((cSpell ~= "") and 1.0 or 0.6)
@@ -1296,10 +1296,10 @@ function RF:UpdateMacroListItem(btn, macroCfg, index)
     if sName and sName ~= "" then
         local spellInfo = RF:GetSpellRanksInfo(sName)
         if spellInfo and spellInfo.spellID then
-            tex = GetSpellTexture(spellInfo.spellID)
+            tex = RF:GetSpellTexture(spellInfo.spellID)
         end
-        if not tex then
-            tex = GetSpellTexture(sName)
+        if not tex or tex == "Interface\\Icons\\INV_Misc_QuestionMark" then
+            tex = RF:GetSpellTexture(sName)
         end
     end
     if btn.icon then
@@ -1333,8 +1333,11 @@ function RF:LoadMacroIntoEditor(macroConfig)
     local spellInfo = RF:GetSpellRanksInfo(macroConfig.spellName)
     local tex = "Interface\\Icons\\INV_Misc_QuestionMark"
     if spellInfo and spellInfo.spellID then
-        local t = GetSpellTexture(spellInfo.spellID)
+        local t = RF:GetSpellTexture(spellInfo.spellID)
         if t then tex = t end
+    end
+    if not tex or tex == "Interface\\Icons\\INV_Misc_QuestionMark" then
+        tex = RF:GetSpellTexture(macroConfig.spellName)
     end
     f.dropSlot.icon:SetTexture(tex)
     f.previewIcon.icon:SetTexture(tex)
@@ -1510,16 +1513,7 @@ function RF:UpdateUI()
             subText:SetJustifyH("LEFT")
             btn.subText = subText
 
-            local origSetText = btn.SetText
-            function btn:SetText(txt)
-                if self.nameText then
-                    self.nameText:SetText(txt)
-                end
-                if origSetText then
-                    origSetText(self, "")
-                end
-            end
-
+            btn:SetText("")
             listContent.buttons[i] = btn
         end
 
@@ -1591,8 +1585,8 @@ function RF:ToggleUI()
     if f:IsShown() then
         f:Hide()
     else
-        RF:UpdateUI()
         f:Show()
+        RF:UpdateUI()
     end
 end
 
@@ -1913,7 +1907,7 @@ function RF:RefreshSpellPickerList()
             end
 
             btn:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -y)
-            local tex = (sp.spellID and GetSpellTexture(sp.spellID)) or GetSpellTexture(sp.name) or "Interface\\Icons\\INV_Misc_QuestionMark"
+            local tex = (sp.spellID and RF:GetSpellTexture(sp.spellID)) or RF:GetSpellTexture(sp.name) or "Interface\\Icons\\INV_Misc_QuestionMark"
             btn.icon:SetTexture(tex)
             btn.text:SetText(sp.name)
             btn:Show()

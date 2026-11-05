@@ -115,7 +115,10 @@ def build_wow_environment(lua):
         return "Spell_" .. tostring(id), "", "Interface\\\\Icons\\\\INV_Misc_QuestionMark"
     end
 
-    function GetSpellTexture(nameOrID)
+    function GetSpellTexture(idx, bookType)
+        if type(idx) == "number" and not bookType then
+            error("bad argument #2 to 'GetSpellTexture' (string expected, got no value)")
+        end
         return "Interface\\\\Icons\\\\Spell_Holy_Renew"
     end
 
