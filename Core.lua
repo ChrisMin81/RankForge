@@ -757,22 +757,130 @@ RF.SpellClassLookup = {
     -- Priest
     ["Renew"] = "PRIEST", ["Erneuerung"] = "PRIEST",
     ["Flash Heal"] = "PRIEST", ["Blitzheilung"] = "PRIEST",
-    ["Greater Heal"] = "PRIEST", ["Große Heilung"] = "PRIEST",
-    ["Heal"] = "PRIEST", ["Heilung"] = "PRIEST",
+    ["Greater Heal"] = "PRIEST", ["Große Heilung"] = "PRIEST", ["Grosse Heilung"] = "PRIEST",
+    ["Heal"] = "PRIEST", ["Heilung"] = "PRIEST", ["Heilen"] = "PRIEST",
     ["Lesser Heal"] = "PRIEST", ["Geringes Heilen"] = "PRIEST", ["Geringe Heilung"] = "PRIEST",
     ["Prayer of Healing"] = "PRIEST", ["Gebet der Heilung"] = "PRIEST",
     ["Power Word: Shield"] = "PRIEST", ["Machtwort: Schild"] = "PRIEST",
     ["Smite"] = "PRIEST", ["Heilige Pein"] = "PRIEST", ["Göttliche Pein"] = "PRIEST", ["Pein"] = "PRIEST",
     ["Mind Blast"] = "PRIEST", ["Gedankenschlag"] = "PRIEST",
     ["Shadow Word: Pain"] = "PRIEST", ["Schattenwort: Schmerz"] = "PRIEST",
+    ["Shadow Word: Death"] = "PRIEST", ["Schattenwort: Tod"] = "PRIEST",
+    ["Vampiric Touch"] = "PRIEST", ["Vampirberührung"] = "PRIEST", ["Vampirberuehrung"] = "PRIEST",
+    ["Mana Burn"] = "PRIEST", ["Manabrand"] = "PRIEST",
+    ["Mind Flay"] = "PRIEST", ["Gedankenschinden"] = "PRIEST",
+    ["Shadowguard"] = "PRIEST", ["Schattenschild"] = "PRIEST", ["Schattengarde"] = "PRIEST",
+    ["Vampiric Embrace"] = "PRIEST", ["Vampirumarmung"] = "PRIEST",
+    ["Holy Nova"] = "PRIEST", ["Heilige Nova"] = "PRIEST",
+    ["Circle of Healing"] = "PRIEST", ["Kreis der Heilung"] = "PRIEST",
+    ["Binding Heal"] = "PRIEST", ["Verbindende Heilung"] = "PRIEST",
+    ["Prayer of Mending"] = "PRIEST", ["Gebet der Besserung"] = "PRIEST",
+    ["Holy Fire"] = "PRIEST", ["Heiliges Feuer"] = "PRIEST",
+    ["Desperate Prayer"] = "PRIEST", ["Verzweifeltes Gebet"] = "PRIEST",
+    ["Devouring Plague"] = "PRIEST", ["Verschlingende Seuche"] = "PRIEST",
+    ["Power Word: Fortitude"] = "PRIEST", ["Machtwort: Seelenstärke"] = "PRIEST", ["Machtwort: Seelenstaerke"] = "PRIEST",
+    ["Shadow Protection"] = "PRIEST", ["Schattenschutz"] = "PRIEST",
+    ["Divine Spirit"] = "PRIEST", ["Göttlicher Wille"] = "PRIEST", ["Goettlicher Wille"] = "PRIEST",
+    ["Fear Ward"] = "PRIEST", ["Furchtschutz"] = "PRIEST", ["Furcht-Zauberschutz"] = "PRIEST",
+    ["Silence"] = "PRIEST", ["Stille"] = "PRIEST",
+    ["Psychic Scream"] = "PRIEST", ["Psychischer Schrei"] = "PRIEST",
+    ["Dispel Magic"] = "PRIEST", ["Magiebannung"] = "PRIEST",
+    ["Abolish Disease"] = "PRIEST", ["Krankheit aufheben"] = "PRIEST",
+    ["Cure Disease"] = "PRIEST", ["Krankheit heilen"] = "PRIEST",
+    ["Fade"] = "PRIEST", ["Verblassen"] = "PRIEST",
+    ["Shadowform"] = "PRIEST", ["Schattengestalt"] = "PRIEST",
+    ["Inner Fire"] = "PRIEST", ["Inneres Feuer"] = "PRIEST",
+    ["Inner Focus"] = "PRIEST", ["Innerer Fokus"] = "PRIEST",
+    ["Power Infusion"] = "PRIEST", ["Seele der Macht"] = "PRIEST",
+    ["Pain Suppression"] = "PRIEST", ["Schmerzunterdrückung"] = "PRIEST", ["Schmerzunterdrueckung"] = "PRIEST",
+    ["Levitate"] = "PRIEST", ["Levitieren"] = "PRIEST",
+    ["Resurrect"] = "PRIEST", ["Auferstehung"] = "PRIEST",
+    ["Shackle Undead"] = "PRIEST", ["Untote fesseln"] = "PRIEST",
+    ["Mind Control"] = "PRIEST", ["Gedankenkontrolle"] = "PRIEST",
+    ["Mind Vision"] = "PRIEST", ["Gedankensicht"] = "PRIEST",
+
+    -- Hunter
+    ["Aimed Shot"] = "HUNTER", ["Gezielter Schuss"] = "HUNTER",
+    ["Arcane Shot"] = "HUNTER", ["Arkaner Schuss"] = "HUNTER",
+    ["Multi-Shot"] = "HUNTER", ["Mehrfachschuss"] = "HUNTER",
+    ["Serpent Sting"] = "HUNTER", ["Schlangenbiss"] = "HUNTER",
+    ["Viper Sting"] = "HUNTER", ["Vipernbiss"] = "HUNTER",
+    ["Scorpid Sting"] = "HUNTER", ["Skorpidgift"] = "HUNTER",
+    ["Concussive Shot"] = "HUNTER", ["Erschütternder Schuss"] = "HUNTER", ["Erschuetternder Schuss"] = "HUNTER",
+    ["Distracting Shot"] = "HUNTER", ["Ablenkender Schuss"] = "HUNTER",
+    ["Scatter Shot"] = "HUNTER", ["Streuschuss"] = "HUNTER",
+    ["Silencing Shot"] = "HUNTER", ["Unterdrückender Schuss"] = "HUNTER",
+    ["Kill Shot"] = "HUNTER", ["Tödlicher Schuss"] = "HUNTER", ["Toedlicher Schuss"] = "HUNTER",
+    ["Steady Shot"] = "HUNTER", ["Zuverlässiger Schuss"] = "HUNTER", ["Zuverlaessiger Schuss"] = "HUNTER",
+    ["Volley"] = "HUNTER", ["Salve"] = "HUNTER",
+    ["Rapid Fire"] = "HUNTER", ["Schnellfeuer"] = "HUNTER",
+    ["Bestial Wrath"] = "HUNTER", ["Zorn des Wildtiers"] = "HUNTER",
+    ["Mend Pet"] = "HUNTER", ["Tier heilen"] = "HUNTER",
+    ["Feed Pet"] = "HUNTER", ["Tier füttern"] = "HUNTER", ["Tier fuettern"] = "HUNTER",
+    ["Call Pet"] = "HUNTER", ["Begleiter rufen"] = "HUNTER",
+    ["Revive Pet"] = "HUNTER", ["Begleiter wiederbeleben"] = "HUNTER",
+    ["Dismiss Pet"] = "HUNTER", ["Begleiter freigeben"] = "HUNTER",
+    ["Feign Death"] = "HUNTER", ["Totstellen"] = "HUNTER",
+    ["Hunter's Mark"] = "HUNTER", ["Mal des Jägers"] = "HUNTER", ["Mal des Jaegers"] = "HUNTER",
+    ["Flare"] = "HUNTER", ["Leuchtfeuer"] = "HUNTER",
+    ["Disengage"] = "HUNTER", ["Rückzug"] = "HUNTER", ["Rueckzug"] = "HUNTER",
+    ["Raptor Strike"] = "HUNTER", ["Raptorschlag"] = "HUNTER",
+    ["Mongoose Bite"] = "HUNTER", ["Mungobiss"] = "HUNTER",
+    ["Wing Clip"] = "HUNTER", ["Zurechtstutzen"] = "HUNTER",
+    ["Freezing Trap"] = "HUNTER", ["Eiskältefalle"] = "HUNTER", ["Eiskaeltefalle"] = "HUNTER",
+    ["Frost Trap"] = "HUNTER", ["Frostfalle"] = "HUNTER",
+    ["Immolation Trap"] = "HUNTER", ["Feuerbrandfalle"] = "HUNTER",
+    ["Explosive Trap"] = "HUNTER", ["Sprengfalle"] = "HUNTER",
+    ["Snake Trap"] = "HUNTER", ["Schlangenfalle"] = "HUNTER",
+    ["Aspect of the Hawk"] = "HUNTER", ["Aspekt des Falken"] = "HUNTER",
+    ["Aspect of the Monkey"] = "HUNTER", ["Aspekt des Affen"] = "HUNTER",
+    ["Aspect of the Cheetah"] = "HUNTER", ["Aspekt des Geparden"] = "HUNTER",
+    ["Aspect of the Pack"] = "HUNTER", ["Aspekt des Rudels"] = "HUNTER",
+    ["Aspect of the Viper"] = "HUNTER", ["Aspekt der Viper"] = "HUNTER",
+    ["Aspect of the Wild"] = "HUNTER", ["Aspekt der Wildnis"] = "HUNTER",
+    ["Aspect of the Beast"] = "HUNTER", ["Aspekt des Wildtiers"] = "HUNTER",
+    ["Aspect of the Dragonhawk"] = "HUNTER", ["Aspekt des Drachenfalken"] = "HUNTER",
+    ["Deterrence"] = "HUNTER", ["Abschreckung"] = "HUNTER",
+    ["Misdirection"] = "HUNTER", ["Irreführung"] = "HUNTER", ["Irrefuehrung"] = "HUNTER",
+    ["Tranquilizing Shot"] = "HUNTER", ["Einlullender Schuss"] = "HUNTER",
+    ["Readiness"] = "HUNTER", ["Bereitschaft"] = "HUNTER",
+    ["Intimidation"] = "HUNTER", ["Einschüchterung"] = "HUNTER", ["Einschuechterung"] = "HUNTER",
 
     -- Druid
-    ["Healing Touch"] = "DRUID", ["Heilende Berührung"] = "DRUID",
+    ["Healing Touch"] = "DRUID", ["Heilende Berührung"] = "DRUID", ["Heilende Beruehrung"] = "DRUID",
     ["Regrowth"] = "DRUID", ["Nachwachsen"] = "DRUID",
-    ["Rejuvenation"] = "DRUID", ["Verjüngung"] = "DRUID",
+    ["Rejuvenation"] = "DRUID", ["Verjüngung"] = "DRUID", ["Verjuengung"] = "DRUID",
     ["Moonfire"] = "DRUID", ["Mondfeuer"] = "DRUID",
     ["Wrath"] = "DRUID", ["Zorn"] = "DRUID",
     ["Starfire"] = "DRUID", ["Sternenfeuer"] = "DRUID",
+    ["Tranquility"] = "DRUID", ["Gelassenheit"] = "DRUID",
+    ["Swiftmend"] = "DRUID", ["Rasche Heilung"] = "DRUID",
+    ["Insect Swarm"] = "DRUID", ["Insektenschwarm"] = "DRUID",
+    ["Mark of the Wild"] = "DRUID", ["Mal der Wildnis"] = "DRUID",
+    ["Thorns"] = "DRUID", ["Dornen"] = "DRUID",
+    ["Entangling Roots"] = "DRUID", ["Wucherwurzeln"] = "DRUID",
+    ["Barkskin"] = "DRUID", ["Baumrinde"] = "DRUID",
+    ["Innervate"] = "DRUID", ["Anregen"] = "DRUID",
+    ["Lifebloom"] = "DRUID", ["Blühendes Leben"] = "DRUID", ["Bluehendes Leben"] = "DRUID",
+    ["Hurricane"] = "DRUID", ["Hurrikan"] = "DRUID",
+    ["Cyclone"] = "DRUID", ["Wirbelsturm"] = "DRUID",
+    ["Hibernate"] = "DRUID", ["Winterschlaf"] = "DRUID",
+    ["Abolish Poison"] = "DRUID", ["Vergiftung aufheben"] = "DRUID",
+    ["Cure Poison"] = "DRUID", ["Gift heilen"] = "DRUID",
+    ["Remove Curse"] = "DRUID", ["Fluch aufheben"] = "DRUID",
+    ["Faerie Fire"] = "DRUID", ["Feenfeuer"] = "DRUID",
+    ["Rip"] = "DRUID", ["Zerfetzen"] = "DRUID",
+    ["Ferocious Bite"] = "DRUID", ["Wilder Biss"] = "DRUID",
+    ["Claw"] = "DRUID", ["Klaue"] = "DRUID",
+    ["Rake"] = "DRUID", ["Krallenhieb"] = "DRUID",
+    ["Shred"] = "DRUID", ["Schreddern"] = "DRUID",
+    ["Mangle"] = "DRUID", ["Zerfleischen"] = "DRUID",
+    ["Maul"] = "DRUID", ["Zermalmen"] = "DRUID",
+    ["Swipe"] = "DRUID", ["Prankenhieb"] = "DRUID",
+    ["Bear Form"] = "DRUID", ["Bärengestalt"] = "DRUID", ["Baerengestalt"] = "DRUID",
+    ["Cat Form"] = "DRUID", ["Katzengestalt"] = "DRUID",
+    ["Travel Form"] = "DRUID", ["Reisegestalt"] = "DRUID",
+    ["Aquatic Form"] = "DRUID", ["Wassergestalt"] = "DRUID",
 
     -- Paladin
     ["Holy Light"] = "PALADIN", ["Heiliges Licht"] = "PALADIN",
@@ -780,39 +888,220 @@ RF.SpellClassLookup = {
     ["Holy Shock"] = "PALADIN", ["Heiliger Schock"] = "PALADIN",
     ["Consecration"] = "PALADIN", ["Weihe"] = "PALADIN",
     ["Exorcism"] = "PALADIN", ["Exorzismus"] = "PALADIN",
+    ["Lay on Hands"] = "PALADIN", ["Handauflegung"] = "PALADIN",
+    ["Blessing of Protection"] = "PALADIN", ["Segen des Schutzes"] = "PALADIN",
+    ["Blessing of Might"] = "PALADIN", ["Segen der Macht"] = "PALADIN",
+    ["Blessing of Wisdom"] = "PALADIN", ["Segen der Weisheit"] = "PALADIN",
+    ["Blessing of Kings"] = "PALADIN", ["Segen der Könige"] = "PALADIN", ["Segen der Koenige"] = "PALADIN",
+    ["Blessing of Freedom"] = "PALADIN", ["Segen der Freiheit"] = "PALADIN",
+    ["Blessing of Sacrifice"] = "PALADIN", ["Segen der Opferung"] = "PALADIN",
+    ["Blessing of Sanctuary"] = "PALADIN", ["Segen des Refugiums"] = "PALADIN",
+    ["Hammer of Wrath"] = "PALADIN", ["Hammer des Zorns"] = "PALADIN",
+    ["Judgement"] = "PALADIN", ["Richturteil"] = "PALADIN",
+    ["Cleanse"] = "PALADIN", ["Reinigung"] = "PALADIN",
+    ["Purify"] = "PALADIN", ["Läutern"] = "PALADIN", ["Laeutern"] = "PALADIN",
+    ["Divine Shield"] = "PALADIN", ["Gottesschild"] = "PALADIN",
+    ["Divine Protection"] = "PALADIN", ["Göttlicher Schutz"] = "PALADIN", ["Goettlicher Schutz"] = "PALADIN",
+    ["Hammer of Justice"] = "PALADIN", ["Hammer der Gerechtigkeit"] = "PALADIN",
+    ["Crusader Strike"] = "PALADIN", ["Kreuzfahrerstoß"] = "PALADIN",
+    ["Avenger's Shield"] = "PALADIN", ["Schild des Rächers"] = "PALADIN", ["Schild des Raechers"] = "PALADIN",
+    ["Holy Wrath"] = "PALADIN", ["Heiliger Zorn"] = "PALADIN",
 
     -- Shaman
     ["Healing Wave"] = "SHAMAN", ["Welle der Heilung"] = "SHAMAN",
     ["Lesser Healing Wave"] = "SHAMAN", ["Geringe Welle der Heilung"] = "SHAMAN",
     ["Chain Heal"] = "SHAMAN", ["Kettenheilung"] = "SHAMAN",
     ["Lightning Bolt"] = "SHAMAN", ["Blitzschlag"] = "SHAMAN",
-    ["Chain Lightning"] = "SHAMAN", ["Kettenblitz"] = "SHAMAN",
+    ["Chain Lightning"] = "SHAMAN", ["Kettenblitz"] = "SHAMAN", ["Kettenblitzschlag"] = "SHAMAN",
     ["Earth Shock"] = "SHAMAN", ["Erdschock"] = "SHAMAN",
     ["Flame Shock"] = "SHAMAN", ["Flammenschock"] = "SHAMAN",
     ["Frost Shock"] = "SHAMAN", ["Frostschock"] = "SHAMAN",
+    ["Purge"] = "SHAMAN", ["Reinigen"] = "SHAMAN",
+    ["Earth Shield"] = "SHAMAN", ["Erdschild"] = "SHAMAN",
+    ["Water Shield"] = "SHAMAN", ["Wasserschild"] = "SHAMAN",
+    ["Lightning Shield"] = "SHAMAN", ["Blitzschlagschild"] = "SHAMAN",
+    ["Mana Spring Totem"] = "SHAMAN", ["Totem der Manaquelle"] = "SHAMAN",
+    ["Healing Stream Totem"] = "SHAMAN", ["Totem des heilenden Flusses"] = "SHAMAN",
+    ["Riptide"] = "SHAMAN", ["Springflut"] = "SHAMAN",
+    ["Wind Shear"] = "SHAMAN", ["Windstoß"] = "SHAMAN", ["Windstoss"] = "SHAMAN",
+    ["Ghost Wolf"] = "SHAMAN", ["Geisterwolf"] = "SHAMAN",
+    ["Bloodlust"] = "SHAMAN", ["Kampfrausch"] = "SHAMAN",
+    ["Heroism"] = "SHAMAN", ["Heldentum"] = "SHAMAN",
+    ["Tremor Totem"] = "SHAMAN", ["Totem des Erdstoßes"] = "SHAMAN", ["Totem des Erdstosses"] = "SHAMAN",
+    ["Poison Cleansing Totem"] = "SHAMAN", ["Totem der Giftreinigung"] = "SHAMAN",
+    ["Cleanse Spirit"] = "SHAMAN", ["Geistreinigung"] = "SHAMAN",
+    ["Cure Toxins"] = "SHAMAN", ["Gifte heilen"] = "SHAMAN",
 
     -- Mage
     ["Frostbolt"] = "MAGE", ["Frostblitz"] = "MAGE",
     ["Fireball"] = "MAGE", ["Feuerball"] = "MAGE",
-    ["Scorch"] = "MAGE", ["Sengen"] = "MAGE", ["Sengende Hitze"] = "MAGE",
+    ["Scorch"] = "MAGE", ["Sengen"] = "MAGE", ["Versengen"] = "MAGE", ["Sengende Hitze"] = "MAGE",
     ["Arcane Missiles"] = "MAGE", ["Arkane Geschosse"] = "MAGE",
-    ["Cone of Cold"] = "MAGE", ["Kältekegel"] = "MAGE",
-    ["Flamestrike"] = "MAGE", ["Flammenstoß"] = "MAGE",
+    ["Cone of Cold"] = "MAGE", ["Kältekegel"] = "MAGE", ["Kaeltekegel"] = "MAGE",
+    ["Flamestrike"] = "MAGE", ["Flammenstoß"] = "MAGE", ["Flammenstoss"] = "MAGE", ["Flammenschlag"] = "MAGE",
     ["Blizzard"] = "MAGE",
+    ["Frost Nova"] = "MAGE", ["Frostnova"] = "MAGE",
+    ["Fire Blast"] = "MAGE", ["Feuerschlag"] = "MAGE",
+    ["Arcane Explosion"] = "MAGE", ["Arkane Explosion"] = "MAGE",
+    ["Pyroblast"] = "MAGE", ["Pyroschlag"] = "MAGE",
+    ["Ice Barrier"] = "MAGE", ["Eisbarriere"] = "MAGE",
+    ["Mana Shield"] = "MAGE", ["Manaschild"] = "MAGE",
+    ["Arcane Intellect"] = "MAGE", ["Arkane Intelligenz"] = "MAGE",
+    ["Ice Armor"] = "MAGE", ["Eisrüstung"] = "MAGE", ["Eisruestung"] = "MAGE",
+    ["Frost Armor"] = "MAGE", ["Frostrüstung"] = "MAGE", ["Frostruestung"] = "MAGE",
+    ["Mage Armor"] = "MAGE", ["Magische Rüstung"] = "MAGE", ["Magische Ruestung"] = "MAGE",
+    ["Counterspell"] = "MAGE", ["Gegenzauber"] = "MAGE",
+    ["Blink"] = "MAGE", ["Blinzeln"] = "MAGE",
+    ["Evocation"] = "MAGE", ["Hervorrufung"] = "MAGE",
+    ["Polymorph"] = "MAGE", ["Verwandlung"] = "MAGE",
+    ["Ice Block"] = "MAGE", ["Eisblock"] = "MAGE",
+    ["Cold Snap"] = "MAGE", ["Kälteeinbruch"] = "MAGE", ["Kaelteeinbruch"] = "MAGE",
+    ["Ice Lance"] = "MAGE", ["Eislanze"] = "MAGE",
+    ["Deep Freeze"] = "MAGE", ["Tieffrieren"] = "MAGE",
 
     -- Warlock
     ["Shadow Bolt"] = "WARLOCK", ["Schattenblitz"] = "WARLOCK",
     ["Corruption"] = "WARLOCK", ["Verderbnis"] = "WARLOCK",
     ["Immolate"] = "WARLOCK", ["Feuerbrand"] = "WARLOCK",
     ["Curse of Agony"] = "WARLOCK", ["Fluch der Pein"] = "WARLOCK",
+    ["Siphon Life"] = "WARLOCK", ["Lebensentzug"] = "WARLOCK",
     ["Drain Life"] = "WARLOCK", ["Blutsauger"] = "WARLOCK",
-    ["Hellfire"] = "WARLOCK", ["Höllenfeuer"] = "WARLOCK",
+    ["Drain Soul"] = "WARLOCK", ["Seelendieb"] = "WARLOCK",
+    ["Drain Mana"] = "WARLOCK", ["Manasauger"] = "WARLOCK",
+    ["Life Tap"] = "WARLOCK", ["Aderlass"] = "WARLOCK",
+    ["Hellfire"] = "WARLOCK", ["Höllenfeuer"] = "WARLOCK", ["Hoellenfeuer"] = "WARLOCK",
     ["Rain of Fire"] = "WARLOCK", ["Feuerregen"] = "WARLOCK",
+    ["Fear"] = "WARLOCK", ["Furcht"] = "WARLOCK",
+    ["Howl of Terror"] = "WARLOCK", ["Schreckensgeheul"] = "WARLOCK",
+    ["Death Coil"] = "WARLOCK", ["Todesmantel"] = "WARLOCK",
+    ["Shadowburn"] = "WARLOCK", ["Schattenbrand"] = "WARLOCK",
+    ["Demon Armor"] = "WARLOCK", ["Dämonenrüstung"] = "WARLOCK", ["Daemonenruestung"] = "WARLOCK",
+    ["Fel Armor"] = "WARLOCK", ["Teufelsrüstung"] = "WARLOCK", ["Teufelsruestung"] = "WARLOCK",
+    ["Health Funnel"] = "WARLOCK", ["Lebenslinie"] = "WARLOCK",
+    ["Seed of Corruption"] = "WARLOCK", ["Saat der Verderbnis"] = "WARLOCK",
+    ["Incinerate"] = "WARLOCK", ["Verbrennen"] = "WARLOCK",
+    ["Unstable Affliction"] = "WARLOCK", ["Instabiles Gebrechen"] = "WARLOCK",
+    ["Chaos Bolt"] = "WARLOCK", ["Chaosblitz"] = "WARLOCK",
+    ["Haunt"] = "WARLOCK", ["Heimsuchung"] = "WARLOCK",
+    ["Conflagrate"] = "WARLOCK", ["Feuersbrunst"] = "WARLOCK",
+    ["Soul Fire"] = "WARLOCK", ["Seelenfeuer"] = "WARLOCK",
+    ["Searing Pain"] = "WARLOCK", ["Sengender Schmerz"] = "WARLOCK",
+
+    -- Warrior
+    ["Heroic Strike"] = "WARRIOR", ["Heroischer Stoß"] = "WARRIOR", ["Heroischer Stoss"] = "WARRIOR",
+    ["Rend"] = "WARRIOR", ["Verwunden"] = "WARRIOR",
+    ["Thunder Clap"] = "WARRIOR", ["Donnerknall"] = "WARRIOR",
+    ["Shield Slam"] = "WARRIOR", ["Schildschlag"] = "WARRIOR",
+    ["Mortal Strike"] = "WARRIOR", ["Tödlicher Stoß"] = "WARRIOR", ["Toedlicher Stoss"] = "WARRIOR",
+    ["Bloodthirst"] = "WARRIOR", ["Blutdurst"] = "WARRIOR",
+    ["Whirlwind"] = "WARRIOR", ["Wirbelwind"] = "WARRIOR",
+    ["Overpower"] = "WARRIOR", ["Überwältigen"] = "WARRIOR", ["Ueberwaeltigen"] = "WARRIOR",
+    ["Revenge"] = "WARRIOR", ["Rache"] = "WARRIOR",
+    ["Execute"] = "WARRIOR", ["Hinrichten"] = "WARRIOR",
+    ["Sunder Armor"] = "WARRIOR", ["Rüstung zerreißen"] = "WARRIOR", ["Ruestung zerreissen"] = "WARRIOR",
+    ["Shield Block"] = "WARRIOR", ["Schildblock"] = "WARRIOR",
+    ["Taunt"] = "WARRIOR", ["Spott"] = "WARRIOR",
+    ["Battle Shout"] = "WARRIOR", ["Schlachtruf"] = "WARRIOR",
+    ["Demoralizing Shout"] = "WARRIOR", ["Demoralisierender Ruf"] = "WARRIOR",
+    ["Intimidating Shout"] = "WARRIOR", ["Drohruf"] = "WARRIOR",
+    ["Challenging Shout"] = "WARRIOR", ["Herausfordernder Ruf"] = "WARRIOR",
+    ["Pummel"] = "WARRIOR", ["Zuschlagen"] = "WARRIOR",
+    ["Shield Bash"] = "WARRIOR", ["Schildhieb"] = "WARRIOR",
+    ["Charge"] = "WARRIOR", ["Sturmangriff"] = "WARRIOR",
+    ["Intercept"] = "WARRIOR", ["Abfangen"] = "WARRIOR",
+    ["Intervene"] = "WARRIOR", ["Einschreiten"] = "WARRIOR",
+    ["Disarm"] = "WARRIOR", ["Entwaffnen"] = "WARRIOR",
+    ["Hamstring"] = "WARRIOR", ["Kniesehne"] = "WARRIOR",
+    ["Cleave"] = "WARRIOR", ["Spalten"] = "WARRIOR",
+    ["Slam"] = "WARRIOR", ["Zerschmettern"] = "WARRIOR",
+    ["Berserker Rage"] = "WARRIOR", ["Berserkerwut"] = "WARRIOR",
+    ["Bloodrage"] = "WARRIOR", ["Blutrausch"] = "WARRIOR",
+    ["Last Stand"] = "WARRIOR", ["Letztes Gefecht"] = "WARRIOR",
+    ["Shield Wall"] = "WARRIOR", ["Schildwall"] = "WARRIOR",
+    ["Retaliation"] = "WARRIOR", ["Gegenschlag"] = "WARRIOR",
+    ["Recklessness"] = "WARRIOR", ["Tollkühnheit"] = "WARRIOR", ["Tollkuehnheit"] = "WARRIOR",
+    ["Sweeping Strikes"] = "WARRIOR", ["Weitreichende Stöße"] = "WARRIOR",
+    ["Death Wish"] = "WARRIOR", ["Todeswunsch"] = "WARRIOR",
+    ["Concussion Blow"] = "WARRIOR", ["Erschütternder Schlag"] = "WARRIOR",
+    ["Devastate"] = "WARRIOR", ["Verwüsten"] = "WARRIOR", ["Verwuesten"] = "WARRIOR",
+    ["Victory Rush"] = "WARRIOR", ["Siegesrausch"] = "WARRIOR",
+    ["Spell Reflection"] = "WARRIOR", ["Zauberreflexion"] = "WARRIOR",
+
+    -- Rogue
+    ["Sinister Strike"] = "ROGUE", ["Finsterer Stoß"] = "ROGUE", ["Finsterer Stoss"] = "ROGUE",
+    ["Eviscerate"] = "ROGUE", ["Ausweiden"] = "ROGUE",
+    ["Slice and Dice"] = "ROGUE", ["Zerhäckseln"] = "ROGUE", ["Zerhaeckseln"] = "ROGUE",
+    ["Backstab"] = "ROGUE", ["Meucheln"] = "ROGUE",
+    ["Ambush"] = "ROGUE", ["Hinterhalt"] = "ROGUE",
+    ["Rupture"] = "ROGUE", ["Blutung"] = "ROGUE",
+    ["Kidney Shot"] = "ROGUE", ["Nierenhieb"] = "ROGUE",
+    ["Cheap Shot"] = "ROGUE", ["Fieser Trick"] = "ROGUE",
+    ["Gouge"] = "ROGUE", ["Solarplexus"] = "ROGUE",
+    ["Blind"] = "ROGUE", ["Blenden"] = "ROGUE",
+    ["Kick"] = "ROGUE", ["Tritt"] = "ROGUE",
+    ["Stealth"] = "ROGUE", ["Verstohlenheit"] = "ROGUE",
+    ["Vanish"] = "ROGUE", ["Verschwinden"] = "ROGUE",
+    ["Sprint"] = "ROGUE", ["Sprinten"] = "ROGUE",
+    ["Evasion"] = "ROGUE", ["Entrinnen"] = "ROGUE",
+    ["Feint"] = "ROGUE", ["Finte"] = "ROGUE",
+    ["Garrote"] = "ROGUE", ["Erdrosseln"] = "ROGUE",
+    ["Sap"] = "ROGUE", ["Kopfnuss"] = "ROGUE",
+    ["Expose Armor"] = "ROGUE", ["Rüstung schwächen"] = "ROGUE", ["Ruestung schwaechen"] = "ROGUE",
+    ["Riposte"] = "ROGUE", ["Riposte"] = "ROGUE",
+    ["Blade Flurry"] = "ROGUE", ["Klingenwirbel"] = "ROGUE",
+    ["Adrenaline Rush"] = "ROGUE", ["Adrenalinrausch"] = "ROGUE",
+    ["Hemorrhage"] = "ROGUE", ["Blutsturz"] = "ROGUE",
+    ["Preparation"] = "ROGUE", ["Vorbereitung"] = "ROGUE",
+    ["Cloak of Shadows"] = "ROGUE", ["Mantel der Schatten"] = "ROGUE",
+    ["Shadowstep"] = "ROGUE", ["Schattenschritt"] = "ROGUE",
+    ["Shiv"] = "ROGUE", ["Tückische Klinge"] = "ROGUE", ["Tueckische Klinge"] = "ROGUE",
+    ["Mutilate"] = "ROGUE", ["Verstümmeln"] = "ROGUE", ["Verstuemmeln"] = "ROGUE",
+    ["Envenom"] = "ROGUE", ["Vergiften"] = "ROGUE",
+    ["Deadly Throw"] = "ROGUE", ["Tödlicher Wurf"] = "ROGUE", ["Toedlicher Wurf"] = "ROGUE",
 }
+
+local function NormalizeSpellKey(str)
+    if not str then return "" end
+    return str:lower():gsub("[%s_%-:'\"%c%p]", "")
+end
+
+local spellClassNormalizedCache = nil
 
 function RF:GetClassForSpell(spellName)
     if not spellName or spellName == "" then return nil end
-    return RF.SpellClassLookup and RF.SpellClassLookup[spellName]
+    if not RF.SpellClassLookup then return nil end
+
+    -- 1. Direct table hit
+    local direct = RF.SpellClassLookup[spellName]
+    if direct then return direct end
+
+    -- 2. Build normalized lookup cache on first demand
+    if not spellClassNormalizedCache then
+        spellClassNormalizedCache = {}
+        for k, v in pairs(RF.SpellClassLookup) do
+            local norm = NormalizeSpellKey(k)
+            if norm ~= "" then
+                spellClassNormalizedCache[norm] = v
+                local u = norm:gsub("ä", "ae"):gsub("ö", "oe"):gsub("ü", "ue"):gsub("ß", "ss")
+                if not spellClassNormalizedCache[u] then
+                    spellClassNormalizedCache[u] = v
+                end
+            end
+        end
+    end
+
+    -- 3. Normalized hit
+    local normKey = NormalizeSpellKey(spellName)
+    local match = spellClassNormalizedCache[normKey]
+    if match then return match end
+
+    -- 4. Check umlaut conversion of input
+    local uInput = normKey:gsub("ä", "ae"):gsub("ö", "oe"):gsub("ü", "ue"):gsub("ß", "ss")
+    if spellClassNormalizedCache[uInput] then
+        return spellClassNormalizedCache[uInput]
+    end
+
+    return nil
 end
 
 function RF:GetCurrentCharacterKey()
@@ -831,47 +1120,57 @@ function RF:IsMacroForCurrentCharacter(macroConfig)
     if not macroConfig then return true end
     local charName, realm, charClass = RF:GetCurrentCharacterKey()
 
-    -- 1. Direct character name match (always visible on the character who created / owns it)
-    if macroConfig.character and macroConfig.character ~= "" then
-        if macroConfig.character == charName then
-            return true
-        end
-    end
-
-    -- 2. Spell class lookup: if spell belongs strictly to another class, always hide it
+    -- Extract spellName (or derive from DR_ macroName)
     local spName = macroConfig.spellName
     if (not spName or spName == "") and macroConfig.macroName then
         spName = macroConfig.macroName:gsub("^DR_", "")
     end
     local spellClass = spName and RF:GetClassForSpell(spName)
 
-    if spellClass and charClass and spellClass ~= charClass then
-        -- This spell belongs to another class (e.g. Blizzard on Priest, Feuerbrand on Mage)
-        return false
-    end
-
-    -- 3. General / Account-wide macros:
-    -- If a macro is saved in the Account tab (isAccount == true) and does not belong to another class
-    -- (e.g. Basic Campfire / Feuer machen, mounts, professions, food/drink), it is shared across all characters!
-    if macroConfig.isAccount == true and not spellClass then
-        return true
-    end
-
-    -- 4. Class match
+    -- RULE 1: HARD CLASS EXCLUSIONS (Cross-class macros are NEVER shown for "Nur dieser Charakter")
+    -- If the macro is explicitly tagged with another class, hide it!
     if macroConfig.class and macroConfig.class ~= "" and charClass and charClass ~= "" then
-        if macroConfig.class == charClass then
-            return true
-        else
+        if macroConfig.class ~= charClass then
             return false
         end
     end
 
-    -- 5. Spell class matches current class
-    if spellClass and charClass and spellClass == charClass then
+    -- RULE 2: SPELL CLASS EXCLUSION
+    -- If the spell belongs to another known class, hide it!
+    if spellClass and charClass and charClass ~= "" then
+        if spellClass ~= charClass then
+            return false
+        end
+    end
+
+    -- RULE 3: DIRECT CHARACTER OWNERSHIP
+    if macroConfig.character and macroConfig.character ~= "" then
+        if macroConfig.character == charName then
+            return true
+        else
+            -- If it belongs to a different character and is saved in character-specific slots (isAccount == false), hide it
+            if macroConfig.isAccount == false then
+                return false
+            end
+        end
+    end
+
+    -- RULE 4: CURRENT CLASS MATCH
+    if macroConfig.class and macroConfig.class == charClass then
+        return true
+    end
+    if spellClass and spellClass == charClass then
         return true
     end
 
-    -- 6. Untagged legacy macro with unknown spell class: visible by default
+    -- RULE 5: GENERAL / ACCOUNT-WIDE MACROS
+    -- (Only reached if the macro does NOT belong to another class or spell class)
+    -- E.g. General macros like Mounts, Hearthstone, Campfire, Potions, Trinkets
+    if macroConfig.isAccount == true then
+        return true
+    end
+
+    -- RULE 6: UNTAGGED LEGACY MACRO
     if (not macroConfig.character or macroConfig.character == "") and (not macroConfig.class or macroConfig.class == "") then
         return true
     end
@@ -1729,7 +2028,11 @@ function RF:RecoverMacrosFromWoW()
         end
         if spellName then spellName = spellName:trim() end
 
-        local macroClass = (spellName and RF:GetClassForSpell(spellName)) or charClass
+        local spellClass = spellName and RF:GetClassForSpell(spellName)
+        local macroClass = spellClass
+        if not macroClass and not isAccount then
+            macroClass = charClass
+        end
 
         local cfg = {
             macroName = name,

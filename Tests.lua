@@ -1025,6 +1025,35 @@ RegisterTest("Character Filtering: RF:IsMacroForCurrentCharacter and list filter
     AssertEquals(RF:IsMacroForCurrentCharacter(campfireAccount), true, "General account macro should be visible across characters")
     AssertEquals(RF:IsMacroForCurrentCharacter(campfireCharOnly), false, "General character-specific macro of another char should be hidden")
 
+    -- Test Cross-Class filtering from Hunter perspective
+    local origUnitClass = UnitClass
+    UnitClass = function(u) return "Hunter", "HUNTER" end
+
+    -- Priest macros saved in Account tab (isAccount == true) must NEVER be visible to a Hunter
+    local priestAccountHeal = { macroName = "DR_Heal", spellName = "Heilen", class = "PRIEST", isAccount = true }
+    local priestAccountVT = { macroName = "DR_VampiricTouch", spellName = "Vampirberührung", class = "PRIEST", isAccount = true }
+    local priestAccountMB = { macroName = "DR_ManaBurn", spellName = "Manabrand", class = "PRIEST", isAccount = true }
+    local priestAccountSG = { macroName = "DR_Shadowguard", spellName = "Schattenschild", class = "PRIEST", isAccount = true }
+    local priestAccountHN = { macroName = "DR_HolyNova", spellName = "Heilige Nova", class = "PRIEST", isAccount = true }
+
+    AssertEquals(RF:IsMacroForCurrentCharacter(priestAccountHeal), false, "Priest DR_Heal must NOT be shown to a Hunter")
+    AssertEquals(RF:IsMacroForCurrentCharacter(priestAccountVT), false, "Priest DR_VampiricTouch must NOT be shown to a Hunter")
+    AssertEquals(RF:IsMacroForCurrentCharacter(priestAccountMB), false, "Priest DR_ManaBurn must NOT be shown to a Hunter")
+    AssertEquals(RF:IsMacroForCurrentCharacter(priestAccountSG), false, "Priest DR_Shadowguard must NOT be shown to a Hunter")
+    AssertEquals(RF:IsMacroForCurrentCharacter(priestAccountHN), false, "Priest DR_HolyNova must NOT be shown to a Hunter")
+
+    -- Hunter macros must be visible to a Hunter
+    local hunterAimedShot = { macroName = "DR_AimedShot", spellName = "Gezielter Schuss", class = "HUNTER", isAccount = true }
+    local hunterMendPet = { macroName = "DR_MendPet", spellName = "Tier heilen", class = "HUNTER", isAccount = true }
+    AssertEquals(RF:IsMacroForCurrentCharacter(hunterAimedShot), true, "Hunter Aimed Shot must be shown to a Hunter")
+    AssertEquals(RF:IsMacroForCurrentCharacter(hunterMendPet), true, "Hunter Mend Pet must be shown to a Hunter")
+
+    -- True neutral account macro must still be visible to a Hunter
+    AssertEquals(RF:IsMacroForCurrentCharacter(campfireAccount), true, "General campfire must be visible to a Hunter")
+
+    -- Restore UnitClass
+    UnitClass = origUnitClass
+
     -- Restore profile macros & filter setting
     profile.macros = origMacros
     RankForgeCharDB.filterCurrentCharOnly = true
