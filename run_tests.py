@@ -242,6 +242,11 @@ def build_wow_environment(lua):
             self.fontString = self.fontString or CreateDummyObject("FontString", "FontString")
             return self.fontString
         end
+        function obj:SetFontString(fs) self.fontString = fs end
+        function obj:SetNormalFontObject(...) end
+        function obj:SetHighlightFontObject(...) end
+        function obj:SetDisabledFontObject(...) end
+        function obj:SetDrawLayer(...) end
         function obj:SetScrollChild(...) end
         function obj:RegisterEvent(...) end
         return obj

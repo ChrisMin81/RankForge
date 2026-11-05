@@ -67,9 +67,55 @@ local function ApplyModernCardStyle(frame, bgColor, borderColor)
     end
 end
 
-local function ApplyModernButtonStyle(btn, theme)
-    if not btn or not btn.SetBackdrop then return end
-    btn:SetBackdrop(BACKDROP_SOLID)
+local function ApplyModernButtonStyle(btn, theme, fontObject)
+    if not btn then return end
+    if btn.SetBackdrop then
+        btn:SetBackdrop(BACKDROP_SOLID)
+    end
+
+    local font = fontObject or "GameFontHighlight"
+    if btn.SetNormalFontObject then btn:SetNormalFontObject(font) end
+    if btn.SetHighlightFontObject then btn:SetHighlightFontObject(font) end
+    if btn.SetDisabledFontObject then btn:SetDisabledFontObject("GameFontDisable") end
+
+    -- Ensure a valid FontString exists on the button
+    local fs = btn.GetFontString and btn:GetFontString()
+    if not fs and btn.CreateFontString then
+        fs = btn:CreateFontString(nil, "OVERLAY", font)
+        fs:SetPoint("CENTER", btn, "CENTER", 0, 0)
+        if btn.SetFontString then
+            btn:SetFontString(fs)
+        end
+    end
+    if fs then
+        fs:SetFontObject(font)
+        if fs.SetDrawLayer then fs:SetDrawLayer("OVERLAY", 7) end
+        fs:ClearAllPoints()
+        fs:SetPoint("CENTER", btn, "CENTER", 0, 0)
+        if fs.SetTextColor then fs:SetTextColor(1, 1, 1, 1) end
+        fs:Show()
+    end
+
+    -- Hook SetText so that calling btn:SetText(...) ALWAYS sets the text on fs and makes it visible
+    if not btn._rfSetTextHooked then
+        btn._rfSetTextHooked = true
+        local origSetText = btn.SetText
+        btn.SetText = function(self, txt)
+            if origSetText then origSetText(self, txt) end
+            local s = self.GetFontString and self:GetFontString()
+            if s and s.SetText then
+                s:SetText(txt or "")
+                s:Show()
+            end
+        end
+    end
+
+    -- If the button already had text (e.g. from XML or earlier SetText), ensure fs displays it
+    local currentText = btn.GetText and btn:GetText()
+    if currentText and currentText ~= "" and fs and fs.SetText then
+        fs:SetText(currentText)
+        fs:Show()
+    end
 
     -- Hide native Blizzard button border textures if present
     if btn.GetNormalTexture and btn:GetNormalTexture() then btn:GetNormalTexture():SetAlpha(0) end
@@ -116,10 +162,14 @@ local function ApplyModernButtonStyle(btn, theme)
         btn:HookScript("OnEnter", function(self)
             if not self.IsEnabled or self:IsEnabled() then
                 if self.SetBackdropColor then self:SetBackdropColor(hoverBg[1], hoverBg[2], hoverBg[3], hoverBg[4]) end
+                local s = self.GetFontString and self:GetFontString()
+                if s and s.SetTextColor then s:SetTextColor(1, 1, 1, 1) end
             end
         end)
         btn:HookScript("OnLeave", function(self)
             if self.SetBackdropColor then self:SetBackdropColor(normalBg[1], normalBg[2], normalBg[3], normalBg[4]) end
+            local s = self.GetFontString and self:GetFontString()
+            if s and s.SetTextColor then s:SetTextColor(0.92, 0.92, 0.95, 1) end
         end)
         btn:HookScript("OnMouseDown", function(self)
             if not self.IsEnabled or self:IsEnabled() then
@@ -132,6 +182,18 @@ local function ApplyModernButtonStyle(btn, theme)
             end
         end)
     end
+end
+
+local function CreateModernButton(parent, width, height, text, theme, fontObject)
+    local btn = CreateFrame("Button", nil, parent, "BackdropTemplate")
+    if width and height then
+        btn:SetSize(width, height)
+    end
+    ApplyModernButtonStyle(btn, theme, fontObject)
+    if text then
+        btn:SetText(text)
+    end
+    return btn
 end
 
 local function ApplyModernEditBoxStyle(editbox)
@@ -341,21 +403,15 @@ local function CreateMainUI()
     f.listContent = listContent
 
     -- Buttons on Left Panel
-    local newBtn = CreateFrame("Button", nil, leftPanel, "BackdropTemplate")
-    newBtn:SetSize(205, 24)
+    local newBtn = CreateModernButton(leftPanel, 205, 24, "+ " .. L["UI_NEW_MACRO"], "blue")
     newBtn:SetPoint("BOTTOM", leftPanel, "BOTTOM", 0, 75)
-    newBtn:SetText("+ " .. L["UI_NEW_MACRO"])
-    ApplyModernButtonStyle(newBtn, "blue")
     newBtn:SetScript("OnClick", function()
         RF:CreateNewMacroConfig()
     end)
     f.newBtn = newBtn
 
-    local cloneBtn = CreateFrame("Button", nil, leftPanel, "BackdropTemplate")
-    cloneBtn:SetSize(205, 24)
+    local cloneBtn = CreateModernButton(leftPanel, 205, 24, L["UI_CLONE_BTN"], "slate")
     cloneBtn:SetPoint("BOTTOM", leftPanel, "BOTTOM", 0, 45)
-    cloneBtn:SetText(L["UI_CLONE_BTN"])
-    ApplyModernButtonStyle(cloneBtn, "slate")
     cloneBtn:SetScript("OnClick", function()
         if currentMacro then
             local cloned = RF:CloneMacro(currentMacro)
@@ -372,11 +428,8 @@ local function CreateMainUI()
     end)
     f.cloneBtn = cloneBtn
 
-    local exportBtn = CreateFrame("Button", nil, leftPanel, "BackdropTemplate")
-    exportBtn:SetSize(205, 24)
+    local exportBtn = CreateModernButton(leftPanel, 205, 24, L["UI_EXPORT_BTN"], "slate")
     exportBtn:SetPoint("BOTTOM", leftPanel, "BOTTOM", 0, 15)
-    exportBtn:SetText(L["UI_EXPORT_BTN"])
-    ApplyModernButtonStyle(exportBtn, "slate")
     exportBtn:SetScript("OnClick", function()
         RF:OpenImportExportDialog()
     end)
@@ -700,11 +753,8 @@ local function CreateMainUI()
     modHeader:SetText(L["UI_MODIFIERS_HEADER"])
     f.modifiersHeader = modHeader
 
-    local resetSortBtn = CreateFrame("Button", nil, editor, "BackdropTemplate")
-    resetSortBtn:SetSize(140, 20)
+    local resetSortBtn = CreateModernButton(editor, 140, 20, L["UI_RESET_SORT_BTN"], "slate", "GameFontHighlightSmall")
     resetSortBtn:SetPoint("LEFT", modHeader, "RIGHT", 10, 0)
-    resetSortBtn:SetText(L["UI_RESET_SORT_BTN"])
-    ApplyModernButtonStyle(resetSortBtn, "slate")
     resetSortBtn:SetScript("OnClick", function()
         if currentMacro then
             RF:ResetModifierSortOrder(currentMacro)
@@ -1139,11 +1189,8 @@ local function CreateMainUI()
         row.customSpellEdit = customSpellEdit
 
         -- Search / Picker button
-        local searchBtn = CreateFrame("Button", nil, row, "BackdropTemplate")
-        searchBtn:SetSize(22, 18)
+        local searchBtn = CreateModernButton(row, 22, 18, "...", "slate", "GameFontHighlightSmall")
         searchBtn:SetPoint("LEFT", row, "LEFT", 733, 0)
-        searchBtn:SetText("...")
-        ApplyModernButtonStyle(searchBtn, "slate")
         row.searchBtn = searchBtn
 
         -- Helper to apply a selected spell to this modifier
@@ -1352,11 +1399,8 @@ local function CreateMainUI()
     f.charCount = charCount
 
     -- Save Button
-    local saveBtn = CreateFrame("Button", nil, editor, "BackdropTemplate")
-    saveBtn:SetSize(160, 24)
+    local saveBtn = CreateModernButton(editor, 160, 24, L["UI_SAVE_MACRO"], "primary")
     saveBtn:SetPoint("BOTTOMRIGHT", editor, "BOTTOMRIGHT", -15, 12)
-    saveBtn:SetText(L["UI_SAVE_MACRO"])
-    ApplyModernButtonStyle(saveBtn, "primary")
     saveBtn:SetScript("OnClick", function()
         if currentMacro then
             if not currentMacro.spellID or currentMacro.spellID == 0 then
@@ -1369,11 +1413,8 @@ local function CreateMainUI()
     f.saveBtn = saveBtn
 
     -- Delete Button
-    local deleteBtn = CreateFrame("Button", nil, editor, "BackdropTemplate")
-    deleteBtn:SetSize(90, 24)
+    local deleteBtn = CreateModernButton(editor, 90, 24, L["UI_DELETE_MACRO"], "danger")
     deleteBtn:SetPoint("RIGHT", saveBtn, "LEFT", -10, 0)
-    deleteBtn:SetText(L["UI_DELETE_MACRO"])
-    ApplyModernButtonStyle(deleteBtn, "danger")
     deleteBtn:SetScript("OnClick", function()
         if currentMacro then
             StaticPopup_Show("RANKFORGE_CONFIRM_DELETE", currentMacro.macroName, nil, currentMacro)
@@ -1718,7 +1759,7 @@ function RF:RefreshUILabels()
 
     if f.title then f.title:SetText(L["UI_TITLE"]) end
     if f.listHeader then f.listHeader:SetText(L["UI_CONFIGURED_MACROS"]) end
-    if f.newBtn then f.newBtn:SetText(L["UI_NEW_MACRO"]) end
+    if f.newBtn then f.newBtn:SetText("+ " .. L["UI_NEW_MACRO"]) end
     if f.cloneBtn then f.cloneBtn:SetText(L["UI_CLONE_BTN"]) end
     if f.exportBtn then f.exportBtn:SetText(L["UI_EXPORT_BTN"]) end
     if f.nameLabel then f.nameLabel:SetText(L["UI_MACRO_NAME"]) end
@@ -2060,11 +2101,8 @@ function RF:OpenPresetsDialog()
     local y = 0
 
     for i, p in ipairs(presets) do
-        local btn = CreateFrame("Button", nil, content, "BackdropTemplate")
-        btn:SetSize(330, 30)
+        local btn = CreateModernButton(content, 330, 30, p.name .. " (" .. p.macroName .. ")", "slate")
         btn:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -y)
-        btn:SetText(p.name .. " (" .. p.macroName .. ")")
-        ApplyModernButtonStyle(btn, "slate")
 
         btn:SetScript("OnClick", function()
             local macros = RF:GetMacrosList()
@@ -2079,11 +2117,8 @@ function RF:OpenPresetsDialog()
     end
     content:SetHeight(math.max(y, 10))
 
-    local close = CreateFrame("Button", nil, d, "BackdropTemplate")
-    close:SetSize(100, 24)
+    local close = CreateModernButton(d, 100, 24, L["PRESETS_CLOSE"], "slate")
     close:SetPoint("BOTTOM", d, "BOTTOM", 0, 12)
-    close:SetText(L["PRESETS_CLOSE"])
-    ApplyModernButtonStyle(close, "slate")
     close:SetScript("OnClick", function() d:Hide() end)
 
     RF.PresetsDialog = d
@@ -2145,11 +2180,8 @@ function RF:OpenImportExportDialog()
     editBox:HighlightText()
 
     -- Import Button
-    local importBtn = CreateFrame("Button", nil, d, "BackdropTemplate")
-    importBtn:SetSize(140, 24)
+    local importBtn = CreateModernButton(d, 140, 24, L["PROFILE_IMPORT_BTN"], "primary")
     importBtn:SetPoint("BOTTOMLEFT", d, "BOTTOMLEFT", 20, 15)
-    importBtn:SetText(L["PROFILE_IMPORT_BTN"])
-    ApplyModernButtonStyle(importBtn, "primary")
     importBtn:SetScript("OnClick", function()
         local text = editBox:GetText()
         local imported = RF:ImportProfileFromString(text)
@@ -2166,11 +2198,8 @@ function RF:OpenImportExportDialog()
     end)
 
     -- Close Button
-    local closeBtn = CreateFrame("Button", nil, d, "BackdropTemplate")
-    closeBtn:SetSize(100, 24)
+    local closeBtn = CreateModernButton(d, 100, 24, L["PRESETS_CLOSE"], "slate")
     closeBtn:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -20, 15)
-    closeBtn:SetText(L["PRESETS_CLOSE"])
-    ApplyModernButtonStyle(closeBtn, "slate")
     closeBtn:SetScript("OnClick", function() d:Hide() end)
 
     RF.ImportExportDialog = d
@@ -2227,11 +2256,8 @@ function RF:ShowTestResultsDialog(reportText)
 
         editBox:SetScript("OnEscapePressed", function() d:Hide() end)
 
-        local closeBtn = CreateFrame("Button", nil, d, "BackdropTemplate")
-        closeBtn:SetSize(120, 24)
+        local closeBtn = CreateModernButton(d, 120, 24, L["TEST_DIALOG_CLOSE"] or "Close", "slate")
         closeBtn:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -20, 15)
-        closeBtn:SetText(L["TEST_DIALOG_CLOSE"] or "Close")
-        ApplyModernButtonStyle(closeBtn, "slate")
         closeBtn:SetScript("OnClick", function() d:Hide() end)
 
         RF.TestResultsDialog = d
