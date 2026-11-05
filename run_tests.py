@@ -186,6 +186,20 @@ def build_wow_environment(lua):
         function obj:GetScript(evt) return self[evt] end
         function obj:SetBackdrop(...) end
         function obj:SetBackdropColor(...) end
+        function obj:SetBackdropBorderColor(...) end
+        function obj:HookScript(evt, fn)
+            local old = self[evt]
+            self[evt] = function(...)
+                if old then old(...) end
+                fn(...)
+            end
+        end
+        function obj:GetNormalTexture() return self.normalTex or CreateDummyObject("Tex", "Texture") end
+        function obj:GetHighlightTexture() return self.hlTex or CreateDummyObject("Tex", "Texture") end
+        function obj:GetPushedTexture() return self.pushedTex or CreateDummyObject("Tex", "Texture") end
+        function obj:GetDisabledTexture() return self.disTex or CreateDummyObject("Tex", "Texture") end
+        function obj:SetTextInsets(...) end
+        function obj:IsEnabled() return true end
         function obj:SetFrameStrata(s) self.strata = s end
         function obj:SetFrameLevel(l) self.level = l end
         function obj:SetToplevel(t) end

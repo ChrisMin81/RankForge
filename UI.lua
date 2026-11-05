@@ -38,6 +38,122 @@ StaticPopupDialogs["RANKFORGE_CONFIRM_DELETE"] = {
 }
 
 --------------------------------------------------------------------------------
+-- Modern Dark-Theme Styling Helpers
+--------------------------------------------------------------------------------
+local BACKDROP_SOLID = {
+    bgFile = "Interface\\Buttons\\WHITE8X8",
+    edgeFile = "Interface\\Buttons\\WHITE8X8",
+    tile = false, tileSize = 0, edgeSize = 1,
+    insets = { left = 0, right = 0, top = 0, bottom = 0 }
+}
+
+local BACKDROP_FRAME = {
+    bgFile = "Interface\\Buttons\\WHITE8X8",
+    edgeFile = "Interface\\Buttons\\WHITE8X8",
+    tile = false, tileSize = 0, edgeSize = 1,
+    insets = { left = 1, right = 1, top = 1, bottom = 1 }
+}
+
+local function ApplyModernCardStyle(frame, bgColor, borderColor)
+    if not frame or not frame.SetBackdrop then return end
+    frame:SetBackdrop(BACKDROP_FRAME)
+    local bg = bgColor or { 0.05, 0.06, 0.08, 0.88 }
+    local border = borderColor or { 0.18, 0.22, 0.32, 0.85 }
+    if frame.SetBackdropColor then
+        frame:SetBackdropColor(bg[1], bg[2], bg[3], bg[4])
+    end
+    if frame.SetBackdropBorderColor then
+        frame:SetBackdropBorderColor(border[1], border[2], border[3], border[4])
+    end
+end
+
+local function ApplyModernButtonStyle(btn, theme)
+    if not btn or not btn.SetBackdrop then return end
+    btn:SetBackdrop(BACKDROP_SOLID)
+
+    -- Hide native Blizzard button border textures if present
+    if btn.GetNormalTexture and btn:GetNormalTexture() then btn:GetNormalTexture():SetAlpha(0) end
+    if btn.GetHighlightTexture and btn:GetHighlightTexture() then btn:GetHighlightTexture():SetAlpha(0) end
+    if btn.GetPushedTexture and btn:GetPushedTexture() then btn:GetPushedTexture():SetAlpha(0) end
+    if btn.GetDisabledTexture and btn:GetDisabledTexture() then btn:GetDisabledTexture():SetAlpha(0) end
+
+    local normalBg, hoverBg, pressBg, borderColor
+    if theme == "primary" or theme == "green" then
+        normalBg    = { 0.10, 0.35, 0.20, 0.95 }
+        hoverBg     = { 0.15, 0.50, 0.28, 1.00 }
+        pressBg     = { 0.08, 0.26, 0.15, 1.00 }
+        borderColor = { 0.28, 0.80, 0.45, 0.95 }
+    elseif theme == "danger" or theme == "red" then
+        normalBg    = { 0.42, 0.12, 0.15, 0.95 }
+        hoverBg     = { 0.58, 0.16, 0.20, 1.00 }
+        pressBg     = { 0.30, 0.08, 0.10, 1.00 }
+        borderColor = { 0.85, 0.25, 0.30, 0.95 }
+    elseif theme == "blue" then
+        normalBg    = { 0.12, 0.26, 0.48, 0.95 }
+        hoverBg     = { 0.18, 0.38, 0.65, 1.00 }
+        pressBg     = { 0.09, 0.20, 0.38, 1.00 }
+        borderColor = { 0.30, 0.62, 0.95, 0.95 }
+    elseif theme == "gold" then
+        normalBg    = { 0.38, 0.30, 0.10, 0.95 }
+        hoverBg     = { 0.52, 0.42, 0.14, 1.00 }
+        pressBg     = { 0.28, 0.22, 0.08, 1.00 }
+        borderColor = { 0.95, 0.80, 0.25, 0.95 }
+    else -- neutral / slate
+        normalBg    = { 0.12, 0.14, 0.20, 0.95 }
+        hoverBg     = { 0.18, 0.22, 0.32, 1.00 }
+        pressBg     = { 0.08, 0.10, 0.14, 1.00 }
+        borderColor = { 0.25, 0.32, 0.45, 0.85 }
+    end
+
+    if btn.SetBackdropColor then
+        btn:SetBackdropColor(normalBg[1], normalBg[2], normalBg[3], normalBg[4])
+    end
+    if btn.SetBackdropBorderColor then
+        btn:SetBackdropBorderColor(borderColor[1], borderColor[2], borderColor[3], borderColor[4])
+    end
+
+    if btn.HookScript then
+        btn:HookScript("OnEnter", function(self)
+            if not self.IsEnabled or self:IsEnabled() then
+                if self.SetBackdropColor then self:SetBackdropColor(hoverBg[1], hoverBg[2], hoverBg[3], hoverBg[4]) end
+            end
+        end)
+        btn:HookScript("OnLeave", function(self)
+            if self.SetBackdropColor then self:SetBackdropColor(normalBg[1], normalBg[2], normalBg[3], normalBg[4]) end
+        end)
+        btn:HookScript("OnMouseDown", function(self)
+            if not self.IsEnabled or self:IsEnabled() then
+                if self.SetBackdropColor then self:SetBackdropColor(pressBg[1], pressBg[2], pressBg[3], pressBg[4]) end
+            end
+        end)
+        btn:HookScript("OnMouseUp", function(self)
+            if not self.IsEnabled or self:IsEnabled() then
+                if self.SetBackdropColor then self:SetBackdropColor(hoverBg[1], hoverBg[2], hoverBg[3], hoverBg[4]) end
+            end
+        end)
+    end
+end
+
+local function ApplyModernEditBoxStyle(editbox)
+    if not editbox or not editbox.SetBackdrop then return end
+    editbox:SetBackdrop(BACKDROP_FRAME)
+    if editbox.SetBackdropColor then
+        editbox:SetBackdropColor(0.04, 0.05, 0.08, 0.95)
+    end
+    if editbox.SetBackdropBorderColor then
+        editbox:SetBackdropBorderColor(0.20, 0.26, 0.38, 0.85)
+    end
+    if editbox.HookScript then
+        editbox:HookScript("OnEditFocusGained", function(self)
+            if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.40, 0.65, 0.95, 1.0) end
+        end)
+        editbox:HookScript("OnEditFocusLost", function(self)
+            if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.20, 0.26, 0.38, 0.85) end
+        end)
+    end
+end
+
+--------------------------------------------------------------------------------
 -- Main Frame Creation
 --------------------------------------------------------------------------------
 local function CreateMainUI()
@@ -66,42 +182,54 @@ local function CreateMainUI()
         end
     end
 
-    -- Backdrop
-    f:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 32,
-        insets = { left = 8, right = 8, top = 8, bottom = 8 }
-    })
-    f:SetBackdropColor(0.08, 0.08, 0.1, 0.95)
+    -- Modern Outer Backdrop (Deep Obsidian with Champagne Gold Accent Border)
+    f:SetBackdrop(BACKDROP_FRAME)
+    f:SetBackdropColor(0.04, 0.05, 0.07, 0.98)
+    f:SetBackdropBorderColor(0.68, 0.55, 0.26, 0.90)
 
-    -- Header Title
-    local titleBg = f:CreateTexture(nil, "ARTWORK")
-    titleBg:SetTexture("Interface\\DialogFrame\\UI-DialogBox-Header")
-    titleBg:SetWidth(540)
-    titleBg:SetHeight(64)
-    titleBg:SetPoint("TOP", f, "TOP", 0, 12)
+    -- Modern Top Header Bar (36px high)
+    local headerBar = CreateFrame("Frame", nil, f, "BackdropTemplate")
+    headerBar:SetPoint("TOPLEFT", f, "TOPLEFT", 1, -1)
+    headerBar:SetPoint("TOPRIGHT", f, "TOPRIGHT", -1, -1)
+    headerBar:SetHeight(38)
+    headerBar:SetBackdrop(BACKDROP_SOLID)
+    headerBar:SetBackdropColor(0.07, 0.09, 0.13, 0.98)
+    headerBar:SetBackdropBorderColor(0.18, 0.22, 0.32, 0.85)
+    f.headerBar = headerBar
 
-    local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    title:SetPoint("TOP", titleBg, "TOP", 0, -14)
-    title:SetText(L["UI_TITLE"])
+    -- Header Icon
+    local headerIcon = headerBar:CreateTexture(nil, "ARTWORK")
+    headerIcon:SetSize(22, 22)
+    headerIcon:SetPoint("LEFT", headerBar, "LEFT", 12, 0)
+    headerIcon:SetTexture("Interface\\Icons\\INV_Hammer_01")
+    headerIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+
+    local title = headerBar:CreateFontString(nil, "OVERLAY", "GameFontNormalMed2")
+    title:SetPoint("LEFT", headerIcon, "RIGHT", 10, 0)
+    title:SetText("|cffffd200RankForge|r  |cff557799•|r  |cffffffff" .. (L["UI_TITLE"] or "Downranking Makro Schmiede") .. "|r")
     f.title = title
 
-    -- Close Button
-    local closeBtn = CreateFrame("Button", nil, f, "UIPanelCloseButton")
-    closeBtn:SetPoint("TOPRIGHT", f, "TOPRIGHT", -5, -5)
+    -- Modern Close Button
+    local closeBtn = CreateFrame("Button", nil, headerBar, "BackdropTemplate")
+    closeBtn:SetSize(24, 24)
+    closeBtn:SetPoint("RIGHT", headerBar, "RIGHT", -8, 0)
+    local closeFs = closeBtn:CreateFontString(nil, "OVERLAY", "GameFontHighlightMedium")
+    closeFs:SetPoint("CENTER", 0, 0)
+    closeFs:SetText("|cffff5555×|r")
+    closeBtn.fs = closeFs
+    ApplyModernButtonStyle(closeBtn, "danger")
     closeBtn:SetScript("OnClick", function()
         f:Hide()
     end)
 
     -- Language Selection Dropdown
-    local langDropdown = CreateFrame("Frame", "RankForgeLanguageDropdown", f, "UIDropDownMenuTemplate")
+    local langDropdown = CreateFrame("Frame", "RankForgeLanguageDropdown", headerBar, "UIDropDownMenuTemplate")
     langDropdown:SetPoint("RIGHT", closeBtn, "LEFT", 15, -2)
     UIDropDownMenu_SetWidth(langDropdown, 105)
 
     -- Debug Mode Checkbox (Auto-Open on reload)
-    local cbDebug = CreateFrame("CheckButton", nil, f, "UICheckButtonTemplate")
-    cbDebug:SetSize(20, 20)
+    local cbDebug = CreateFrame("CheckButton", nil, headerBar, "UICheckButtonTemplate")
+    cbDebug:SetSize(18, 18)
     cbDebug:SetPoint("RIGHT", langDropdown, "LEFT", -110, 2)
     local debugText = cbDebug:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     debugText:SetPoint("LEFT", cbDebug, "RIGHT", 2, 0)
@@ -165,31 +293,25 @@ local function CreateMainUI()
     f.langDropdown = langDropdown
 
     ----------------------------------------------------------------------------
-    -- Left Panel: Macro List
+    -- Left Panel: Macro List Card
     ----------------------------------------------------------------------------
     local leftPanel = CreateFrame("Frame", nil, f, "BackdropTemplate")
-    leftPanel:SetPoint("TOPLEFT", f, "TOPLEFT", 15, -35)
-    leftPanel:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 15, 15)
-    leftPanel:SetWidth(220)
-    leftPanel:SetBackdrop({
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
-    leftPanel:SetBackdropColor(0.05, 0.05, 0.07, 0.8)
+    leftPanel:SetPoint("TOPLEFT", f, "TOPLEFT", 12, -48)
+    leftPanel:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 12, 12)
+    leftPanel:SetWidth(225)
+    ApplyModernCardStyle(leftPanel, { 0.05, 0.06, 0.09, 0.92 }, { 0.16, 0.20, 0.28, 0.85 })
 
     local listHeader = leftPanel:CreateFontString(nil, "OVERLAY", "GameFontHighlightMedium")
-    listHeader:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 10, -8)
+    listHeader:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 12, -10)
     listHeader:SetText(L["UI_CONFIGURED_MACROS"])
     f.listHeader = listHeader
 
     -- Filter Current Character Checkbox
     local filterCharCb = CreateFrame("CheckButton", nil, leftPanel, "UICheckButtonTemplate")
     filterCharCb:SetSize(18, 18)
-    filterCharCb:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 8, -26)
+    filterCharCb:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 10, -28)
     local filterText = filterCharCb:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    filterText:SetPoint("LEFT", filterCharCb, "RIGHT", 2, 0)
+    filterText:SetPoint("LEFT", filterCharCb, "RIGHT", 4, 0)
     filterText:SetText(L["UI_FILTER_CURRENT_CHAR"] or "Nur dieser Charakter")
     filterCharCb.text = filterText
     filterCharCb:SetScript("OnEnter", function(self)
@@ -210,28 +332,30 @@ local function CreateMainUI()
 
     -- Macro Scroll Frame
     local scrollFrame = CreateFrame("ScrollFrame", "RankForgeMacroListScroll", leftPanel, "UIPanelScrollFrameTemplate")
-    scrollFrame:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 8, -48)
-    scrollFrame:SetPoint("BOTTOMRIGHT", leftPanel, "BOTTOMRIGHT", -26, 110)
+    scrollFrame:SetPoint("TOPLEFT", leftPanel, "TOPLEFT", 8, -52)
+    scrollFrame:SetPoint("BOTTOMRIGHT", leftPanel, "BOTTOMRIGHT", -26, 115)
 
     local listContent = CreateFrame("Frame", nil, scrollFrame)
-    listContent:SetSize(185, 10)
+    listContent:SetSize(188, 10)
     scrollFrame:SetScrollChild(listContent)
     f.listContent = listContent
 
     -- Buttons on Left Panel
-    local newBtn = CreateFrame("Button", nil, leftPanel, "UIPanelButtonTemplate")
-    newBtn:SetSize(200, 24)
+    local newBtn = CreateFrame("Button", nil, leftPanel, "BackdropTemplate")
+    newBtn:SetSize(205, 24)
     newBtn:SetPoint("BOTTOM", leftPanel, "BOTTOM", 0, 75)
-    newBtn:SetText(L["UI_NEW_MACRO"])
+    newBtn:SetText("+ " .. L["UI_NEW_MACRO"])
+    ApplyModernButtonStyle(newBtn, "blue")
     newBtn:SetScript("OnClick", function()
         RF:CreateNewMacroConfig()
     end)
     f.newBtn = newBtn
 
-    local cloneBtn = CreateFrame("Button", nil, leftPanel, "UIPanelButtonTemplate")
-    cloneBtn:SetSize(200, 24)
+    local cloneBtn = CreateFrame("Button", nil, leftPanel, "BackdropTemplate")
+    cloneBtn:SetSize(205, 24)
     cloneBtn:SetPoint("BOTTOM", leftPanel, "BOTTOM", 0, 45)
     cloneBtn:SetText(L["UI_CLONE_BTN"])
+    ApplyModernButtonStyle(cloneBtn, "slate")
     cloneBtn:SetScript("OnClick", function()
         if currentMacro then
             local cloned = RF:CloneMacro(currentMacro)
@@ -248,10 +372,11 @@ local function CreateMainUI()
     end)
     f.cloneBtn = cloneBtn
 
-    local exportBtn = CreateFrame("Button", nil, leftPanel, "UIPanelButtonTemplate")
-    exportBtn:SetSize(200, 24)
+    local exportBtn = CreateFrame("Button", nil, leftPanel, "BackdropTemplate")
+    exportBtn:SetSize(205, 24)
     exportBtn:SetPoint("BOTTOM", leftPanel, "BOTTOM", 0, 15)
     exportBtn:SetText(L["UI_EXPORT_BTN"])
+    ApplyModernButtonStyle(exportBtn, "slate")
     exportBtn:SetScript("OnClick", function()
         RF:OpenImportExportDialog()
     end)
@@ -259,22 +384,16 @@ local function CreateMainUI()
 
     -- Slot status text
     local slotStatus = leftPanel:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-    slotStatus:SetPoint("BOTTOMLEFT", leftPanel, "BOTTOMLEFT", 10, 105)
+    slotStatus:SetPoint("BOTTOMLEFT", leftPanel, "BOTTOMLEFT", 12, 104)
     f.slotStatus = slotStatus
 
     ----------------------------------------------------------------------------
-    -- Right Panel: Macro Editor
+    -- Right Panel: Macro Editor Card
     ----------------------------------------------------------------------------
     local editor = CreateFrame("Frame", nil, f, "BackdropTemplate")
     editor:SetPoint("TOPLEFT", leftPanel, "TOPRIGHT", 10, 0)
-    editor:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -15, 15)
-    editor:SetBackdrop({
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
-    editor:SetBackdropColor(0.05, 0.05, 0.07, 0.8)
+    editor:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 12)
+    ApplyModernCardStyle(editor, { 0.05, 0.06, 0.09, 0.92 }, { 0.16, 0.20, 0.28, 0.85 })
     f.editor = editor
 
     -- Macro Name Input
@@ -283,10 +402,13 @@ local function CreateMainUI()
     nameLabel:SetText(L["UI_MACRO_NAME"])
     f.nameLabel = nameLabel
 
-    local nameEdit = CreateFrame("EditBox", nil, editor, "InputBoxTemplate")
-    nameEdit:SetSize(160, 20)
+    local nameEdit = CreateFrame("EditBox", nil, editor, "BackdropTemplate")
+    nameEdit:SetSize(160, 22)
     nameEdit:SetPoint("LEFT", nameLabel, "RIGHT", 10, 0)
     nameEdit:SetAutoFocus(false)
+    nameEdit:SetFontObject("GameFontHighlightSmall")
+    nameEdit:SetTextInsets(6, 6, 0, 0)
+    ApplyModernEditBoxStyle(nameEdit)
     nameEdit:SetScript("OnTextChanged", function(self, userInput)
         if userInput and currentMacro then
             currentMacro.macroName = self:GetText()
@@ -345,14 +467,26 @@ local function CreateMainUI()
     local dropSlot = CreateFrame("Button", nil, editor, "BackdropTemplate")
     dropSlot:SetSize(36, 36)
     dropSlot:SetPoint("LEFT", spellLabel, "RIGHT", 10, 0)
-    dropSlot:SetBackdrop({
-        edgeFile = "Interface\\Buttons\\UI-Quickslot-Depress",
-        edgeSize = 14,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 }
-    })
+    dropSlot:SetBackdrop(BACKDROP_FRAME)
+    if dropSlot.SetBackdropColor then
+        dropSlot:SetBackdropColor(0.08, 0.10, 0.15, 0.95)
+    end
+    if dropSlot.SetBackdropBorderColor then
+        dropSlot:SetBackdropBorderColor(0.28, 0.45, 0.70, 0.90)
+    end
+    if dropSlot.HookScript then
+        dropSlot:HookScript("OnEnter", function(self)
+            if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.85, 0.70, 0.25, 1.0) end
+        end)
+        dropSlot:HookScript("OnLeave", function(self)
+            if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.28, 0.45, 0.70, 0.90) end
+        end)
+    end
 
     local dropSlotIcon = dropSlot:CreateTexture(nil, "ARTWORK")
-    dropSlotIcon:SetAllPoints()
+    dropSlotIcon:SetPoint("TOPLEFT", dropSlot, "TOPLEFT", 2, -2)
+    dropSlotIcon:SetPoint("BOTTOMRIGHT", dropSlot, "BOTTOMRIGHT", -2, 2)
+    dropSlotIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     dropSlotIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
     dropSlot.icon = dropSlotIcon
 
@@ -402,10 +536,13 @@ local function CreateMainUI()
     f.dropSlotBtn = dropSlotBtn
 
     -- Spell Name Manual Input
-    local spellEdit = CreateFrame("EditBox", nil, editor, "InputBoxTemplate")
-    spellEdit:SetSize(140, 20)
+    local spellEdit = CreateFrame("EditBox", nil, editor, "BackdropTemplate")
+    spellEdit:SetSize(140, 22)
     spellEdit:SetPoint("LEFT", dropSlotBtn, "RIGHT", 10, 0)
     spellEdit:SetAutoFocus(false)
+    spellEdit:SetFontObject("GameFontHighlightSmall")
+    if spellEdit.SetTextInsets then spellEdit:SetTextInsets(6, 6, 0, 0) end
+    ApplyModernEditBoxStyle(spellEdit)
     spellEdit:SetScript("OnReceiveDrag", HandleBaseSpellDrop)
     spellEdit:SetScript("OnMouseDown", function(self, button)
         if button == "LeftButton" then
@@ -517,11 +654,14 @@ local function CreateMainUI()
     preCastLabel:SetText(L["UI_PRECAST_CUSTOM"])
     f.preCastHeader = preCastLabel
 
-    local preCastEdit = CreateFrame("EditBox", nil, editor, "InputBoxTemplate")
+    local preCastEdit = CreateFrame("EditBox", nil, editor, "BackdropTemplate")
     preCastEdit:SetPoint("TOPLEFT", editor, "TOPLEFT", 18, -154)
     preCastEdit:SetPoint("RIGHT", editor, "RIGHT", -25, 0)
-    preCastEdit:SetHeight(20)
+    preCastEdit:SetHeight(22)
     preCastEdit:SetAutoFocus(false)
+    preCastEdit:SetFontObject("GameFontHighlightSmall")
+    if preCastEdit.SetTextInsets then preCastEdit:SetTextInsets(6, 6, 0, 0) end
+    ApplyModernEditBoxStyle(preCastEdit)
     preCastEdit:SetScript("OnTextChanged", function(self, userInput)
         if userInput and currentMacro then
             currentMacro.preCastLines = self:GetText()
@@ -536,11 +676,14 @@ local function CreateMainUI()
     customTargetLabel:SetText(L["UI_TARGET_CUSTOM"])
     f.customTargetHeader = customTargetLabel
 
-    local customTargetEdit = CreateFrame("EditBox", nil, editor, "InputBoxTemplate")
+    local customTargetEdit = CreateFrame("EditBox", nil, editor, "BackdropTemplate")
     customTargetEdit:SetPoint("LEFT", customTargetLabel, "RIGHT", 10, 0)
     customTargetEdit:SetPoint("RIGHT", editor, "RIGHT", -25, 0)
-    customTargetEdit:SetHeight(20)
+    customTargetEdit:SetHeight(22)
     customTargetEdit:SetAutoFocus(false)
+    customTargetEdit:SetFontObject("GameFontHighlightSmall")
+    if customTargetEdit.SetTextInsets then customTargetEdit:SetTextInsets(6, 6, 0, 0) end
+    ApplyModernEditBoxStyle(customTargetEdit)
     customTargetEdit:SetScript("OnTextChanged", function(self, userInput)
         if userInput and currentMacro then
             currentMacro.customTarget = self:GetText()
@@ -557,10 +700,11 @@ local function CreateMainUI()
     modHeader:SetText(L["UI_MODIFIERS_HEADER"])
     f.modifiersHeader = modHeader
 
-    local resetSortBtn = CreateFrame("Button", nil, editor, "UIPanelButtonTemplate")
-    resetSortBtn:SetSize(140, 18)
+    local resetSortBtn = CreateFrame("Button", nil, editor, "BackdropTemplate")
+    resetSortBtn:SetSize(140, 20)
     resetSortBtn:SetPoint("LEFT", modHeader, "RIGHT", 10, 0)
     resetSortBtn:SetText(L["UI_RESET_SORT_BTN"])
+    ApplyModernButtonStyle(resetSortBtn, "slate")
     resetSortBtn:SetScript("OnClick", function()
         if currentMacro then
             RF:ResetModifierSortOrder(currentMacro)
@@ -693,9 +837,33 @@ local function CreateMainUI()
     local rowHeight = 24
 
     for i = 1, 7 do
-        local row = CreateFrame("Frame", nil, editor)
+        local row = CreateFrame("Frame", nil, editor, "BackdropTemplate")
         row:SetSize(755, rowHeight)
-        row:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, startY - (i - 1) * rowHeight)
+        row:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, startY - (i - 1) * (rowHeight + 1))
+        row:SetBackdrop(BACKDROP_FRAME)
+
+        local isEven = (i % 2 == 0)
+        local rowBg = isEven and { 0.04, 0.05, 0.08, 0.50 } or { 0.07, 0.09, 0.13, 0.50 }
+        local rowBorder = { 0.12, 0.15, 0.22, 0.35 }
+
+        if row.SetBackdropColor then
+            row:SetBackdropColor(rowBg[1], rowBg[2], rowBg[3], rowBg[4])
+        end
+        if row.SetBackdropBorderColor then
+            row:SetBackdropBorderColor(rowBorder[1], rowBorder[2], rowBorder[3], rowBorder[4])
+        end
+
+        row:EnableMouse(true)
+        if row.HookScript then
+            row:HookScript("OnEnter", function(self)
+                if self.SetBackdropColor then self:SetBackdropColor(0.10, 0.14, 0.22, 0.85) end
+                if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.25, 0.35, 0.50, 0.80) end
+            end)
+            row:HookScript("OnLeave", function(self)
+                if self.SetBackdropColor then self:SetBackdropColor(rowBg[1], rowBg[2], rowBg[3], rowBg[4]) end
+                if self.SetBackdropBorderColor then self:SetBackdropBorderColor(rowBorder[1], rowBorder[2], rowBorder[3], rowBorder[4]) end
+            end)
+        end
 
         -- Up/Down order buttons using native WoW scroll button templates
         local upBtn = CreateFrame("Button", nil, row, "UIPanelScrollUpButtonTemplate")
@@ -739,12 +907,15 @@ local function CreateMainUI()
         offsetLabel:SetText((L["RANK_WORD"] or "Rank") .. ":")
         row.offsetLabel = offsetLabel
 
-        local offsetEdit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
+        local offsetEdit = CreateFrame("EditBox", nil, row, "BackdropTemplate")
         offsetEdit:SetSize(22, 18)
         offsetEdit:SetPoint("LEFT", row, "LEFT", 204, 0)
         offsetEdit:SetAutoFocus(false)
         offsetEdit:SetNumeric(true)
         offsetEdit:SetMaxLetters(2)
+        offsetEdit:SetFontObject("GameFontHighlightSmall")
+        if offsetEdit.SetTextInsets then offsetEdit:SetTextInsets(2, 2, 0, 0) end
+        ApplyModernEditBoxStyle(offsetEdit)
         local function UpdateRowDesc(val)
             local off = tonumber(val) or 0
             local spName = currentMacro and currentMacro.spellName
@@ -941,30 +1112,38 @@ local function CreateMainUI()
         local altDropSlot = CreateFrame("Button", nil, row, "BackdropTemplate")
         altDropSlot:SetSize(18, 18)
         altDropSlot:SetPoint("LEFT", row, "LEFT", 565, 0)
-        altDropSlot:SetBackdrop({
-            edgeFile = "Interface\\Buttons\\UI-Quickslot-Depress",
-            edgeSize = 10,
-            insets = { left = 1, right = 1, top = 1, bottom = 1 }
-        })
+        altDropSlot:SetBackdrop(BACKDROP_FRAME)
+        if altDropSlot.SetBackdropColor then
+            altDropSlot:SetBackdropColor(0.06, 0.08, 0.12, 0.95)
+        end
+        if altDropSlot.SetBackdropBorderColor then
+            altDropSlot:SetBackdropBorderColor(0.20, 0.26, 0.38, 0.85)
+        end
 
         local altDropIcon = altDropSlot:CreateTexture(nil, "ARTWORK")
-        altDropIcon:SetAllPoints()
+        altDropIcon:SetPoint("TOPLEFT", altDropSlot, "TOPLEFT", 1, -1)
+        altDropIcon:SetPoint("BOTTOMRIGHT", altDropSlot, "BOTTOMRIGHT", -1, 1)
+        altDropIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
         altDropIcon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
         altDropIcon:SetAlpha(0.6)
         altDropSlot.icon = altDropIcon
         row.altDropSlot = altDropSlot
 
-        local customSpellEdit = CreateFrame("EditBox", nil, row, "InputBoxTemplate")
+        local customSpellEdit = CreateFrame("EditBox", nil, row, "BackdropTemplate")
         customSpellEdit:SetSize(142, 18)
         customSpellEdit:SetPoint("LEFT", row, "LEFT", 587, 0)
         customSpellEdit:SetAutoFocus(false)
+        customSpellEdit:SetFontObject("GameFontHighlightSmall")
+        if customSpellEdit.SetTextInsets then customSpellEdit:SetTextInsets(4, 4, 0, 0) end
+        ApplyModernEditBoxStyle(customSpellEdit)
         row.customSpellEdit = customSpellEdit
 
         -- Search / Picker button
-        local searchBtn = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+        local searchBtn = CreateFrame("Button", nil, row, "BackdropTemplate")
         searchBtn:SetSize(22, 18)
         searchBtn:SetPoint("LEFT", row, "LEFT", 733, 0)
         searchBtn:SetText("...")
+        ApplyModernButtonStyle(searchBtn, "slate")
         row.searchBtn = searchBtn
 
         -- Helper to apply a selected spell to this modifier
@@ -1079,15 +1258,27 @@ local function CreateMainUI()
     local previewIcon = CreateFrame("Button", "RankForgePreviewDragButton", editor, "BackdropTemplate")
     previewIcon:SetSize(42, 42)
     previewIcon:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -458)
-    previewIcon:SetBackdrop({
-        edgeFile = "Interface\\Buttons\\UI-Quickslot-Depress",
-        edgeSize = 14,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 }
-    })
+    previewIcon:SetBackdrop(BACKDROP_FRAME)
+    if previewIcon.SetBackdropColor then
+        previewIcon:SetBackdropColor(0.08, 0.10, 0.14, 0.95)
+    end
+    if previewIcon.SetBackdropBorderColor then
+        previewIcon:SetBackdropBorderColor(0.28, 0.45, 0.70, 0.90)
+    end
+    if previewIcon.HookScript then
+        previewIcon:HookScript("OnEnter", function(self)
+            if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.85, 0.70, 0.25, 1.0) end
+        end)
+        previewIcon:HookScript("OnLeave", function(self)
+            if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.28, 0.45, 0.70, 0.90) end
+        end)
+    end
     previewIcon:RegisterForDrag("LeftButton")
 
     local pTex = previewIcon:CreateTexture(nil, "ARTWORK")
-    pTex:SetAllPoints()
+    pTex:SetPoint("TOPLEFT", previewIcon, "TOPLEFT", 2, -2)
+    pTex:SetPoint("BOTTOMRIGHT", previewIcon, "BOTTOMRIGHT", -2, 2)
+    pTex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     pTex:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
     previewIcon.icon = pTex
 
@@ -1120,12 +1311,7 @@ local function CreateMainUI()
     local previewBoxBg = CreateFrame("Frame", nil, editor, "BackdropTemplate")
     previewBoxBg:SetPoint("TOPLEFT", previewIcon, "TOPRIGHT", 10, 0)
     previewBoxBg:SetPoint("BOTTOMRIGHT", editor, "BOTTOMRIGHT", -15, 45)
-    previewBoxBg:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true, tileSize = 16, edgeSize = 12,
-        insets = { left = 3, right = 3, top = 3, bottom = 3 }
-    })
+    ApplyModernCardStyle(previewBoxBg, { 0.03, 0.04, 0.06, 0.95 }, { 0.18, 0.22, 0.32, 0.85 })
 
     local copyHint = editor:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
     copyHint:SetPoint("BOTTOMRIGHT", previewBoxBg, "TOPRIGHT", 0, 4)
@@ -1166,10 +1352,11 @@ local function CreateMainUI()
     f.charCount = charCount
 
     -- Save Button
-    local saveBtn = CreateFrame("Button", nil, editor, "UIPanelButtonTemplate")
+    local saveBtn = CreateFrame("Button", nil, editor, "BackdropTemplate")
     saveBtn:SetSize(160, 24)
     saveBtn:SetPoint("BOTTOMRIGHT", editor, "BOTTOMRIGHT", -15, 12)
     saveBtn:SetText(L["UI_SAVE_MACRO"])
+    ApplyModernButtonStyle(saveBtn, "primary")
     saveBtn:SetScript("OnClick", function()
         if currentMacro then
             if not currentMacro.spellID or currentMacro.spellID == 0 then
@@ -1182,10 +1369,11 @@ local function CreateMainUI()
     f.saveBtn = saveBtn
 
     -- Delete Button
-    local deleteBtn = CreateFrame("Button", nil, editor, "UIPanelButtonTemplate")
+    local deleteBtn = CreateFrame("Button", nil, editor, "BackdropTemplate")
     deleteBtn:SetSize(90, 24)
     deleteBtn:SetPoint("RIGHT", saveBtn, "LEFT", -10, 0)
     deleteBtn:SetText(L["UI_DELETE_MACRO"])
+    ApplyModernButtonStyle(deleteBtn, "danger")
     deleteBtn:SetScript("OnClick", function()
         if currentMacro then
             StaticPopup_Show("RANKFORGE_CONFIRM_DELETE", currentMacro.macroName, nil, currentMacro)
@@ -1250,13 +1438,13 @@ end
 -- Modifier Labels & Default Setup
 --------------------------------------------------------------------------------
 local function GetModifierDisplayName(key)
-    if key == "nomod" then return L["UI_MOD_NOMOD"] end
-    if key == "shift_ctrl" then return L["UI_MOD_SHIFT_CTRL"] end
-    if key == "shift_alt" then return L["UI_MOD_SHIFT_ALT"] end
-    if key == "ctrl_alt" then return L["UI_MOD_CTRL_ALT"] end
-    if key == "shift" then return L["UI_MOD_SHIFT"] end
-    if key == "ctrl" then return L["UI_MOD_CTRL"] end
-    if key == "alt" then return L["UI_MOD_ALT"] end
+    if key == "nomod" then return "|cffffd200" .. L["UI_MOD_NOMOD"] .. "|r" end
+    if key == "shift_ctrl" then return "|cff00e5ff" .. L["UI_MOD_SHIFT"] .. "|r+|cffa855f7" .. L["UI_MOD_CTRL"] .. "|r" end
+    if key == "shift_alt" then return "|cff00e5ff" .. L["UI_MOD_SHIFT"] .. "|r+|cff22c55e" .. L["UI_MOD_ALT"] .. "|r" end
+    if key == "ctrl_alt" then return "|cffa855f7" .. L["UI_MOD_CTRL"] .. "|r+|cff22c55e" .. L["UI_MOD_ALT"] .. "|r" end
+    if key == "shift" then return "|cff00e5ff" .. L["UI_MOD_SHIFT"] .. "|r" end
+    if key == "ctrl" then return "|cffa855f7" .. L["UI_MOD_CTRL"] .. "|r" end
+    if key == "alt" then return "|cff22c55e" .. L["UI_MOD_ALT"] .. "|r" end
     return key
 end
 
@@ -1688,8 +1876,13 @@ function RF:UpdateUI()
         local origIdx = entry.index
         local btn = listContent.buttons[i]
         if not btn then
-            btn = CreateFrame("Button", nil, listContent, "UIPanelButtonTemplate")
-            btn:SetSize(185, btnHeight)
+            btn = CreateFrame("Button", nil, listContent, "BackdropTemplate")
+            btn:SetSize(188, btnHeight)
+            ApplyModernCardStyle(btn, { 0.06, 0.08, 0.12, 0.85 }, { 0.15, 0.18, 0.25, 0.80 })
+
+            -- Hide default button textures if any
+            if btn.GetNormalTexture and btn:GetNormalTexture() then btn:GetNormalTexture():SetAlpha(0) end
+            if btn.GetHighlightTexture and btn:GetHighlightTexture() then btn:GetHighlightTexture():SetAlpha(0) end
 
             local icon = btn:CreateTexture(nil, "ARTWORK")
             icon:SetSize(24, 24)
@@ -1726,15 +1919,24 @@ function RF:UpdateUI()
         RF:UpdateMacroListItem(btn, macroCfg, origIdx)
 
         -- Highlight currently selected macro button
-        if origIdx == selectedMacroIndex then
-            btn:LockHighlight()
+        local isSel = (origIdx == selectedMacroIndex)
+        if isSel then
+            if btn.SetBackdropColor then btn:SetBackdropColor(0.12, 0.16, 0.25, 0.98) end
+            if btn.SetBackdropBorderColor then btn:SetBackdropBorderColor(0.85, 0.70, 0.25, 0.95) end
+            if btn.LockHighlight then btn:LockHighlight() end
         else
-            btn:UnlockHighlight()
+            if btn.SetBackdropColor then btn:SetBackdropColor(0.06, 0.08, 0.12, 0.85) end
+            if btn.SetBackdropBorderColor then btn:SetBackdropBorderColor(0.15, 0.18, 0.25, 0.80) end
+            if btn.UnlockHighlight then btn:UnlockHighlight() end
         end
 
         btn:Show()
 
         btn:SetScript("OnEnter", function(self)
+            if self.macroIndex ~= selectedMacroIndex then
+                if self.SetBackdropColor then self:SetBackdropColor(0.10, 0.14, 0.22, 0.95) end
+                if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.28, 0.45, 0.70, 0.90) end
+            end
             local cfg = self.macroConfig or macroCfg
             if not cfg then return end
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -1758,6 +1960,10 @@ function RF:UpdateUI()
             GameTooltip:Show()
         end)
         btn:SetScript("OnLeave", function(self)
+            if self.macroIndex ~= selectedMacroIndex then
+                if self.SetBackdropColor then self:SetBackdropColor(0.06, 0.08, 0.12, 0.85) end
+                if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.15, 0.18, 0.25, 0.80) end
+            end
             GameTooltip:Hide()
         end)
 
@@ -1780,10 +1986,15 @@ function RF:UpdateUI()
         btn:SetScript("OnClick", function()
             selectedMacroIndex = origIdx
             for _, b in ipairs(listContent.buttons) do
-                if b.macroIndex == origIdx then
-                    b:LockHighlight()
+                local sel = (b.macroIndex == origIdx)
+                if sel then
+                    if b.LockHighlight then b:LockHighlight() end
+                    if b.SetBackdropColor then b:SetBackdropColor(0.12, 0.16, 0.25, 0.98) end
+                    if b.SetBackdropBorderColor then b:SetBackdropBorderColor(0.85, 0.70, 0.25, 0.95) end
                 else
-                    b:UnlockHighlight()
+                    if b.UnlockHighlight then b:UnlockHighlight() end
+                    if b.SetBackdropColor then b:SetBackdropColor(0.06, 0.08, 0.12, 0.85) end
+                    if b.SetBackdropBorderColor then b:SetBackdropBorderColor(0.15, 0.18, 0.25, 0.80) end
                 end
             end
             RF:LoadMacroIntoEditor(macroCfg)
@@ -1830,19 +2041,7 @@ function RF:OpenPresetsDialog()
     d:SetFrameLevel(500)
     d:SetToplevel(true)
 
-    d:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 32,
-        insets = { left = 8, right = 8, top = 8, bottom = 8 }
-    })
-    d:SetBackdropColor(0.04, 0.04, 0.06, 1.0)
-
-    -- Fully opaque background blocker so nothing underneath shows through
-    local bgTex = d:CreateTexture(nil, "BACKGROUND", nil, -5)
-    bgTex:SetPoint("TOPLEFT", d, "TOPLEFT", 10, -10)
-    bgTex:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -10, 10)
-    bgTex:SetColorTexture(0.05, 0.05, 0.08, 1.0)
+    ApplyModernCardStyle(d, { 0.04, 0.05, 0.07, 0.98 }, { 0.68, 0.55, 0.26, 0.90 })
 
     local title = d:CreateFontString(nil, "OVERLAY", "GameFontHighlightMedium")
     title:SetPoint("TOP", d, "TOP", 0, -16)
@@ -1861,10 +2060,11 @@ function RF:OpenPresetsDialog()
     local y = 0
 
     for i, p in ipairs(presets) do
-        local btn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+        local btn = CreateFrame("Button", nil, content, "BackdropTemplate")
         btn:SetSize(330, 30)
         btn:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -y)
         btn:SetText(p.name .. " (" .. p.macroName .. ")")
+        ApplyModernButtonStyle(btn, "slate")
 
         btn:SetScript("OnClick", function()
             local macros = RF:GetMacrosList()
@@ -1879,10 +2079,11 @@ function RF:OpenPresetsDialog()
     end
     content:SetHeight(math.max(y, 10))
 
-    local close = CreateFrame("Button", nil, d, "UIPanelButtonTemplate")
+    local close = CreateFrame("Button", nil, d, "BackdropTemplate")
     close:SetSize(100, 24)
     close:SetPoint("BOTTOM", d, "BOTTOM", 0, 12)
     close:SetText(L["PRESETS_CLOSE"])
+    ApplyModernButtonStyle(close, "slate")
     close:SetScript("OnClick", function() d:Hide() end)
 
     RF.PresetsDialog = d
@@ -1910,19 +2111,7 @@ function RF:OpenImportExportDialog()
     d:SetFrameLevel(500)
     d:SetToplevel(true)
 
-    d:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 32,
-        insets = { left = 8, right = 8, top = 8, bottom = 8 }
-    })
-    d:SetBackdropColor(0.04, 0.04, 0.06, 1.0)
-
-    -- Fully opaque background blocker so nothing underneath shows through
-    local bgTex = d:CreateTexture(nil, "BACKGROUND", nil, -5)
-    bgTex:SetPoint("TOPLEFT", d, "TOPLEFT", 10, -10)
-    bgTex:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -10, 10)
-    bgTex:SetColorTexture(0.05, 0.05, 0.08, 1.0)
+    ApplyModernCardStyle(d, { 0.04, 0.05, 0.07, 0.98 }, { 0.68, 0.55, 0.26, 0.90 })
 
     local title = d:CreateFontString(nil, "OVERLAY", "GameFontHighlightMedium")
     title:SetPoint("TOP", d, "TOP", 0, -16)
@@ -1932,10 +2121,15 @@ function RF:OpenImportExportDialog()
     hint:SetPoint("TOPLEFT", d, "TOPLEFT", 20, -45)
     hint:SetText(L["PROFILE_EXPORT_HINT"])
 
-    -- Scrollable EditBox
-    local scroll = CreateFrame("ScrollFrame", nil, d, "UIPanelScrollFrameTemplate")
-    scroll:SetPoint("TOPLEFT", d, "TOPLEFT", 20, -65)
-    scroll:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -38, 50)
+    -- Scrollable EditBox Card Box
+    local scrollBox = CreateFrame("Frame", nil, d, "BackdropTemplate")
+    scrollBox:SetPoint("TOPLEFT", d, "TOPLEFT", 20, -65)
+    scrollBox:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -20, 50)
+    ApplyModernCardStyle(scrollBox, { 0.02, 0.03, 0.05, 0.96 }, { 0.18, 0.22, 0.30, 0.85 })
+
+    local scroll = CreateFrame("ScrollFrame", nil, scrollBox, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", scrollBox, "TOPLEFT", 6, -6)
+    scroll:SetPoint("BOTTOMRIGHT", scrollBox, "BOTTOMRIGHT", -26, 6)
 
     local editBox = CreateFrame("EditBox", nil, scroll)
     editBox:SetMultiLine(true)
@@ -1951,10 +2145,11 @@ function RF:OpenImportExportDialog()
     editBox:HighlightText()
 
     -- Import Button
-    local importBtn = CreateFrame("Button", nil, d, "UIPanelButtonTemplate")
+    local importBtn = CreateFrame("Button", nil, d, "BackdropTemplate")
     importBtn:SetSize(140, 24)
     importBtn:SetPoint("BOTTOMLEFT", d, "BOTTOMLEFT", 20, 15)
     importBtn:SetText(L["PROFILE_IMPORT_BTN"])
+    ApplyModernButtonStyle(importBtn, "primary")
     importBtn:SetScript("OnClick", function()
         local text = editBox:GetText()
         local imported = RF:ImportProfileFromString(text)
@@ -1971,10 +2166,11 @@ function RF:OpenImportExportDialog()
     end)
 
     -- Close Button
-    local closeBtn = CreateFrame("Button", nil, d, "UIPanelButtonTemplate")
+    local closeBtn = CreateFrame("Button", nil, d, "BackdropTemplate")
     closeBtn:SetSize(100, 24)
     closeBtn:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -20, 15)
     closeBtn:SetText(L["PRESETS_CLOSE"])
+    ApplyModernButtonStyle(closeBtn, "slate")
     closeBtn:SetScript("OnClick", function() d:Hide() end)
 
     RF.ImportExportDialog = d
@@ -1998,19 +2194,7 @@ function RF:ShowTestResultsDialog(reportText)
         d:SetFrameStrata("FULLSCREEN_DIALOG")
         d:SetFrameLevel(600)
         d:SetToplevel(true)
-
-        d:SetBackdrop({
-            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
-            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-            tile = true, tileSize = 32, edgeSize = 32,
-            insets = { left = 8, right = 8, top = 8, bottom = 8 }
-        })
-        d:SetBackdropColor(0.04, 0.04, 0.06, 1.0)
-
-        local bgTex = d:CreateTexture(nil, "BACKGROUND", nil, -5)
-        bgTex:SetPoint("TOPLEFT", d, "TOPLEFT", 10, -10)
-        bgTex:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -10, 10)
-        bgTex:SetColorTexture(0.05, 0.05, 0.08, 1.0)
+        ApplyModernCardStyle(d, { 0.04, 0.05, 0.07, 0.98 }, { 0.68, 0.55, 0.26, 0.90 })
 
         local title = d:CreateFontString(nil, "OVERLAY", "GameFontHighlightMedium")
         title:SetPoint("TOP", d, "TOP", 0, -16)
@@ -2024,9 +2208,14 @@ function RF:ShowTestResultsDialog(reportText)
         hint:SetText(L["TEST_DIALOG_HINT"] or "Press Ctrl+C to copy test report. Saved to SavedVariables/RankForge.lua on /reload:")
         d.hint = hint
 
-        local scroll = CreateFrame("ScrollFrame", nil, d, "UIPanelScrollFrameTemplate")
-        scroll:SetPoint("TOPLEFT", d, "TOPLEFT", 20, -68)
-        scroll:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -38, 50)
+        local scrollBox = CreateFrame("Frame", nil, d, "BackdropTemplate")
+        scrollBox:SetPoint("TOPLEFT", d, "TOPLEFT", 20, -68)
+        scrollBox:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -20, 50)
+        ApplyModernCardStyle(scrollBox, { 0.02, 0.03, 0.05, 0.96 }, { 0.18, 0.22, 0.30, 0.85 })
+
+        local scroll = CreateFrame("ScrollFrame", nil, scrollBox, "UIPanelScrollFrameTemplate")
+        scroll:SetPoint("TOPLEFT", scrollBox, "TOPLEFT", 6, -6)
+        scroll:SetPoint("BOTTOMRIGHT", scrollBox, "BOTTOMRIGHT", -26, 6)
 
         local editBox = CreateFrame("EditBox", nil, scroll)
         editBox:SetMultiLine(true)
@@ -2038,10 +2227,11 @@ function RF:ShowTestResultsDialog(reportText)
 
         editBox:SetScript("OnEscapePressed", function() d:Hide() end)
 
-        local closeBtn = CreateFrame("Button", nil, d, "UIPanelButtonTemplate")
+        local closeBtn = CreateFrame("Button", nil, d, "BackdropTemplate")
         closeBtn:SetSize(120, 24)
         closeBtn:SetPoint("BOTTOMRIGHT", d, "BOTTOMRIGHT", -20, 15)
         closeBtn:SetText(L["TEST_DIALOG_CLOSE"] or "Close")
+        ApplyModernButtonStyle(closeBtn, "slate")
         closeBtn:SetScript("OnClick", function() d:Hide() end)
 
         RF.TestResultsDialog = d
@@ -2072,18 +2262,7 @@ function RF:OpenSpellPicker(anchorEditBox, onSelectCallback)
         p:SetToplevel(true)
         p:EnableMouse(true)
 
-        p:SetBackdrop({
-            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background-Dark",
-            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-            tile = true, tileSize = 16, edgeSize = 16,
-            insets = { left = 4, right = 4, top = 4, bottom = 4 }
-        })
-        p:SetBackdropColor(0.04, 0.04, 0.07, 1.0)
-
-        local bgTex = p:CreateTexture(nil, "BACKGROUND", nil, -5)
-        bgTex:SetPoint("TOPLEFT", p, "TOPLEFT", 4, -4)
-        bgTex:SetPoint("BOTTOMRIGHT", p, "BOTTOMRIGHT", -4, 4)
-        bgTex:SetColorTexture(0.05, 0.05, 0.08, 1.0)
+        ApplyModernCardStyle(p, { 0.04, 0.05, 0.07, 0.98 }, { 0.28, 0.45, 0.70, 0.95 })
 
         local title = p:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         title:SetPoint("TOPLEFT", p, "TOPLEFT", 10, -8)
@@ -2095,10 +2274,13 @@ function RF:OpenSpellPicker(anchorEditBox, onSelectCallback)
         closeBtn:SetScript("OnClick", function() p:Hide() end)
 
         -- Filter input box
-        local filterEdit = CreateFrame("EditBox", nil, p, "InputBoxTemplate")
-        filterEdit:SetSize(210, 18)
+        local filterEdit = CreateFrame("EditBox", nil, p, "BackdropTemplate")
+        filterEdit:SetSize(210, 20)
         filterEdit:SetPoint("TOPLEFT", p, "TOPLEFT", 12, -28)
         filterEdit:SetAutoFocus(false)
+        filterEdit:SetFontObject("GameFontHighlightSmall")
+        if filterEdit.SetTextInsets then filterEdit:SetTextInsets(4, 4, 0, 0) end
+        ApplyModernEditBoxStyle(filterEdit)
         p.filterEdit = filterEdit
 
         -- Scroll list
@@ -2185,19 +2367,35 @@ function RF:RefreshSpellPickerList()
             table.insert(p.filteredSpells, sp)
             local btn = buttons[count]
             if not btn then
-                btn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate")
+                btn = CreateFrame("Button", nil, content, "BackdropTemplate")
                 btn:SetSize(195, 22)
+                ApplyModernCardStyle(btn, { 0.06, 0.08, 0.12, 0.85 }, { 0.15, 0.18, 0.25, 0.70 })
+
+                if btn.GetNormalTexture and btn:GetNormalTexture() then btn:GetNormalTexture():SetAlpha(0) end
+                if btn.GetHighlightTexture and btn:GetHighlightTexture() then btn:GetHighlightTexture():SetAlpha(0) end
 
                 local icon = btn:CreateTexture(nil, "ARTWORK")
                 icon:SetSize(16, 16)
                 icon:SetPoint("LEFT", btn, "LEFT", 4, 0)
+                icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
                 btn.icon = icon
 
                 local text = btn:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-                text:SetPoint("LEFT", icon, "RIGHT", 4, 0)
+                text:SetPoint("LEFT", icon, "RIGHT", 6, 0)
                 text:SetPoint("RIGHT", btn, "RIGHT", -4, 0)
                 text:SetJustifyH("LEFT")
                 btn.text = text
+
+                if btn.HookScript then
+                    btn:HookScript("OnEnter", function(self)
+                        if self.SetBackdropColor then self:SetBackdropColor(0.12, 0.16, 0.25, 0.95) end
+                        if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.28, 0.45, 0.70, 0.90) end
+                    end)
+                    btn:HookScript("OnLeave", function(self)
+                        if self.SetBackdropColor then self:SetBackdropColor(0.06, 0.08, 0.12, 0.85) end
+                        if self.SetBackdropBorderColor then self:SetBackdropBorderColor(0.15, 0.18, 0.25, 0.70) end
+                    end)
+                end
 
                 buttons[count] = btn
             end
