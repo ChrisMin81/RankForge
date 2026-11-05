@@ -1740,10 +1740,27 @@ function RF:UpdateUI()
                 end
             end
             GameTooltip:AddLine(string.format(L["UI_LIST_TOOLTIP_MODS"] or "Modifiers configured: %d", activeMods), 0.6, 0.6, 0.6, true)
+            GameTooltip:AddLine("|cff00ff00" .. (L["UI_LIST_DRAG_HINT"] or "Drag: Place directly onto action bar") .. "|r")
             GameTooltip:Show()
         end)
         btn:SetScript("OnLeave", function(self)
             GameTooltip:Hide()
+        end)
+
+        -- Enable Drag & Drop directly from the left macro list onto action bars
+        btn:RegisterForDrag("LeftButton")
+        btn:SetScript("OnDragStart", function(self)
+            local cfg = self.macroConfig or macroCfg
+            if cfg and cfg.macroName then
+                local index = RF:FindMacroIndex(cfg.macroName)
+                if not index then
+                    local ok, status, newIdx = RF:SyncMacro(cfg, true)
+                    index = newIdx or RF:FindMacroIndex(cfg.macroName)
+                end
+                if index and PickupMacro then
+                    PickupMacro(index)
+                end
+            end
         end)
 
         btn:SetScript("OnClick", function()

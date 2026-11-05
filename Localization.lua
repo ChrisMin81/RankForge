@@ -149,6 +149,7 @@ local STRINGS_EN = {
     ["UI_SLOT_STATUS"] = "Gen.: %d/%d | Char: %d/%d",
     ["UI_NO_SPELL"] = "(No spell)",
     ["UI_LIST_TOOLTIP_MODS"] = "Modifiers configured: %d",
+    ["UI_LIST_DRAG_HINT"] = "Drag: Place directly onto action bar",
     ["UI_DEFAULT_MACRO_NAME"] = "DR_New",
 
     ["CONFIRM_DELETE_TITLE"] = "Delete Macro?",
@@ -316,6 +317,7 @@ local STRINGS_DE = {
     ["UI_SLOT_STATUS"] = "Allg.: %d/%d | Char: %d/%d",
     ["UI_NO_SPELL"] = "(Kein Zauber)",
     ["UI_LIST_TOOLTIP_MODS"] = "Konfigurierte Modifikatoren: %d",
+    ["UI_LIST_DRAG_HINT"] = "Ziehen: Direkt auf Aktionsleiste ablegen",
     ["UI_DEFAULT_MACRO_NAME"] = "DR_Neu",
 
     ["CONFIRM_DELETE_TITLE"] = "Makro wirklich löschen?",

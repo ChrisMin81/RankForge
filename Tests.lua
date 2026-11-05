@@ -1063,6 +1063,36 @@ RegisterTest("Default Character Slot & Debug Auto-Open Mode", function()
     AssertEquals(f.cbDebug:GetChecked(), false, "Debug checkbox must reflect debugMode = false")
 end)
 
+RegisterTest("Drag & Drop: Left macro list button draggable to action bars", function()
+    local profile = RF:GetActiveProfile()
+    local origMacros = profile.macros
+    profile.macros = {
+        {
+            macroName = "DR_DragListTest",
+            spellName = "Renew",
+            modifiers = { { key = "nomod", enabled = true, rankOffset = 0 } }
+        }
+    }
+
+    RF:UpdateUI()
+    local f = RF.MainFrame
+    Assert(f.listContent.buttons ~= nil and #f.listContent.buttons >= 1, "Macro button must exist")
+
+    local btn = f.listContent.buttons[1]
+    Assert(btn:GetScript("OnDragStart") ~= nil, "Macro list button must have OnDragStart script")
+
+    local pickedUp = nil
+    local oldPickup = PickupMacro
+    PickupMacro = function(idx) pickedUp = idx end
+
+    btn:GetScript("OnDragStart")(btn)
+    Assert(pickedUp ~= nil, "PickupMacro must be called when dragging from list button")
+
+    PickupMacro = oldPickup
+    profile.macros = origMacros
+    RF:UpdateUI()
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------
