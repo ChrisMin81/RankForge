@@ -409,8 +409,10 @@ RF.SpellRankLevels = {
     ["Gebet der Heilung"] = { [1]=30, [2]=40, [3]=50, [4]=60 },
     ["Power Word: Shield"] = { [1]=6, [2]=12, [3]=18, [4]=24, [5]=30, [6]=36, [7]=42, [8]=48, [9]=54, [10]=60 },
     ["Machtwort: Schild"] = { [1]=6, [2]=12, [3]=18, [4]=24, [5]=30, [6]=36, [7]=42, [8]=48, [9]=54, [10]=60 },
-    ["Smite"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54 },
-    ["Pein"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54 },
+    ["Smite"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54, [9]=61, [10]=69 },
+    ["Heilige Pein"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54, [9]=61, [10]=69 },
+    ["Göttliche Pein"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54, [9]=61, [10]=69 },
+    ["Pein"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54, [9]=61, [10]=69 },
     ["Mind Blast"] = { [1]=10, [2]=16, [3]=22, [4]=28, [5]=34, [6]=40, [7]=46, [8]=52, [9]=58 },
     ["Gedankenschlag"] = { [1]=10, [2]=16, [3]=22, [4]=28, [5]=34, [6]=40, [7]=46, [8]=52, [9]=58 },
     ["Shadow Word: Pain"] = { [1]=4, [2]=10, [3]=18, [4]=26, [5]=34, [6]=42, [7]=50, [8]=58 },
@@ -882,26 +884,26 @@ function RF:GenerateMacroBody(macroConfig)
 
                 if isTarget and isSelfcast then
                     -- Both Target and Selfcast active:
-                    -- In WoW, [modCondition] handles target + auto-self-cast in 11 chars instead of 42!
-                    if modCondition then
-                        table.insert(conditionBlocks, string.format("[%s]", modCondition))
-                    else
-                        local tgtCond = BuildConditionSubstring("@target", tgtHelp, tgtHarm, tgtNodead)
-                        if tgtCond ~= "" then
+                    local tgtCond = BuildConditionSubstring("@target", tgtHelp, tgtHarm, tgtNodead)
+                    if tgtCond ~= "" then
+                        if modCondition then
+                            table.insert(conditionBlocks, string.format("[%s,%s]", modCondition, tgtCond))
+                        else
                             table.insert(conditionBlocks, string.format("[%s]", tgtCond))
                         end
+                    end
+                    if modCondition then
+                        table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
+                    else
                         table.insert(conditionBlocks, "[@player]")
-                        table.insert(conditionBlocks, "[]")
                     end
                 elseif isTarget then
                     local tgtCond = BuildConditionSubstring("@target", tgtHelp, tgtHarm, tgtNodead)
                     if tgtCond ~= "" then
                         if modCondition then
                             table.insert(conditionBlocks, string.format("[%s,%s]", modCondition, tgtCond))
-                            table.insert(conditionBlocks, string.format("[%s]", modCondition))
                         else
                             table.insert(conditionBlocks, string.format("[%s]", tgtCond))
-                            table.insert(conditionBlocks, "[]")
                         end
                     else
                         if modCondition then
@@ -913,10 +915,8 @@ function RF:GenerateMacroBody(macroConfig)
                 elseif isSelfcast then
                     if modCondition then
                         table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
-                        table.insert(conditionBlocks, string.format("[%s]", modCondition))
                     else
                         table.insert(conditionBlocks, "[@player]")
-                        table.insert(conditionBlocks, "[]")
                     end
                 elseif #targets == 0 then
                     if modCondition then
