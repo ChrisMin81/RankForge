@@ -1,40 +1,57 @@
-# RankForge (DRM)
+# RankForge (DRM) - Downranking Makro Schmiede
 
-**RankForge** ist ein hochflexibles WoW-Addon zur automatischen Erstellung und Verwaltung von Downranking-Makros für Heiler und Caster in **WoW Forever**, **Classic Era / SoD / Hardcore** und **TBC Era**.
+**RankForge** ist ein hochflexibles, intelligentes WoW-Addon zur automatischen Erstellung, Optimierung und Verwaltung von Downranking-Makros für Heiler und Caster in **WoW Forever (3.3.5a)**, **Classic Era / SoD / Hardcore** und **TBC Era**.
 
 ---
 
 ## ✨ Features
 
-- **Dynamisches Downranking:**
-  - Wähle Zauber und weise Tasten (`nomod`, `Shift`, `Ctrl`, `Alt`, `Shift+Ctrl`, `Shift+Alt`) relative Ränge zu (`Max`, `Max - 1`, `Max - 2`, etc.) oder alternative Zauber.
-  - Beim Lernen neuer Zauberränge beim Lehrer werden alle Makros im Hintergrund **vollautomatisch aktualisiert**.
-- **Direktes Drag & Drop auf die Aktionsleiste:**
-  - Greife das Vorschau-Icon in der GUI mit der Maus und ziehe das Makro direkt auf deine Aktionsleiste! Du musst das Makro-Menü (`/m`) nie wieder öffnen.
-  - Das Makro muss nur einmal auf die Leiste gelegt werden – RankForge aktualisiert den Inhalt im Hintergrund, wenn du levelst oder neue Ränge lernst.
-- **Drei Wege zur Zauberauswahl:**
-  1. Zauber direkt aus dem Zauberbuch in das Vorschaufeld ziehen (Drag & Drop).
-  2. Schnellauswahl aus der Liste aller gelernten Zauber.
-  3. Freie Texteingabe.
-- **Frei sortierbare Modifikator-Reihenfolge:**
-  - Tasten können über die Pfeiltasten (▲ / ▼) in jede beliebige Auswertungs-Reihenfolge gebracht werden.
-  - Standardmäßig sind Doppel-Modifikatoren (`Shift+Ctrl`, `Shift+Alt`) priorisiert, damit kein unbeabsichtigtes Auslösen einfacher Modifikatoren passiert.
-- **Fallback-Einstellung bei fehlenden Rängen:**
-  - Wählbar pro Makro: Fehlen noch Ränge (z. B. auf niedrigen Leveln), wird die Bedingung entweder **weggelassen** oder vorübergehend auf **Rang 1** zurückgegriffen.
-- **Umfangreiches Targeting:**
-  - Checkboxen für Mouseover mit Ziel-Fallback (`[@mouseover,help,nodead][]`), striktes Mouseover, Fokus, Ziel-des-Ziels (`[@targettarget]`) und Auto-Selfcast (`[@player]`).
-  - Freitextfeld für eigene fortgeschrittene Bedingungen.
-- **Live-Vorschau mit Zeichenlimit-Warnung:**
-  - Live-Codevorschau und Zeichenzähler (`165 / 255`).
-  - Warnt optisch in Gelb/Rot bei Annäherung an das 255-Zeichen-Limit von WoW.
-- **Kampf-Schutz (`InCombatLockdown`):**
-  - Werden im Kampf neue Ränge gelernt oder ein Levelup erreicht, wartet RankForge automatisch bis zum Kampfende (`PLAYER_REGEN_ENABLED`) und aktualisiert die Makros ohne UI-Fehler oder Taint.
-- **1-Klick-Vorlagen (Presets):**
-  - Vorkonfigurierte Makros für Priester (Erneuerung, Blitzheilung, Große Heilung, Schild), Paladine (Heiliges Licht, Lichtblitz), Druiden (Heilende Berührung, Nachwachsen, Verjüngung) und Schamanen (Kettenheilung, Welle der Heilung).
-- **Profil-System mit Base64-Import/Export:**
-  - Speichere Profile für Twinks oder teile Konfigurationen über einen Base64-String.
-- **Sicherheitsabfrage:**
-  - Beim Löschen eines Makros fragt ein Popup, ob das Makro auch aus den WoW-Makros gelöscht werden soll.
+### 🎯 Dynamisches Downranking & Automatische Synchronisation
+- **Relative Ränge:** Weise Modifikatoren (`nomod`, `Shift`, `Ctrl`, `Alt`, `Shift+Ctrl`, etc.) relative Ränge zu (`Max`, `Max - 1`, `Max - 2`, etc.) oder alternative Zauber.
+- **Vollautomatisches Update:** Lernst du beim Lehrer einen neuen Rang, aktualisiert RankForge im Hintergrund **automatisch alle Makros** auf deinen Aktionsleisten.
+- **Alternative Zauber:** Beliebige Tastenbelegungen können mit alternativen Zaubern belegt werden (z. B. nomod = Große Heilung, Shift = Blitzheilung, Alt = Machtwort: Schild).
+- **Fallback-Einstellung:** Wähle pro Makro, ob bei noch nicht erlernten Rängen die Taste weggelassen oder vorübergehend **Rang 1 als Fallback** genutzt wird.
+
+### ⚡ Downranking-Effizienz-Engine & Sweet-Spot (WoW Forever)
+- **Zaubermacht- & Proc-Berechnung:** Berücksichtigt die Downranking-Strafen (Spell Power Penalty) und Proc-Chancen:
+  - 🟢 **Grün (100% Effizienz):** Zauberstufe $\ge$ Charakterstufe - 18 (volle Zaubermacht-Skalierung).
+  - 🟡 **Gelb (Moderate Reduktion):** Zauberstufe $\ge 20$, aber unterhalb der vollen Skalierungsgrenze.
+  - 🔴 **Rot (Starke Reduktion):** Pre-Level-20-Abzüge & minimierte Effekt- und Proc-Chancen (z. B. Rang-1-Spam).
+- **Sweet-Spot-Erkennung:** Markiert automatisch den manaschonendsten Rang, der noch die vollen 100% Zaubermacht-Bonus erhält.
+
+### 🎛️ Matrix-Grid für zielgenaue Bedingungen
+- **Unabhängige Ziel-Bedingungen:** Jede Modifikator-Zeile verfügt über eigene Checkboxen für:
+  - **MO:** `@mouseover`
+  - **Ziel:** Aktuelles Ziel
+  - **Fokus:** `@focus`
+  - **ToT:** Ziel des Ziels (`@targettarget`)
+  - **Selbst:** Auto-Selfcast (`@player`)
+  - **Filter:** `help`, `harm`, `nodead`
+- **Spalten-Umschalter:** Ein Klick auf die Spaltenüberschriften aktiviert oder deaktiviert die Bedingung für alle Zeilen gleichzeitig.
+- **Automatische Typ-Erkennung:** Beim Auswählen eines Zaubers erkennt RankForge schädliche vs. hilfreiche Sprüche und konfiguriert Ziele und Filter (`harm` vs. `help`, Deaktivierung von Selbstzauber) automatisch passend vor.
+
+### ⚔️ Pre-Cast Utility & Burst-Optionen
+- **Kampfbefehle:** Integrierte Checkboxen für automatischen Nahkampfangriff (`/startattack`) und Begleiter-Angriff (`/petattack`).
+- **Trinkets & Volksfähigkeiten:** 1-Klick-Aktivierung für Trinket 1 (`/use 13`), Trinket 2 (`/use 14`) und Rassenfähigkeiten (`/cast Berserking`, `/cast Kochendes Blut`, etc.).
+- **Zusätzliche Befehle:** Freitextfeld für individuelle Pre-Cast Zeilen (z. B. Tränke, `/cast Innerer Fokus`, Runen).
+
+### ✂️ Zeichenlimit-Optimierung (Maximal 255 Zeichen)
+- **Kompakte Syntax-Engine:** Redundante Bedingungen (wie doppelte Fallbacks) werden eliminiert.
+- **Modifier-Kompression:** Spart bis zu **11–23 Zeichen pro Modifier-Zeile**, sodass selbst komplexe Makros mit Trinkets, Angriffs-Befehlen und 7 Rängen garantiert in die 255-Zeichen-Grenze von WoW passen.
+- **Live-Vorschau:** Interaktive Vorschau mit dynamischer Längenanzeige und Farbumschlag (Grün $\to$ Gelb $\to$ Rot).
+
+### 🖱️ Komfortables Drag & Drop
+- **Aus dem Zauberbuch:** Ziehe einen Zauber direkt aus deinem Zauberbuch auf das Icon **oder** in das Eingabefeld (unterstützt WoW 3.3.5a Buch-Slots, moderne SpellIDs und Aktionsleisten).
+- **Direkt auf die Aktionsleiste:** Greife das Vorschau-Icon in RankForge und lege es direkt auf deine Aktionsleiste. Das Makro muss nie wieder manuell verschoben oder über `/m` bearbeitet werden!
+
+### 📚 Umfassende Multi-Klassen-Datenbank
+- Vollständige Ränge- und Leveltabellen für alle relevanten Heiler und Caster (Priester, Paladin, Schamane, Druide, Magier, Hexenmeister).
+- Vollständig zweisprachig (Deutsch und Englisch) mit automatischer Client-Erkennung.
+
+### 🛡️ Sicherheit & Profile
+- **Kampf-Schutz (`InCombatLockdown`):** Verhindert UI-Fehler oder Taint im Kampf. Änderungen und Updates werden bei Kampfende (`PLAYER_REGEN_ENABLED`) sicher angewendet.
+- **Account vs. Charakter:** Wähle flexibel, ob Makros im allgemeinen (Account) oder im charakterspezifischen Makro-Tab gespeichert werden.
+- **Base64 Profil-System:** Importiere und exportiere Makro-Sets für Twinks oder zum Teilen mit Gildenmitgliedern.
 
 ---
 
@@ -43,8 +60,8 @@
 | Befehl | Funktion |
 | :--- | :--- |
 | `/rf` oder `/rankforge` | Öffnet / schließt die grafische Benutzeroberfläche |
-| `/rf update` | Erzwingt eine sofortige Aktualisierung aller Makros |
-| `/rf help` | Zeigt eine Übersicht aller Befehle im Chat an |
+| `/rf update` | Erzwingt eine sofortige Überprüfung und Aktualisierung aller Makros |
+| `/rf help` | Zeigt eine Übersicht aller verfügbaren Befehle im Chat an |
 
 ---
 
@@ -55,4 +72,4 @@ RankForge ist über Verzeichnis-Junctions (Softlinks) direkt verknüpft mit:
 - `D:\Blizzard\World of Warcraft\_classic_era_\Interface\AddOns\RankForge`
 - `D:\Blizzard\World of Warcraft\_anniversary_\Interface\AddOns\RankForge` (TBC 2.5.6)
 
-Jede Änderung im Entwicklungsordner `d:\Wow-Addons\downrank-macros` ist somit **ohne Kopieren sofort in allen Clients aktiv**!
+Jede Änderung im Entwicklungsordner ist somit **ohne Kopieren sofort in allen Clients aktiv**!
