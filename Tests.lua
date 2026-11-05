@@ -856,6 +856,13 @@ RegisterTest("Drag & Drop: Spell extraction from cursor (3.3.5a, modern and acti
     AssertEquals(sp10, "Geringes Heilen", "Slot 10 must resolve to Geringes Heilen, never Blizzard!")
     Assert(mockCursor == nil, "Cursor should be cleared after extraction")
 
+    -- 1c. Slot 12 test (must not be confused with Spell ID 12 = Hot Foot (TEST)!)
+    mockSpellBook[12] = { name = "Schattenwort: Schmerz", subtext = "Rang 1", spellID = 589 }
+    mockCursor = { "spell", 12, "spell" }
+    local sp12 = RF:GetSpellFromCursor()
+    AssertEquals(sp12, "Schattenwort: Schmerz", "Slot 12 must resolve to Schattenwort: Schmerz, never Hot Foot (TEST)!")
+    Assert(mockCursor == nil, "Cursor should be cleared after extraction")
+
     -- 2. Modern style: {"spell", 139} (numeric spell ID)
     mockCursor = { "spell", 139, nil }
     local sp2 = RF:GetSpellFromCursor()

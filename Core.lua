@@ -272,25 +272,17 @@ function RF:GetSpellFromCursor()
     if infoType == "spell" then
         local bookType = (type(info2) == "string" and info2 ~= "") and info2 or (BOOKTYPE_SPELL or "spell")
 
-        -- 1. In WoW 3.3.5a / Classic: info1 is numeric spellbook slot index, info2 is bookType string ("spell")
+        -- 1. In WoW 3.3.5a / Vanilla / TBC: info1 is numeric spellbook slot index, info2 is bookType string ("spell")
         if type(info1) == "number" and (type(info2) == "string" or not info2) then
-            -- 1a. Try GetSpellInfo with bookType (Native in 3.3.5a / Classic!)
-            if GetSpellInfo then
-                local ok, name = pcall(GetSpellInfo, info1, bookType)
-                if ok and name and name ~= "" and type(name) == "string" then
-                    spellName = name
-                end
-            end
-
-            -- 1b. Try GetSpellName (WotLK 3.3.5a / Vanilla / TBC)
-            if (not spellName or spellName == "") and GetSpellName then
+            -- 1a. Native 3.3.5a / Vanilla / TBC API: GetSpellName(slot, bookType)
+            if GetSpellName then
                 local ok, name = pcall(GetSpellName, info1, bookType)
                 if ok and name and name ~= "" and type(name) == "string" then
                     spellName = name
                 end
             end
 
-            -- 1c. Try GetSpellBookItemName (Cataclysm+)
+            -- 1b. Cataclysm+ API: GetSpellBookItemName(slot, bookType)
             if (not spellName or spellName == "") and GetSpellBookItemName then
                 local ok, name = pcall(GetSpellBookItemName, info1, bookType)
                 if ok and name and name ~= "" and type(name) == "string" then
@@ -298,13 +290,16 @@ function RF:GetSpellFromCursor()
                 end
             end
 
-            -- 1d. Try GetSpellBookItemInfo (pass bookType to GetSpellInfo!)
+            -- 1c. Get actual global spellID from slot via GetSpellBookItemInfo, THEN query GetSpellInfo(spellID)
             if (not spellName or spellName == "") and GetSpellBookItemInfo then
                 local ok, itemType, sID = pcall(GetSpellBookItemInfo, info1, bookType)
-                if ok and sID then
-                    if GetSpellInfo then
-                        local ok2, name = pcall(GetSpellInfo, sID, bookType)
-                        if ok2 and name and name ~= "" and type(name) == "string" then
+                if ok and sID and type(sID) == "number" and sID > 0 then
+                    if C_Spell and C_Spell.GetSpellInfo then
+                        local okInfo, info = pcall(C_Spell.GetSpellInfo, sID)
+                        if okInfo and info and info.name then spellName = info.name end
+                    elseif GetSpellInfo then
+                        local okInfo, name = pcall(GetSpellInfo, sID)
+                        if okInfo and name and name ~= "" and type(name) == "string" then
                             spellName = name
                         end
                     end
