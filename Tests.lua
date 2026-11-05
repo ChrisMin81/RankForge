@@ -716,6 +716,7 @@ end)
 RegisterTest("Macro List UI: Displays both Macro Name and Spell Name with live update", function()
     -- Prepare test macros
     local profile = RF:GetActiveProfile()
+    local origMacros = profile.macros
     profile.macros = {
         {
             macroName = "DR_Renew",
@@ -757,6 +758,10 @@ RegisterTest("Macro List UI: Displays both Macro Name and Spell Name with live u
     RF:UpdateMacroListItem(btn1, updatedCfg, 1)
     AssertEquals(btn1.nameText:GetText(), "DR_Shield_Updated", "nameText should update dynamically")
     AssertEquals(btn1.subText:GetText(), "Power Word: Shield", "subText should update dynamically")
+
+    -- Restore profile macros
+    profile.macros = origMacros
+    RF:UpdateUI()
 end)
 
 RegisterTest("Macro Generation: Action Bar Tooltip & Cast Fallback when only Mouseover is active", function()
@@ -974,6 +979,7 @@ RegisterTest("Character Filtering: RF:IsMacroForCurrentCharacter and list filter
 
     -- Test UI Filtering
     local profile = RF:GetActiveProfile()
+    local origMacros = profile.macros
     profile.macros = { priestMacro, mageMacro, warlockMacro }
     RankForgeCharDB = RankForgeCharDB or {}
     RankForgeCharDB.filterCurrentCharOnly = true
@@ -1012,7 +1018,8 @@ RegisterTest("Character Filtering: RF:IsMacroForCurrentCharacter and list filter
     AssertEquals(RF:IsMacroForCurrentCharacter(campfireAccount), true, "General account macro should be visible across characters")
     AssertEquals(RF:IsMacroForCurrentCharacter(campfireCharOnly), false, "General character-specific macro of another char should be hidden")
 
-    -- Restore filter setting
+    -- Restore profile macros & filter setting
+    profile.macros = origMacros
     RankForgeCharDB.filterCurrentCharOnly = true
     RF:UpdateUI()
 end)
@@ -1020,6 +1027,7 @@ end)
 RegisterTest("Default Character Slot & Debug Auto-Open Mode", function()
     -- Verify new macro has isAccount == false (Character slot by default)
     local profile = RF:GetActiveProfile()
+    local origMacros = profile.macros
     profile.macros = {}
     RF:CreateNewMacroConfig()
     local macros = RF:GetMacrosList()
@@ -1043,6 +1051,7 @@ RegisterTest("Default Character Slot & Debug Auto-Open Mode", function()
     AssertEquals(f.cbDebug:GetChecked(), true, "Debug checkbox must reflect debugMode = true")
 
     RankForgeDB.debugMode = false
+    profile.macros = origMacros
     RF:UpdateUI()
     AssertEquals(f.cbDebug:GetChecked(), false, "Debug checkbox must reflect debugMode = false")
 end)
@@ -1054,6 +1063,11 @@ function RF:RunAllTests()
     passedCount = 0
     failedCount = 0
     wipe(testResults)
+
+    -- 1. Snapshot user configuration so tests never wipe user macros
+    local savedProfiles = (RF.DeepCopy and RankForgeDB and RankForgeDB.profiles) and RF:DeepCopy(RankForgeDB.profiles)
+    local savedCharDB = (RF.DeepCopy and RankForgeCharDB) and RF:DeepCopy(RankForgeCharDB)
+    local savedKnown = (RF.DeepCopy and RF.knownSpells) and RF:DeepCopy(RF.knownSpells)
 
     local charName, realm, charClass = RF:GetCurrentCharacterKey()
     local buildInfo = (GetBuildInfo and select(1, GetBuildInfo())) or "Unknown"
@@ -1103,6 +1117,20 @@ function RF:RunAllTests()
     table.insert(plainLines, summaryStr)
     table.insert(plainLines, "========================================")
     local fullReport = table.concat(plainLines, "\n")
+
+    -- 2. Restore user's real configuration immediately
+    if savedProfiles and RankForgeDB then
+        RankForgeDB.profiles = savedProfiles
+    end
+    if savedCharDB then
+        RankForgeCharDB = savedCharDB
+    end
+    if savedKnown then
+        RF.knownSpells = savedKnown
+    end
+    if RF.UpdateUI and RF.MainFrame and RF.MainFrame:IsShown() then
+        RF:UpdateUI()
+    end
 
     -- Save to SavedVariables (automatically written to WTF on /reload or exit)
     RankForgeDB = RankForgeDB or {}

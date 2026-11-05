@@ -36,8 +36,19 @@ local defaultCharDB = {
 }
 
 --------------------------------------------------------------------------------
--- Utilities: Spell Scanning (Classic Era / TBC / Modern compatible)
+-- Utilities
 --------------------------------------------------------------------------------
+function RF:DeepCopy(orig)
+    if type(orig) ~= "table" then
+        return orig
+    end
+    local copy = {}
+    for k, v in pairs(orig) do
+        copy[RF:DeepCopy(k)] = RF:DeepCopy(v)
+    end
+    return copy
+end
+
 local function ParseRankNumber(subtext)
     if not subtext or subtext == "" then return nil end
     local rank = subtext:match("(%d+)")
@@ -1475,6 +1486,135 @@ function RF:CloneMacro(macroConfig)
 end
 
 --------------------------------------------------------------------------------
+-- Automatic Macro Recovery from WoW Native Macro Window
+--------------------------------------------------------------------------------
+function RF:RecoverMacrosFromWoW()
+    local macros = RF:GetMacrosList()
+    local charName, realm, charClass = RF:GetCurrentCharacterKey()
+
+    -- Check if profile is empty or only contains a fresh dummy macro
+    local onlyDummy = (#macros == 0)
+    if #macros == 1 and macros[1].macroName == "DR_New" and (not macros[1].spellName or macros[1].spellName == "") then
+        onlyDummy = true
+    end
+
+    if not onlyDummy then
+        return false
+    end
+
+    local recovered = {}
+    local numAccount, numCharacter = GetNumMacros()
+    local maxAccount = MAX_ACCOUNT_MACROS or 120
+
+    local function ParseWoWMacro(name, body, isAccount)
+        if not name or not name:match("^DR_") then return nil end
+        if name:match("^DR_Test") or name:match("^DR_CloneTest") or name == "DR_New" then return nil end
+
+        -- Extract spellName from #showtooltip or /cast
+        local spellName = body:match("#showtooltip%s+([^\r\n]+)")
+        if not spellName or spellName == "" then
+            spellName = body:match("/cast%s+.-([%a%s]+)%(Rang")
+        end
+        if not spellName or spellName == "" then
+            spellName = body:match("/cast%s+.-([%a%s]+)%(")
+        end
+        if not spellName or spellName == "" then
+            spellName = body:match("/cast%s+.-([%a%s]+)")
+        end
+        if spellName then spellName = spellName:trim() end
+
+        local macroClass = (spellName and RF:GetClassForSpell(spellName)) or charClass
+
+        local cfg = {
+            macroName = name,
+            spellName = spellName or name:gsub("^DR_", ""),
+            character = isAccount and "" or charName,
+            realm = realm,
+            class = macroClass,
+            isAccount = isAccount,
+            fallbackMode = "omit",
+            targetMouseover = (body:find("@mouseover") ~= nil),
+            customTarget = "",
+            customSortOrder = false,
+            useTrinket1 = (body:find("/use 13") ~= nil),
+            useTrinket2 = (body:find("/use 14") ~= nil),
+            useRacial = (body:find("/cast Berserking") ~= nil or body:find("/cast Kochendes Blut") ~= nil or body:find("/cast Blutrausch") ~= nil),
+            startAttack = (body:find("/startattack") ~= nil),
+            petAttack = (body:find("/petattack") ~= nil),
+            preCastLines = "",
+            modifiers = {}
+        }
+
+        local isHelp = (body:find("help") ~= nil)
+        local isHarm = (body:find("harm") ~= nil) or cfg.startAttack
+
+        local mods = {
+            { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3 },
+            { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4 },
+            { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5 },
+            { key = "shift",      enabled = (body:find("mod:shift") ~= nil), mode = "relative", rankOffset = 1 },
+            { key = "ctrl",       enabled = (body:find("mod:ctrl") ~= nil),  mode = "relative", rankOffset = 2 },
+            { key = "alt",        enabled = (body:find("mod:alt") ~= nil),   mode = "relative", rankOffset = 2 },
+            { key = "nomod",      enabled = true, mode = "relative", rankOffset = 0 },
+        }
+
+        for _, m in ipairs(mods) do
+            table.insert(cfg.modifiers, {
+                key = m.key,
+                enabled = m.enabled,
+                mode = m.mode,
+                rankOffset = m.rankOffset,
+                customSpell = "",
+                targetMouseover = cfg.targetMouseover,
+                targetTarget = true,
+                targetFocus = false,
+                targetToT = false,
+                targetSelfcast = isHelp,
+                isHelp = isHelp,
+                isHarm = isHarm,
+                isNodead = true
+            })
+        end
+
+        return cfg
+    end
+
+    -- 1. Scan Account macros
+    local accLimit = (numAccount and numAccount > 0) and numAccount or 0
+    for i = 1, accLimit do
+        local name, icon, body = GetMacroInfo(i)
+        if name and body then
+            local parsed = ParseWoWMacro(name, body, true)
+            if parsed then
+                table.insert(recovered, parsed)
+            end
+        end
+    end
+
+    -- 2. Scan Character macros
+    local charLimit = (numCharacter and numCharacter > 0) and numCharacter or 0
+    for i = maxAccount + 1, maxAccount + charLimit do
+        local name, icon, body = GetMacroInfo(i)
+        if name and body then
+            local parsed = ParseWoWMacro(name, body, false)
+            if parsed then
+                table.insert(recovered, parsed)
+            end
+        end
+    end
+
+    if #recovered > 0 then
+        wipe(macros)
+        for _, rec in ipairs(recovered) do
+            table.insert(macros, rec)
+        end
+        return true
+    end
+
+    return false
+end
+
+--------------------------------------------------------------------------------
 -- Default Presets Initializer
 --------------------------------------------------------------------------------
 function RF:ApplyInitialPresetsIfEmpty()
@@ -1534,7 +1674,10 @@ EventFrame:SetScript("OnEvent", function(self, event, arg1, ...)
 
     elseif event == "PLAYER_LOGIN" then
         RF:ScanSpellBook()
-        RF:ApplyInitialPresetsIfEmpty()
+        local recovered = RF:RecoverMacrosFromWoW()
+        if not recovered then
+            RF:ApplyInitialPresetsIfEmpty()
+        end
         if RF.InitMinimapButton then
             RF:InitMinimapButton()
         end
