@@ -846,6 +846,60 @@ RegisterTest("Drag & Drop: Spell extraction from cursor (3.3.5a, modern and acti
     end
 end)
 
+RegisterTest("Downranking Efficiency: Spell power and proc chance calculation (WoW Forever)", function()
+    -- Level 60 mock (UnitLevel returns 60)
+    RF.knownSpells["Renew"] = { name = "Renew", maxRank = 10, hasRanks = true }
+    RF.knownSpells["Frostbolt"] = { name = "Frostbolt", maxRank = 11, hasRanks = true }
+
+    -- 1. Renew Max Rank (Rank 10): 100% full, green
+    local pct10, status10, proc10 = RF:GetDownrankingEfficiency("Renew", 0, 10)
+    AssertEquals(pct10, 100, "Max rank should have 100% efficiency")
+    AssertEquals(status10, "green", "Max rank should be green status")
+    AssertEquals(proc10, "100%", "Max rank should have 100% procs")
+
+    -- 2. Renew Sweet Spot Rank 7 (Req lvl 44, >= 42): 100% full, green
+    local pct7, status7, proc7 = RF:GetDownrankingEfficiency("Renew", 3, 7)
+    AssertEquals(pct7, 100, "Sweet spot rank 7 should have 100% efficiency")
+    AssertEquals(status7, "green", "Sweet spot rank 7 should be green status")
+    AssertEquals(proc7, "100%", "Sweet spot rank 7 should have 100% procs")
+
+    -- 3. Renew Rank 5 (Req lvl 32, < 42 but >= 20): yellow minor penalty (~61%)
+    local pct5, status5, proc5 = RF:GetDownrankingEfficiency("Renew", 5, 5)
+    Assert(pct5 < 100 and pct5 >= 60, "Rank 5 should suffer minor level-difference penalty")
+    AssertEquals(status5, "yellow", "Rank 5 should be yellow status")
+
+    -- 4. Renew Rank 2 (Req lvl 14, < 20): red severe pre-20 penalty & 0%/minimal procs
+    local pct2, status2, proc2 = RF:GetDownrankingEfficiency("Renew", 8, 2)
+    Assert(pct2 < 40, "Rank 2 should suffer severe pre-20 penalty")
+    AssertEquals(status2, "red", "Rank 2 should be red status")
+    Assert(proc2:find("⚠️") ~= nil, "Rank 2 procs should have severe warning")
+
+    -- 5. Mage Frostbolt Rank 1 (Req lvl 1): classic rank 1 nerf from WoW Forever article
+    local pctFb1, statusFb1, procFb1 = RF:GetDownrankingEfficiency("Frostbolt", 10, 1)
+    Assert(pctFb1 < 30, "Frostbolt rank 1 should have severe scaling penalty")
+    AssertEquals(statusFb1, "red", "Frostbolt rank 1 should be red status")
+    Assert(procFb1:find("⚠️") ~= nil, "Frostbolt rank 1 procs should have severe warning")
+end)
+
+RegisterTest("Spell Database: Multi-class spell rank tables support", function()
+    local classes = {
+        { name = "Priest", spells = { "Renew", "Flash Heal", "Greater Heal", "Power Word: Shield", "Mind Blast" } },
+        { name = "Druid", spells = { "Healing Touch", "Regrowth", "Rejuvenation", "Moonfire", "Wrath" } },
+        { name = "Paladin", spells = { "Holy Light", "Flash of Light", "Consecration", "Exorcism" } },
+        { name = "Shaman", spells = { "Healing Wave", "Lesser Healing Wave", "Chain Heal", "Lightning Bolt", "Earth Shock" } },
+        { name = "Mage", spells = { "Frostbolt", "Fireball", "Scorch", "Arcane Missiles", "Blizzard" } },
+        { name = "Warlock", spells = { "Shadow Bolt", "Corruption", "Immolate", "Curse of Agony", "Drain Life" } }
+    }
+
+    for _, cls in ipairs(classes) do
+        for _, sp in ipairs(cls.spells) do
+            local ranks = RF.SpellRankLevels[sp]
+            Assert(ranks ~= nil and type(ranks) == "table", string.format("Spell %s for %s must exist in SpellRankLevels", sp, cls.name))
+            Assert(ranks[1] ~= nil and ranks[1] >= 1, string.format("Spell %s must have rank 1 level defined", sp))
+        end
+    end
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

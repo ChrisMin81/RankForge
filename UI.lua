@@ -678,11 +678,26 @@ local function CreateMainUI()
         offsetEdit:SetAutoFocus(false)
         offsetEdit:SetNumeric(true)
         offsetEdit:SetMaxLetters(2)
+        local function UpdateRowDesc(val)
+            local off = tonumber(val) or 0
+            local spName = currentMacro and currentMacro.spellName
+            local pct, status, procChance, reqLvl, desc = RF:GetDownrankingEfficiency(spName, off)
+            local text = (off == 0) and "MAX" or string.format("(-%d)", off)
+            if status == "green" then
+                row.descText:SetText("|cff00ff00" .. text .. "|r")
+            elseif status == "yellow" then
+                row.descText:SetText("|cffffcc00" .. text .. "|r")
+            else
+                row.descText:SetText("|cffff3333" .. text .. "|r")
+            end
+        end
+        row.UpdateRowDesc = UpdateRowDesc
+
         offsetEdit:SetScript("OnTextChanged", function(self, userInput)
             if userInput and currentMacro and currentMacro.modifiers and currentMacro.modifiers[i] then
                 local val = tonumber(self:GetText()) or 0
                 currentMacro.modifiers[i].rankOffset = val
-                row.descText:SetText(val == 0 and "(Max)" or string.format("(-%d)", val))
+                UpdateRowDesc(val)
                 RF:UpdatePreview()
             end
         end)
@@ -690,14 +705,44 @@ local function CreateMainUI()
 
         local descText = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
         descText:SetPoint("LEFT", row, "LEFT", 228, 0)
-        descText:SetWidth(20)
+        descText:SetWidth(25)
         descText:SetJustifyH("LEFT")
         row.descText = descText
+
+        local function ShowRowEfficiencyTooltip(owner)
+            local spName = currentMacro and currentMacro.spellName
+            if not spName or spName == "" then return end
+            local off = tonumber(row.offsetEdit:GetText()) or 0
+            local spellInfo = RF.knownSpells and RF.knownSpells[spName]
+            local maxRank = (spellInfo and spellInfo.maxRank and spellInfo.maxRank > 0) and spellInfo.maxRank or 1
+            local targetRank = math.max(1, maxRank - off)
+            local pct, status, procChance, reqLvl, desc = RF:GetDownrankingEfficiency(spName, off, targetRank)
+
+            GameTooltip:SetOwner(owner, "ANCHOR_TOP")
+            GameTooltip:ClearLines()
+            GameTooltip:AddLine(string.format("%s (%s %d)", spName, L["RANK_WORD"] or "Rank", targetRank), 1, 0.82, 0)
+            GameTooltip:AddLine(string.format(L["UI_EFFICIENCY_REQ_LVL"] or "Required Level: %d", reqLvl), 0.8, 0.8, 0.8)
+
+            local spColor = (status == "green" and "|cff00ff00") or (status == "yellow" and "|cffffcc00") or "|cffff3333"
+            GameTooltip:AddLine(string.format((L["UI_EFFICIENCY_SP_SCALING"] or "Spell Power Scaling: %s"), spColor .. pct .. "%|r"), 1, 1, 1)
+
+            local procColor = (status == "green" and "|cff00ff00") or (status == "yellow" and "|cffffcc00") or "|cffff3333"
+            GameTooltip:AddLine(string.format((L["UI_EFFICIENCY_PROC_CHANCE"] or "Talent & Proc Chance: %s"), procColor .. procChance .. "|r"), 1, 1, 1)
+
+            GameTooltip:AddLine(desc, 0.7, 0.7, 0.7, true)
+            if status ~= "green" then
+                GameTooltip:AddLine("|cffffcc00" .. (L["UI_SWEET_SPOT_CLICK"] or "[Click]") .. "|r Klicke auf den Stern (*), um den sicheren Sweet Spot einzustellen.", 0.9, 0.9, 0.5, true)
+            end
+            GameTooltip:Show()
+        end
+
+        offsetEdit:SetScript("OnEnter", ShowRowEfficiencyTooltip)
+        offsetEdit:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
         -- Sweet Spot Recommendation Button (Gold Star)
         local starBtn = CreateFrame("Button", nil, row)
         starBtn:SetSize(14, 14)
-        starBtn:SetPoint("LEFT", row, "LEFT", 249, 0)
+        starBtn:SetPoint("LEFT", row, "LEFT", 251, 0)
 
         local starIcon = starBtn:CreateTexture(nil, "ARTWORK")
         starIcon:SetAllPoints()
@@ -712,6 +757,8 @@ local function CreateMainUI()
             if spName and spName ~= "" then
                 local bestOffset, bestRank, reqLvl = RF:GetSpellSweetSpot(spName)
                 GameTooltip:AddLine(string.format(L["UI_SWEET_SPOT_RECOMMENDED"] or "Optimal: Rank %d (Level %d+)", bestRank, reqLvl), 0, 1, 0)
+                GameTooltip:AddLine("• 100% Zaubermacht-Skalierung (Kein Malus)", 0.8, 1, 0.8)
+                GameTooltip:AddLine("• 100% Talent- & Schmuckstück-Proc-Chance (Sicher)", 0.8, 1, 0.8)
                 GameTooltip:AddLine(L["UI_SWEET_SPOT_DESC"] or "Lowest rank with 100% spell power scaling for maximum mana efficiency.", 0.8, 0.8, 0.8, true)
                 GameTooltip:AddLine(L["UI_SWEET_SPOT_CLICK"] or "|cff00ff00[Click]|r Set this rank offset automatically", 0, 1, 0)
             else
@@ -730,7 +777,7 @@ local function CreateMainUI()
                 local bestOffset, bestRank, reqLvl = RF:GetSpellSweetSpot(spName)
                 currentMacro.modifiers[i].rankOffset = bestOffset
                 row.offsetEdit:SetText(tostring(bestOffset))
-                row.descText:SetText(bestOffset == 0 and "(Max)" or string.format("(-%d)", bestOffset))
+                UpdateRowDesc(bestOffset)
                 pcall(PlaySound, SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON or 856)
                 RF:UpdatePreview()
             end
@@ -1245,7 +1292,11 @@ function RF:LoadModifiersIntoUI(macroConfig)
             row.modLabel:SetText(GetModifierDisplayName(modData.key))
             row.offsetEdit:SetText(tostring(modData.rankOffset or 0))
             local off = tonumber(modData.rankOffset) or 0
-            row.descText:SetText(off == 0 and "(Max)" or string.format("(-%d)", off))
+            if row.UpdateRowDesc then
+                row.UpdateRowDesc(off)
+            else
+                row.descText:SetText(off == 0 and "MAX" or string.format("(-%d)", off))
+            end
 
             -- Grid Targeting Checkboxes per Row
             if row.cbMo then row.cbMo:SetChecked(modData.targetMouseover ~= false) end

@@ -423,6 +423,8 @@ RF.SpellRankLevels = {
     ["Nachwachsen"] = { [1]=12, [2]=18, [3]=24, [4]=30, [5]=36, [6]=42, [7]=48, [8]=54, [9]=60 },
     ["Rejuvenation"] = { [1]=4, [2]=10, [3]=16, [4]=22, [5]=28, [6]=34, [7]=40, [8]=46, [9]=52, [10]=58, [11]=60 },
     ["Verjüngung"] = { [1]=4, [2]=10, [3]=16, [4]=22, [5]=28, [6]=34, [7]=40, [8]=46, [9]=52, [10]=58, [11]=60 },
+    ["Moonfire"] = { [1]=4, [2]=10, [3]=16, [4]=22, [5]=28, [6]=34, [7]=40, [8]=46, [9]=52, [10]=58, [11]=60 },
+    ["Mondfeuer"] = { [1]=4, [2]=10, [3]=16, [4]=22, [5]=28, [6]=34, [7]=40, [8]=46, [9]=52, [10]=58, [11]=60 },
     ["Wrath"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54 },
     ["Zorn"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54 },
     ["Starfire"] = { [1]=20, [2]=26, [3]=34, [4]=42, [5]=50, [6]=58 },
@@ -433,6 +435,12 @@ RF.SpellRankLevels = {
     ["Heiliges Licht"] = { [1]=1, [2]=6, [3]=14, [4]=22, [5]=30, [6]=38, [7]=46, [8]=54, [9]=60 },
     ["Flash of Light"] = { [1]=20, [2]=26, [3]=34, [4]=42, [5]=50, [6]=58 },
     ["Lichtblitz"] = { [1]=20, [2]=26, [3]=34, [4]=42, [5]=50, [6]=58 },
+    ["Holy Shock"] = { [1]=40, [2]=48, [3]=56, [4]=64, [5]=72, [6]=80 },
+    ["Heiliger Schock"] = { [1]=40, [2]=48, [3]=56, [4]=64, [5]=72, [6]=80 },
+    ["Consecration"] = { [1]=20, [2]=30, [3]=40, [4]=50, [5]=60, [6]=70, [7]=78, [8]=80 },
+    ["Weihe"] = { [1]=20, [2]=30, [3]=40, [4]=50, [5]=60, [6]=70, [7]=78, [8]=80 },
+    ["Exorcism"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=60, [7]=68, [8]=73, [9]=79 },
+    ["Exorzismus"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=60, [7]=68, [8]=73, [9]=79 },
 
     -- Shaman
     ["Healing Wave"] = { [1]=1, [2]=6, [3]=12, [4]=18, [5]=24, [6]=30, [7]=36, [8]=42, [9]=48, [10]=54, [11]=60 },
@@ -443,12 +451,28 @@ RF.SpellRankLevels = {
     ["Kettenheilung"] = { [1]=40, [2]=46, [3]=54 },
     ["Lightning Bolt"] = { [1]=1, [2]=8, [3]=14, [4]=20, [5]=26, [6]=32, [7]=38, [8]=44, [9]=50, [10]=56, [11]=60 },
     ["Blitzschlag"] = { [1]=1, [2]=8, [3]=14, [4]=20, [5]=26, [6]=32, [7]=38, [8]=44, [9]=50, [10]=56, [11]=60 },
+    ["Chain Lightning"] = { [1]=32, [2]=40, [3]=48, [4]=56, [5]=63, [6]=70, [7]=75, [8]=80 },
+    ["Kettenblitz"] = { [1]=32, [2]=40, [3]=48, [4]=56, [5]=63, [6]=70, [7]=75, [8]=80 },
+    ["Earth Shock"] = { [1]=4, [2]=8, [3]=14, [4]=24, [5]=36, [6]=48, [7]=60, [8]=69, [9]=74, [10]=79 },
+    ["Erdschock"] = { [1]=4, [2]=8, [3]=14, [4]=24, [5]=36, [6]=48, [7]=60, [8]=69, [9]=74, [10]=79 },
+    ["Flame Shock"] = { [1]=10, [2]=18, [3]=28, [4]=40, [5]=52, [6]=60, [7]=70, [8]=75, [9]=80 },
+    ["Flammenschock"] = { [1]=10, [2]=18, [3]=28, [4]=40, [5]=52, [6]=60, [7]=70, [8]=75, [9]=80 },
+    ["Frost Shock"] = { [1]=20, [2]=34, [3]=46, [4]=58, [5]=68, [6]=73, [7]=78 },
+    ["Frostschock"] = { [1]=20, [2]=34, [3]=46, [4]=58, [5]=68, [6]=73, [7]=78 },
 
     -- Mage
     ["Frostbolt"] = { [1]=1, [2]=8, [3]=14, [4]=20, [5]=26, [6]=32, [7]=38, [8]=44, [9]=50, [10]=56, [11]=60 },
     ["Frostblitz"] = { [1]=1, [2]=8, [3]=14, [4]=20, [5]=26, [6]=32, [7]=38, [8]=44, [9]=50, [10]=56, [11]=60 },
     ["Fireball"] = { [1]=1, [2]=6, [3]=12, [4]=18, [5]=24, [6]=30, [7]=36, [8]=42, [9]=48, [10]=54, [11]=60 },
     ["Feuerball"] = { [1]=1, [2]=6, [3]=12, [4]=18, [5]=24, [6]=30, [7]=36, [8]=42, [9]=48, [10]=54, [11]=60 },
+    ["Scorch"] = { [1]=22, [2]=28, [3]=34, [4]=40, [5]=46, [6]=52, [7]=58, [8]=64, [9]=70, [10]=76 },
+    ["Sengen"] = { [1]=22, [2]=28, [3]=34, [4]=40, [5]=46, [6]=52, [7]=58, [8]=64, [9]=70, [10]=76 },
+    ["Arcane Missiles"] = { [1]=8, [2]=16, [3]=24, [4]=32, [5]=40, [6]=48, [7]=56, [8]=63, [9]=69, [10]=75, [11]=80 },
+    ["Arkane Geschosse"] = { [1]=8, [2]=16, [3]=24, [4]=32, [5]=40, [6]=48, [7]=56, [8]=63, [9]=69, [10]=75, [11]=80 },
+    ["Cone of Cold"] = { [1]=26, [2]=34, [3]=42, [4]=50, [5]=58, [6]=66, [7]=72, [8]=78 },
+    ["Kältekegel"] = { [1]=26, [2]=34, [3]=42, [4]=50, [5]=58, [6]=66, [7]=72, [8]=78 },
+    ["Flamestrike"] = { [1]=16, [2]=24, [3]=32, [4]=40, [5]=48, [6]=56, [7]=64, [8]=71, [9]=78 },
+    ["Flammenstoß"] = { [1]=16, [2]=24, [3]=32, [4]=40, [5]=48, [6]=56, [7]=64, [8]=71, [9]=78 },
     ["Blizzard"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=60 },
 
     -- Warlock
@@ -457,7 +481,15 @@ RF.SpellRankLevels = {
     ["Corruption"] = { [1]=4, [2]=14, [3]=24, [4]=34, [5]=44, [6]=54 },
     ["Verderbnis"] = { [1]=4, [2]=14, [3]=24, [4]=34, [5]=44, [6]=54 },
     ["Immolate"] = { [1]=1, [2]=10, [3]=20, [4]=30, [5]=40, [6]=50, [7]=60 },
-    ["Feuerbrand"] = { [1]=1, [2]=10, [3]=20, [4]=30, [5]=40, [6]=50, [7]=60 }
+    ["Feuerbrand"] = { [1]=1, [2]=10, [3]=20, [4]=30, [5]=40, [6]=50, [7]=60 },
+    ["Curse of Agony"] = { [1]=8, [2]=18, [3]=28, [4]=38, [5]=48, [6]=58, [7]=67, [8]=73, [9]=79 },
+    ["Fluch der Pein"] = { [1]=8, [2]=18, [3]=28, [4]=38, [5]=48, [6]=58, [7]=67, [8]=73, [9]=79 },
+    ["Drain Life"] = { [1]=14, [2]=22, [3]=30, [4]=38, [5]=46, [6]=54, [7]=62, [8]=69, [9]=75 },
+    ["Blutsauger"] = { [1]=14, [2]=22, [3]=30, [4]=38, [5]=46, [6]=54, [7]=62, [8]=69, [9]=75 },
+    ["Hellfire"] = { [1]=30, [2]=38, [3]=46, [4]=54, [5]=62, [6]=68, [7]=74, [8]=80 },
+    ["Höllenfeuer"] = { [1]=30, [2]=38, [3]=46, [4]=54, [5]=62, [6]=68, [7]=74, [8]=80 },
+    ["Rain of Fire"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=58, [7]=65, [8]=71, [9]=77 },
+    ["Feuerregen"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=58, [7]=65, [8]=71, [9]=77 }
 }
 
 function RF:GetSpellSweetSpot(spellName)
@@ -492,6 +524,74 @@ function RF:GetSpellSweetSpot(spellName)
     if offset < 0 then offset = 0 end
     local reqLvl = rankLevels[optimalRank] or playerLevel
     return offset, optimalRank, reqLvl
+end
+
+function RF:GetDownrankingEfficiency(spellName, rankOffset, targetRank)
+    if not spellName or spellName == "" then
+        return 100, "green", "100%", 60, L["UI_EFFICIENCY_FULL"] or "Volle Effizienz"
+    end
+
+    local spellInfo = RF.knownSpells and RF.knownSpells[spellName]
+    local maxRank = (spellInfo and spellInfo.maxRank and spellInfo.maxRank > 0) and spellInfo.maxRank or 1
+    local playerLevel = (UnitLevel and UnitLevel("player")) or 60
+
+    local rank = targetRank
+    if not rank then
+        local off = tonumber(rankOffset) or 0
+        rank = maxRank - off
+    end
+    if rank < 1 then rank = 1 end
+
+    local rankLevels = RF.SpellRankLevels and RF.SpellRankLevels[spellName]
+    local reqLvl = (rankLevels and rankLevels[rank]) or playerLevel
+
+    -- Max rank or higher: always 100% full efficiency
+    if rank >= maxRank then
+        return 100, "green", "100%", reqLvl, (L["UI_EFFICIENCY_MAX_RANK"] or "Max-Rang (100% Zaubermacht & 100% Procs)")
+    end
+
+    -- Rule 1: Pre-20 penalty multiplier
+    local multPre20 = 1.0
+    if reqLvl < 20 then
+        multPre20 = math.max(0, (reqLvl + 11) / 31)
+    end
+
+    -- Rule 2: Level difference penalty (WoW Forever / WotLK 3.0: playerLevel - 18)
+    local multLevel = 1.0
+    local levelThreshold = math.max(20, playerLevel - 18)
+    if reqLvl < levelThreshold then
+        multLevel = math.max(0, (reqLvl + 11) / (playerLevel + 11))
+    end
+
+    local spScaling = math.min(1.0, multPre20 * multLevel)
+    local pct = math.floor(spScaling * 100 + 0.5)
+
+    -- Status classification & Proc chance analysis (per WoW Forever update)
+    local status = "green"
+    local procChance = "100%"
+    local desc = ""
+
+    if reqLvl < 20 then
+        status = "red"
+        procChance = (L["UI_PROC_ZERO"] or "0% - Stark reduziert ⚠️")
+        desc = string.format(L["UI_EFFICIENCY_DESC_PRE20"] or "Pre-20 Malus: Stufe %d < 20! Zaubermacht stark verringert (%d%%), Talent-Procs deaktiviert/minimal.", reqLvl, pct)
+    elseif reqLvl < levelThreshold then
+        if pct < 60 then
+            status = "red"
+            procChance = (L["UI_PROC_HEAVILY_REDUCED"] or "Stark reduziert ⚠️")
+            desc = string.format(L["UI_EFFICIENCY_DESC_SEVERE"] or "Downranking-Malus: Stufe %d zu weit unter Level %d! Zaubermacht %d%%, Talent-Procs massiv gedrosselt.", reqLvl, playerLevel, pct)
+        else
+            status = "yellow"
+            procChance = string.format(L["UI_PROC_REDUCED"] or "Reduziert (~%d%%)", pct)
+            desc = string.format(L["UI_EFFICIENCY_DESC_MINOR"] or "Leichter Malus: Stufe %d. Zaubermacht bei %d%%, leichte Drosselung von Procs.", reqLvl, pct)
+        end
+    else
+        status = "green"
+        procChance = "100%"
+        desc = string.format(L["UI_EFFICIENCY_DESC_OPTIMAL"] or "Optimaler Sweet Spot: Stufe %d >= %d. Volle Zaubermacht (100%%) & 100%% Talent-Procs!", reqLvl, levelThreshold)
+    end
+
+    return pct, status, procChance, reqLvl, desc
 end
 
 --------------------------------------------------------------------------------
