@@ -583,35 +583,47 @@ function RF:IsMacroForCurrentCharacter(macroConfig)
     if not macroConfig then return true end
     local charName, realm, charClass = RF:GetCurrentCharacterKey()
 
-    -- 1. Direct character name match
+    -- 1. Direct character name match (always visible on the character who created / owns it)
     if macroConfig.character and macroConfig.character ~= "" then
         if macroConfig.character == charName then
             return true
         end
     end
 
-    -- 2. Class match
-    if macroConfig.class and macroConfig.class ~= "" and charClass and charClass ~= "" then
-        if macroConfig.class == charClass then
-            return true
-        end
-    end
-
-    -- 3. Spell class lookup
+    -- 2. Spell class lookup: if spell belongs strictly to another class, always hide it
     local spName = macroConfig.spellName
     if (not spName or spName == "") and macroConfig.macroName then
         spName = macroConfig.macroName:gsub("^DR_", "")
     end
-    if spName and spName ~= "" then
-        local spellClass = RF:GetClassForSpell(spName)
-        if spellClass and charClass and spellClass == charClass then
+    local spellClass = spName and RF:GetClassForSpell(spName)
+
+    if spellClass and charClass and spellClass ~= charClass then
+        -- This spell belongs to another class (e.g. Blizzard on Priest, Feuerbrand on Mage)
+        return false
+    end
+
+    -- 3. General / Account-wide macros:
+    -- If a macro is saved in the Account tab (isAccount == true) and does not belong to another class
+    -- (e.g. Basic Campfire / Feuer machen, mounts, professions, food/drink), it is shared across all characters!
+    if macroConfig.isAccount == true and not spellClass then
+        return true
+    end
+
+    -- 4. Class match
+    if macroConfig.class and macroConfig.class ~= "" and charClass and charClass ~= "" then
+        if macroConfig.class == charClass then
             return true
-        elseif spellClass and charClass and spellClass ~= charClass then
+        else
             return false
         end
     end
 
-    -- 4. Untagged legacy macro with unknown spell class: visible by default
+    -- 5. Spell class matches current class
+    if spellClass and charClass and spellClass == charClass then
+        return true
+    end
+
+    -- 6. Untagged legacy macro with unknown spell class: visible by default
     if (not macroConfig.character or macroConfig.character == "") and (not macroConfig.class or macroConfig.class == "") then
         return true
     end

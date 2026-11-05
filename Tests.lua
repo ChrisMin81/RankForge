@@ -989,6 +989,12 @@ RegisterTest("Character Filtering: RF:IsMacroForCurrentCharacter and list filter
     end
     AssertEquals(visibleCount, 3, "All 3 macros should be visible with filter off")
 
+    -- Test General / Non-Class macros (e.g. Feuer machen / Basic Campfire)
+    local campfireAccount = { macroName = "DR_Lagerfeuer", spellName = "Feuer machen", isAccount = true }
+    local campfireCharOnly = { macroName = "DR_Lagerfeuer_Char", spellName = "Feuer machen", isAccount = false, character = "OtherChar" }
+    AssertEquals(RF:IsMacroForCurrentCharacter(campfireAccount), true, "General account macro should be visible across characters")
+    AssertEquals(RF:IsMacroForCurrentCharacter(campfireCharOnly), false, "General character-specific macro of another char should be hidden")
+
     -- Restore filter setting
     RankForgeCharDB.filterCurrentCharOnly = true
     RF:UpdateUI()
