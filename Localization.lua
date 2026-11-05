@@ -63,6 +63,9 @@ local STRINGS_EN = {
     ["UI_FALLBACK_MODE"] = "When rank not yet learned:",
     ["UI_FALLBACK_OMIT"] = "Omit modifier until learned",
     ["UI_FALLBACK_RANK1"] = "Use Rank 1 as fallback",
+    ["UI_OMIT_RANK"] = "Cast without rank",
+    ["UI_OMIT_RANK_TITLE"] = "Cast without rank (Max rank)",
+    ["UI_OMIT_RANK_DESC"] = "Omits the '(Rank X)' suffix from the macro. WoW will always automatically cast the highest learned rank. Ideal for Power Word: Shield, buffs, utility, or whenever no downranking is needed.",
 
     ["UI_TARGETING_HEADER"] = "Targeting Conditions",
     ["UI_TARGET_MOUSEOVER"] = "Mouseover (@mouseover)",
@@ -231,6 +234,9 @@ local STRINGS_DE = {
     ["UI_FALLBACK_MODE"] = "Wenn Rang noch nicht gelernt:",
     ["UI_FALLBACK_OMIT"] = "Modifikator weglassen bis gelernt" ,
     ["UI_FALLBACK_RANK1"] = "Rang 1 als Fallback nutzen",
+    ["UI_OMIT_RANK"] = "Ohne Rang casten",
+    ["UI_OMIT_RANK_TITLE"] = "Ohne Rang casten (Höchstrang)",
+    ["UI_OMIT_RANK_DESC"] = "Lässt die Rangangabe '(Rang X)' im Makro weg. WoW zaubert dadurch automatisch immer den höchsten erlernten Rang. Ideal für Machtwort: Schild, Buffs, Zauber ohne Ränge oder wenn kein Downranking gewünscht ist.",
 
     ["UI_TARGETING_HEADER"] = "Zielbedingungen (Targeting)",
     ["UI_TARGET_MOUSEOVER"] = "Mouseover (@mouseover)",

@@ -1175,6 +1175,42 @@ RegisterTest("Multi-Language: Cross-locale spell ID resolution and client langua
     Assert(body:find("Flash Heal") ~= nil, "Macro body must contain localized spell name")
 end)
 
+RegisterTest("Macro Generation: Omit Rank (Max Rank / Utility without (Rank X))", function()
+    local cfg = {
+        macroName = "DR_PWS",
+        spellName = "Power Word: Shield",
+        spellID = 17,
+        omitRank = true,
+        targetMouseover = true,
+        modifiers = {
+            { key = "shift", enabled = true, mode = "relative", rankOffset = 1, targetMouseover = true, targetTarget = true, targetSelfcast = true, isHelp = true, isHarm = false, isNodead = true },
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0, targetMouseover = true, targetTarget = true, targetSelfcast = true, isHelp = true, isHarm = false, isNodead = true },
+        }
+    }
+
+    local body = RF:GenerateMacroBody(cfg)
+    Assert(body:find("Power Word: Shield") ~= nil, "Must cast Power Word: Shield")
+    Assert(body:find("%(Rank") == nil and body:find("%(Rang") == nil, "Must NOT contain any (Rank X) or (Rang X) when omitRank is true")
+
+    -- Test cloning preserves omitRank
+    local cloned = RF:CloneMacro(cfg)
+    AssertEquals(cloned.omitRank, true, "Cloned macro must preserve omitRank = true")
+
+    -- Test without omitRank: must contain rank
+    local cfgWithRank = {
+        macroName = "DR_PWS_Rank",
+        spellName = "Power Word: Shield",
+        spellID = 17,
+        omitRank = false,
+        targetMouseover = true,
+        modifiers = {
+            { key = "nomod", enabled = true, mode = "relative", rankOffset = 0, targetMouseover = true, targetTarget = true, targetSelfcast = true, isHelp = true, isHarm = false, isNodead = true },
+        }
+    }
+    local bodyWithRank = RF:GenerateMacroBody(cfgWithRank)
+    Assert(bodyWithRank:find("%(Rank") ~= nil or bodyWithRank:find("%(Rang") ~= nil, "Must contain rank when omitRank is false")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

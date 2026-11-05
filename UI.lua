@@ -653,6 +653,28 @@ local function CreateMainUI()
     end)
     f.spellEdit = spellEdit
 
+    -- Omit Rank Checkbox (for spells like Power Word: Shield, buffs, or max-rank casting)
+    local cbNoRank = CreateFrame("CheckButton", nil, editor, "UICheckButtonTemplate")
+    cbNoRank:SetPoint("LEFT", spellEdit, "RIGHT", 14, 0)
+    cbNoRank.text = cbNoRank:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    cbNoRank.text:SetPoint("LEFT", cbNoRank, "RIGHT", 2, 0)
+    cbNoRank.text:SetText(L["UI_OMIT_RANK"] or "Ohne Rang casten")
+    cbNoRank:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_TOP")
+        GameTooltip:SetText(L["UI_OMIT_RANK_TITLE"] or "Ohne Rang casten (Höchstrang)", 1, 0.82, 0)
+        GameTooltip:AddLine(L["UI_OMIT_RANK_DESC"] or "Lässt die Rangangabe '(Rang X)' im Makro weg. WoW zaubert dadurch automatisch immer den höchsten erlernten Rang. Ideal für Machtwort: Schild, Buffs oder wenn kein Downranking gewünscht ist.", 0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end)
+    cbNoRank:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    cbNoRank:SetScript("OnClick", function(self)
+        if currentMacro then
+            currentMacro.omitRank = self:GetChecked()
+            RF:LoadModifiersIntoUI(currentMacro)
+            RF:UpdatePreview()
+        end
+    end)
+    f.cbNoRank = cbNoRank
+
     -- Fallback Mode Toggle
     local fallbackCheck = CreateFrame("CheckButton", nil, editor, "UICheckButtonTemplate")
     fallbackCheck:SetPoint("TOPLEFT", editor, "TOPLEFT", 15, -90)
@@ -1544,6 +1566,7 @@ function RF:CreateNewMacroConfig()
         class = classFileName,
         isAccount = false,
         fallbackMode = "omit",
+        omitRank = false,
         targetMouseover = true,
         customTarget = "",
         customSortOrder = false,
@@ -1596,10 +1619,18 @@ function RF:LoadModifiersIntoUI(macroConfig)
             row.modLabel:SetText(GetModifierDisplayName(modData.key))
             row.offsetEdit:SetText(tostring(modData.rankOffset or 0))
             local off = tonumber(modData.rankOffset) or 0
-            if row.UpdateRowDesc then
-                row.UpdateRowDesc(off)
+            if macroConfig.omitRank then
+                row.descText:SetText("|cff888888(ohne)|r")
+                if row.offsetEdit.SetAlpha then row.offsetEdit:SetAlpha(0.35) end
+                if row.starBtn and row.starBtn.SetAlpha then row.starBtn:SetAlpha(0.2) end
             else
-                row.descText:SetText(off == 0 and "MAX" or string.format("(-%d)", off))
+                if row.offsetEdit.SetAlpha then row.offsetEdit:SetAlpha(1.0) end
+                if row.starBtn and row.starBtn.SetAlpha then row.starBtn:SetAlpha(1.0) end
+                if row.UpdateRowDesc then
+                    row.UpdateRowDesc(off)
+                else
+                    row.descText:SetText(off == 0 and "MAX" or string.format("(-%d)", off))
+                end
             end
 
             -- Grid Targeting Checkboxes per Row
@@ -1698,6 +1729,9 @@ function RF:LoadMacroIntoEditor(macroConfig)
 
     f.nameEdit:SetText(macroConfig.macroName or "")
     f.spellEdit:SetText(locSpell or macroConfig.spellName or "")
+    if f.cbNoRank then
+        f.cbNoRank:SetChecked(macroConfig.omitRank == true)
+    end
     local isAcc = (macroConfig.isAccount == true)
     UIDropDownMenu_SetSelectedValue(f.storageDropdown, isAcc and "account" or "char")
     UIDropDownMenu_SetText(f.storageDropdown, isAcc and L["UI_STORAGE_ACCOUNT"] or L["UI_STORAGE_CHAR"])
@@ -1764,6 +1798,7 @@ function RF:RefreshUILabels()
     if f.exportBtn then f.exportBtn:SetText(L["UI_EXPORT_BTN"]) end
     if f.nameLabel then f.nameLabel:SetText(L["UI_MACRO_NAME"]) end
     if f.spellLabel then f.spellLabel:SetText(L["UI_SPELL_NAME"]) end
+    if f.cbNoRank and f.cbNoRank.text then f.cbNoRank.text:SetText(L["UI_OMIT_RANK"] or "Ohne Rang casten") end
     if f.dropSlotText then f.dropSlotText:SetText(L["UI_DROP_SPELL_HERE"]) end
     if f.targetHeader then f.targetHeader:SetText(L["UI_TARGETING_HEADER"]) end
     if f.fallbackCheck and f.fallbackCheck.text then f.fallbackCheck.text:SetText(L["UI_FALLBACK_RANK1"]) end

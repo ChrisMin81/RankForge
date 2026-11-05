@@ -1151,7 +1151,11 @@ function RF:GenerateMacroBody(macroConfig)
             local offset = tonumber(mod.rankOffset) or 0
             local targetRank = maxRank - offset
 
-            if spellInfo and spellInfo.hasRanks then
+            if macroConfig.omitRank or macroConfig.noRank then
+                -- When omitRank is enabled, cast clean spell name without any (Rank X) suffix
+                spellToCast = baseSpell
+                rankSubtext = nil
+            elseif spellInfo and spellInfo.hasRanks then
                 if targetRank >= 1 and targetRank <= maxRank then
                     spellToCast = baseSpell
                     local sub = (spellInfo.subtexts and spellInfo.subtexts[targetRank]) or string.format("%s %d", spellInfo.rankWord or L["RANK_WORD"], targetRank)
@@ -1350,7 +1354,7 @@ function RF:GenerateMacroBody(macroConfig)
         end
         if not hasNomod then
             local maxRankString = baseSpell
-            if spellInfo and spellInfo.hasRanks and maxRank > 0 then
+            if not macroConfig.omitRank and not macroConfig.noRank and spellInfo and spellInfo.hasRanks and maxRank > 0 then
                 local sub = (spellInfo.subtexts and spellInfo.subtexts[maxRank]) or string.format("%s %d", spellInfo.rankWord or L["RANK_WORD"], maxRank)
                 maxRankString = string.format("%s(%s)", baseSpell, sub)
             end
@@ -1644,6 +1648,7 @@ function RF:CloneMacro(macroConfig)
         class = macroConfig.class or charClass,
         isAccount = (macroConfig.isAccount == true),
         fallbackMode = macroConfig.fallbackMode or "omit",
+        omitRank = (macroConfig.omitRank == true),
         targetMouseover = macroConfig.targetMouseover,
         customTarget = macroConfig.customTarget or "",
         customSortOrder = macroConfig.customSortOrder or false,
