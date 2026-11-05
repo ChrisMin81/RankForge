@@ -412,6 +412,7 @@ RF.SpellRankLevels = {
     ["Heal"] = { [1]=16, [2]=22, [3]=28, [4]=34 },
     ["Heilung"] = { [1]=16, [2]=22, [3]=28, [4]=34 },
     ["Lesser Heal"] = { [1]=1, [2]=4, [3]=10 },
+    ["Geringes Heilen"] = { [1]=1, [2]=4, [3]=10 },
     ["Geringe Heilung"] = { [1]=1, [2]=4, [3]=10 },
     ["Prayer of Healing"] = { [1]=30, [2]=40, [3]=50, [4]=60 },
     ["Gebet der Heilung"] = { [1]=30, [2]=40, [3]=50, [4]=60 },
@@ -912,6 +913,7 @@ function RF:GenerateMacroBody(macroConfig)
                             table.insert(conditionBlocks, string.format("[%s,%s]", modCondition, tgtCond))
                         else
                             table.insert(conditionBlocks, string.format("[%s]", tgtCond))
+                            table.insert(conditionBlocks, "[]")
                         end
                     else
                         if modCondition then
@@ -925,6 +927,7 @@ function RF:GenerateMacroBody(macroConfig)
                         table.insert(conditionBlocks, string.format("[%s,@player]", modCondition))
                     else
                         table.insert(conditionBlocks, "[@player]")
+                        table.insert(conditionBlocks, "[]")
                     end
                 elseif #targets == 0 then
                     if modCondition then
@@ -974,10 +977,8 @@ function RF:GenerateMacroBody(macroConfig)
         end
     end
 
-    local hasPreCastUtility = macroConfig.startAttack or macroConfig.petAttack or macroConfig.useTrinket1 or macroConfig.useTrinket2 or macroConfig.useRacial or (macroConfig.preCastLines and macroConfig.preCastLines:trim() ~= "")
-
     local tooltipHeader = "#showtooltip"
-    if hasPreCastUtility and baseSpell and baseSpell ~= "" then
+    if baseSpell and baseSpell ~= "" then
         tooltipHeader = "#showtooltip " .. baseSpell
     end
 
