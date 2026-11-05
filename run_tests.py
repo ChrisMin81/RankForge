@@ -127,7 +127,10 @@ def build_wow_environment(lua):
         return "spell", 139
     end
 
-    function GetSpellInfo(id)
+    function GetSpellInfo(id, bookType)
+        if bookType and type(id) == "number" and mockSpellBook[id] then
+            return mockSpellBook[id].name, mockSpellBook[id].subtext, "Interface\\\\Icons\\\\Spell_Holy_Renew"
+        end
         if id == 139 then return "Renew", "", "Interface\\\\Icons\\\\Spell_Holy_Renew" end
         if id == 2061 then return "Flash Heal", "", "Interface\\\\Icons\\\\Spell_Holy_FlashHeal" end
         if id == 2060 then return "Greater Heal", "", "Interface\\\\Icons\\\\Spell_Holy_GreaterHeal" end

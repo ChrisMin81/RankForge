@@ -818,13 +818,20 @@ RegisterTest("UI Lifecycle: Main frame starts hidden and only opens via ToggleUI
 end)
 
 RegisterTest("Drag & Drop: Spell extraction from cursor (3.3.5a, modern and action bars)", function()
-    -- Mock spellbook entry 1 as "Renew"
+    -- Mock spellbook entry 1 as "Renew" and slot 10 as "Geringes Heilen"
     mockSpellBook[1] = { name = "Renew", subtext = "Rank 1", spellID = 139 }
+    mockSpellBook[10] = { name = "Geringes Heilen", subtext = "Rang 1", spellID = 2050 }
 
     -- 1. 3.3.5a style: {"spell", 1, "spell"} (spellbook slot index + bookType string)
     mockCursor = { "spell", 1, "spell" }
     local sp1 = RF:GetSpellFromCursor()
     AssertEquals(sp1, "Renew", "Should resolve spell name from 3.3.5a spellbook slot index")
+    Assert(mockCursor == nil, "Cursor should be cleared after extraction")
+
+    -- 1b. Slot 10 test (must not be confused with Spell ID 10 = Blizzard!)
+    mockCursor = { "spell", 10, "spell" }
+    local sp10 = RF:GetSpellFromCursor()
+    AssertEquals(sp10, "Geringes Heilen", "Slot 10 must resolve to Geringes Heilen, never Blizzard!")
     Assert(mockCursor == nil, "Cursor should be cleared after extraction")
 
     -- 2. Modern style: {"spell", 139} (numeric spell ID)
