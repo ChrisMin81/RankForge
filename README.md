@@ -49,7 +49,7 @@
 - Vollständig zweisprachig (Deutsch und Englisch) mit automatischer Client-Erkennung.
 
 ### 🛡️ Sicherheit, Charakter-Filter & Profile
-- **Charakterspezifische Filterung:** Mit der Checkbox `[x] Nur dieser Charakter` oberhalb der Makroliste werden nur Makros angezeigt, die zu deinem aktuellen Charakter bzw. deiner Klasse gehören. Deaktiviere die Checkbox jederzeit, um alle Makros accountweit einzusehen.
+- **Charakterspezifische Filterung:** Mit der Checkbox `[x] Nur dieser Charakter` oberhalb der Makroliste werden nur Makros angezeigt, die zu deinem aktuellen Charakter bzw. deiner Klasse gehören. Allgemeine Makros im Account-Tab (z. B. *Feuer machen / Lagerfeuer*, Reittiere, Berufe) bleiben dabei für alle Charaktere sichtbar, während Makros fremder Klassen (z. B. *Blizzard* auf einem Priester) automatisch ausgeblendet werden. Deaktiviere die Checkbox jederzeit, um alle Makros accountweit einzusehen.
 - **Standard-Speicherort:** Neue Makros werden standardmäßig im **charakterspezifischen Tab (18 Slots)** angelegt, um die 120 allgemeinen Account-Slots nicht zu überfüllen.
 - **Debug-Modus (Auto-Öffnen):** Über den Schalter `Debug (Auto-Öffnen)` in der Titelleiste oder via `/rf debug` öffnet sich RankForge nach jedem `/reload` oder Login automatisch.
 - **Kampf-Schutz (`InCombatLockdown`):** Verhindert UI-Fehler oder Taint im Kampf. Änderungen und Updates werden bei Kampfende (`PLAYER_REGEN_ENABLED`) sicher angewendet.
