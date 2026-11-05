@@ -966,8 +966,15 @@ function RF:GenerateMacroBody(macroConfig)
         end
     end
 
+    local hasPreCastUtility = macroConfig.startAttack or macroConfig.petAttack or macroConfig.useTrinket1 or macroConfig.useTrinket2 or macroConfig.useRacial or (macroConfig.preCastLines and macroConfig.preCastLines:trim() ~= "")
+
+    local tooltipHeader = "#showtooltip"
+    if hasPreCastUtility and baseSpell and baseSpell ~= "" then
+        tooltipHeader = "#showtooltip " .. baseSpell
+    end
+
     local macroLines = {
-        "#showtooltip"
+        tooltipHeader
     }
 
     if macroConfig.startAttack then
@@ -1015,6 +1022,9 @@ function RF:GenerateMacroBody(macroConfig)
     end
     if #macroBody > 255 then
         macroBody = macroBody:gsub(",nodead", "")
+    end
+    if #macroBody > 255 and macroBody:find("^#showtooltip .-\n") then
+        macroBody = macroBody:gsub("^#showtooltip [^\n]+", "#showtooltip")
     end
 
     return macroBody

@@ -921,7 +921,7 @@ RegisterTest("Utility: startattack and petattack checkboxes and macro generation
     local body = RF:GenerateMacroBody(cfg)
     local lines = {}
     for l in body:gmatch("[^\r\n]+") do table.insert(lines, l) end
-    AssertEquals(lines[1], "#showtooltip")
+    AssertEquals(lines[1], "#showtooltip Frostbolt")
     AssertEquals(lines[2], "/startattack")
     AssertEquals(lines[3], "/petattack")
     Assert(lines[4]:find("/cast") ~= nil, "Cast line must follow utility commands")
