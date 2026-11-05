@@ -1564,7 +1564,7 @@ function RF:CreateNewMacroConfig()
         character = charName,
         realm = realm,
         class = classFileName,
-        isAccount = false,
+        isAccount = true, -- Default to General (Account, 120 Slots)
         fallbackMode = "omit",
         omitRank = false,
         targetMouseover = true,

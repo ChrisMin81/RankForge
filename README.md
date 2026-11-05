@@ -59,9 +59,21 @@
 - **Aus der Makro-Liste auf die Aktionsleiste:** Klicke ein Makro in der linken Liste an und ziehe es direkt mit gedrückter Maustaste auf deine Aktionsleiste.
 - **Vorschau-Icon:** Ziehe alternativ das große Vorschau-Icon auf deine Leiste.
 
+### 🛡️ Ohne Rang casten (Höchstrang / Spells ohne Rang)
+- **Checkbox `[ ] Ohne Rang casten`:** Lässt die `(Rang X)`- bzw. `(Rank X)`-Klammer im Makro komplett weg (z. B. `/cast [@mouseover,help,nodead][] Machtwort: Schild`).
+- **Automatischer Höchstrang:** In WoW zaubert ein Spruch ohne Rangangabe immer automatisch den **höchsten erlernten Rang** deines Charakters – auch nach neuen Level-Ups und Lehrer-Besuchen, ohne das Makro je anfassen zu müssen!
+- **Massive Zeichenersparnis:** Spart bei langen Zaubernamen wie `Machtwort: Schild` oder `Psychischer Schrei` pro Bedingung sofort 9–10 Zeichen (in Summe **30–50 Zeichen** im 255-Zeichen-Limit).
+- **Perfekt für Utility & Buffs:** Ideal für Schilde, Magiebannung, Krankheit aufheben, Furcht, Stille, Seele der Macht und Klassen-Buffs, bei denen kein Downranking gewünscht ist.
+
+### 🎨 Modernes Dark Obsidian Design
+- **Dark-Mode Ästhetik:** Elegantes Schiefer- und Obsidian-Farbschema mit dezenten 1px Champagner-Gold- und Cyan-Kanten anstelle veralteter 2004er Blizzard-Graustufen.
+- **Neon-Modifier-Badges:** Farbcodierte Modifikatoren im Matrix-Grid für maximale Übersichtlichkeit (<span style="color:#00e5ff;">Shift</span>, <span style="color:#a855f7;">Strg</span>, <span style="color:#22c55e;">Alt</span>, <span style="color:#ffd200;">nomod</span>).
+- **Zebra-Striping:** Abwechselnde Zeilenschattierungen mit geschmeidigem Maus-Hover-Leuchten.
+- **Moderne Flat-Buttons:** Smaragdgrüner Speichern-Button, Karminroter Löschen-Button und Blizzard-Blauer Neuer-Makro-Button mit reaktivem Klick- und Hover-Feedback.
+
 ### 🛡️ Sicherheit, Charakter-Filter & Profile
 - **Charakterspezifische Filterung:** Mit der Checkbox `[x] Nur dieser Charakter` werden nur Makros angezeigt, die zu deinem aktuellen Charakter bzw. deiner Klasse gehören. Allgemeine Makros im Account-Tab bleiben für alle sichtbar.
-- **Standard-Speicherort:** Neue Makros werden standardmäßig im **charakterspezifischen Tab (18 Slots)** angelegt, um die 120 allgemeinen Account-Slots nicht zu überfüllen.
+- **Standard-Speicherort (Allgemeine Makros):** Neue Makros werden standardmäßig im **Allgemeinen Account-Tab (120 Slots)** angelegt, da der charakterspezifische Tab (18 Slots) bei vielen Makros schnell voll ist. Über das Dropdown kann jederzeit flexibel zwischen Allgemein und Charakterspezifisch gewechselt werden.
 - **Auto-Recovery:** Erkennt bestehende `DR_`-Makros aus dem nativen WoW-Cache und stellt sie automatisch wieder her.
 - **Debug-Modus (Auto-Öffnen):** Über den Schalter `Debug (Auto-Öffnen)` in der Titelleiste oder via `/rf debug` öffnet sich RankForge nach jedem `/reload` oder Login automatisch.
 - **Kampf-Schutz (`InCombatLockdown`):** Verhindert UI-Fehler oder Taint im Kampf. Änderungen und Updates werden bei Kampfende (`PLAYER_REGEN_ENABLED`) sicher angewendet.
@@ -76,14 +88,14 @@
 | `/rf` oder `/rankforge` | Öffnet / schließt die grafische Benutzeroberfläche |
 | `/rf update` oder `/rf sync` | Erzwingt eine sofortige Überprüfung und Aktualisierung aller Makros |
 | `/rf debug` | Schaltet den Debug-Modus (automatisches Öffnen nach Reload/Login) um |
-| `/rf test` | Führt die 37 automatisierten Unit-Tests aus und öffnet das kopierbare Bericht-Fenster |
+| `/rf test` | Führt die 38 automatisierten Unit-Tests aus und öffnet das kopierbare Bericht-Fenster |
 | `/rf help` | Zeigt eine Übersicht aller verfügbaren Befehle im Chat an |
 
 ---
 
 ## 🧪 Integrierte Test-Suite (`/rf test`)
 
-RankForge verfügt über eine vollständige automatisierte Test-Suite mit **37 Unit- & Integrationstests**:
+RankForge verfügt über eine vollständige automatisierte Test-Suite mit **38 Unit- & Integrationstests**:
 - **Kopierbarer Test-Report:** Öffnet ein Dialogfenster mit <kbd>Strg</kbd>+<kbd>C</kbd> zum einfachen Kopieren von Testergebnissen.
 - **SavedVariables-Export:** Speichert Testberichte in `SavedVariables/RankForge.lua` zur externen Prüfung.
 - **Test-Isolierung:** Benutzermakros werden vor Testläufen gesichert und danach verlustfrei wiederhergestellt.

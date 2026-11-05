@@ -1031,8 +1031,8 @@ RegisterTest("Character Filtering: RF:IsMacroForCurrentCharacter and list filter
     RF:UpdateUI()
 end)
 
-RegisterTest("Default Character Slot & Debug Auto-Open Mode", function()
-    -- Verify new macro has isAccount == false (Character slot by default)
+RegisterTest("Default Account/General Slot & Debug Auto-Open Mode", function()
+    -- Verify new macro has isAccount == true (General/Account slot by default)
     local profile = RF:GetActiveProfile()
     local origMacros = profile.macros
     profile.macros = {}
@@ -1040,13 +1040,13 @@ RegisterTest("Default Character Slot & Debug Auto-Open Mode", function()
     local macros = RF:GetMacrosList()
     Assert(#macros >= 1, "New macro must be created")
     local newMacro = macros[#macros]
-    AssertEquals(newMacro.isAccount, false, "New macro must default to character slot (isAccount = false)")
+    AssertEquals(newMacro.isAccount, true, "New macro must default to general slot (isAccount = true)")
 
-    -- Verify UI dropdown reflects character slot
+    -- Verify UI dropdown reflects account slot
     if RF.MainFrame and RF.MainFrame.storageDropdown then
         RF:LoadMacroIntoEditor(newMacro)
         local isAcc = (newMacro.isAccount == true)
-        AssertEquals(isAcc, false, "Editor storage dropdown state must reflect character slot")
+        AssertEquals(isAcc, true, "Editor storage dropdown state must reflect general/account slot")
     end
 
     -- Verify Debug Mode Checkbox & State

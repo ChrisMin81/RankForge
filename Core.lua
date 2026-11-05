@@ -1507,7 +1507,7 @@ function RF:SyncMacro(macroConfig, silent)
     end
 
     local macroName = macroConfig.macroName
-    local isAccount = (macroConfig.isAccount == true) -- default false (Character slot)
+    local isAccount = (macroConfig.isAccount ~= false) -- default true (General / Account slot with 120 slots)
     local macroBody = RF:GenerateMacroBody(macroConfig)
     local icon = "INV_MISC_QUESTIONMARK"
 

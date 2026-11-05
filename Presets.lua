@@ -234,7 +234,7 @@ function RF:GetPresetsForClass(classFileName)
             targetToTNodead = true,
             targetSelfcast = false,
             customTarget = "",
-            isAccount = false,
+            isAccount = true, -- Default to General (Account, 120 Slots)
             fallbackMode = p.fallbackMode or "omit",
             modifiers = {}
         }
