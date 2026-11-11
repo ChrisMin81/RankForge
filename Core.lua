@@ -219,6 +219,13 @@ end
 --------------------------------------------------------------------------------
 -- Multi-Language & Spell ID Resolution
 --------------------------------------------------------------------------------
+function RF:SafeLower(str)
+    if not str then return "" end
+    -- Standard Lua string.lower uses C tolower(), which on Windows/Latin-1 locales corrupts UTF-8 leading bytes (0xC3 -> 0xE3)
+    -- We safely lower ASCII [A-Z] and German uppercase umlauts without breaking UTF-8 byte sequences.
+    return str:gsub("([A-Z])", string.lower):gsub("Ä", "ä"):gsub("Ö", "ö"):gsub("Ü", "ü")
+end
+
 function RF:ResolveSpellID(spellName)
     if not spellName or spellName == "" then return nil end
 
@@ -227,8 +234,8 @@ function RF:ResolveSpellID(spellName)
         return RF.knownSpells[spellName].spellID
     end
 
-    -- 2. Check cross-language catalog in Presets.lua (case-insensitive)
-    local lower = spellName:lower():trim()
+    -- 2. Check cross-language catalog in Presets.lua (case-insensitive & UTF-8 safe)
+    local lower = RF:SafeLower(spellName):trim()
     if RF.SpellCatalog and RF.SpellCatalog[lower] then
         return RF.SpellCatalog[lower]
     end
@@ -251,7 +258,7 @@ function RF:ResolveSpellID(spellName)
     if RF.PresetSpells then
         for class, list in pairs(RF.PresetSpells) do
             for _, p in ipairs(list) do
-                if p.name and p.name:lower() == lower and p.spellID then
+                if p.name and (RF:SafeLower(p.name):trim() == lower or p.name:lower():trim() == lower) and p.spellID then
                     return p.spellID
                 end
             end
@@ -578,6 +585,15 @@ local HARMFUL_SPELLS = {
     ["Frost Shock"] = true, ["Frostschock"] = true,
     ["Exorcism"] = true, ["Exorzismus"] = true,
     ["Consecration"] = true, ["Weihe"] = true,
+
+    -- Hunter
+    ["Falke beschwören"] = true, ["Falke beschworen"] = true, ["Falke beschören"] = true,
+    ["Summon Hawk"] = true,
+    ["Aimed Shot"] = true, ["Gezielter Schuss"] = true,
+    ["Arcane Shot"] = true, ["Arkaner Schuss"] = true,
+    ["Multi-Shot"] = true, ["Mehrfachschuss"] = true,
+    ["Serpent Sting"] = true, ["Schlangenbiss"] = true,
+    ["Concussive Shot"] = true, ["Erschütternder Schuss"] = true,
 }
 
 local HELPFUL_SPELLS = {
@@ -597,12 +613,13 @@ local HELPFUL_SPELLS = {
     ["Healing Wave"] = true, ["Welle der Heilung"] = true,
     ["Lesser Healing Wave"] = true, ["Geringe Welle der Heilung"] = true,
     ["Chain Heal"] = true, ["Kettenheilung"] = true,
+    ["Mend Pet"] = true, ["Tier heilen"] = true,
 }
 
 function RF:IsSpellHarmful(spellName)
     if not spellName or spellName == "" then return false end
-    if HARMFUL_SPELLS[spellName] then return true end
-    if HELPFUL_SPELLS[spellName] then return false end
+    if HARMFUL_SPELLS[spellName] or HARMFUL_SPELLS[spellName:lower():trim()] then return true end
+    if HELPFUL_SPELLS[spellName] or HELPFUL_SPELLS[spellName:lower():trim()] then return false end
     if C_Spell and C_Spell.IsSpellHarmful then
         local ok, res = pcall(C_Spell.IsSpellHarmful, spellName)
         if ok and res ~= nil then return res end
@@ -616,8 +633,8 @@ end
 
 function RF:IsSpellHelpful(spellName)
     if not spellName or spellName == "" then return false end
-    if HELPFUL_SPELLS[spellName] then return true end
-    if HARMFUL_SPELLS[spellName] then return false end
+    if HELPFUL_SPELLS[spellName] or HELPFUL_SPELLS[spellName:lower():trim()] then return true end
+    if HARMFUL_SPELLS[spellName] or HARMFUL_SPELLS[spellName:lower():trim()] then return false end
     if C_Spell and C_Spell.IsSpellHelpful then
         local ok, res = pcall(C_Spell.IsSpellHelpful, spellName)
         if ok and res ~= nil then return res end
@@ -750,7 +767,21 @@ RF.SpellRankLevels = {
     ["Hellfire"] = { [1]=30, [2]=38, [3]=46, [4]=54, [5]=62, [6]=68, [7]=74, [8]=80 },
     ["Höllenfeuer"] = { [1]=30, [2]=38, [3]=46, [4]=54, [5]=62, [6]=68, [7]=74, [8]=80 },
     ["Rain of Fire"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=58, [7]=65, [8]=71, [9]=77 },
-    ["Feuerregen"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=58, [7]=65, [8]=71, [9]=77 }
+    ["Feuerregen"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=58, [7]=65, [8]=71, [9]=77 },
+
+    -- Hunter
+    ["Falke beschwören"] = { [1]=25, [2]=36, [3]=48, [4]=60 },
+    ["Falke beschworen"] = { [1]=25, [2]=36, [3]=48, [4]=60 },
+    ["Falke beschören"] = { [1]=25, [2]=36, [3]=48, [4]=60 },
+    ["Summon Hawk"] = { [1]=25, [2]=36, [3]=48, [4]=60 },
+    ["Aimed Shot"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=60 },
+    ["Gezielter Schuss"] = { [1]=20, [2]=28, [3]=36, [4]=44, [5]=52, [6]=60 },
+    ["Multi-Shot"] = { [1]=18, [2]=30, [3]=42, [4]=54, [5]=60 },
+    ["Mehrfachschuss"] = { [1]=18, [2]=30, [3]=42, [4]=54, [5]=60 },
+    ["Serpent Sting"] = { [1]=4, [2]=10, [3]=18, [4]=26, [5]=34, [6]=42, [7]=50, [8]=58, [9]=60 },
+    ["Schlangenbiss"] = { [1]=4, [2]=10, [3]=18, [4]=26, [5]=34, [6]=42, [7]=50, [8]=58, [9]=60 },
+    ["Arcane Shot"] = { [1]=8, [2]=12, [3]=20, [4]=28, [5]=36, [6]=44, [7]=52, [8]=60 },
+    ["Arkaner Schuss"] = { [1]=8, [2]=12, [3]=20, [4]=28, [5]=36, [6]=44, [7]=52, [8]=60 },
 }
 
 RF.SpellClassLookup = {
@@ -800,6 +831,8 @@ RF.SpellClassLookup = {
     ["Mind Vision"] = "PRIEST", ["Gedankensicht"] = "PRIEST",
 
     -- Hunter
+    ["Falke beschwören"] = "HUNTER", ["Falke beschworen"] = "HUNTER", ["Falke beschören"] = "HUNTER",
+    ["Summon Hawk"] = "HUNTER",
     ["Aimed Shot"] = "HUNTER", ["Gezielter Schuss"] = "HUNTER",
     ["Arcane Shot"] = "HUNTER", ["Arkaner Schuss"] = "HUNTER",
     ["Multi-Shot"] = "HUNTER", ["Mehrfachschuss"] = "HUNTER",
@@ -1062,7 +1095,8 @@ RF.SpellClassLookup = {
 
 local function NormalizeSpellKey(str)
     if not str then return "" end
-    return str:lower():gsub("[%s_%-:'\"%c%p]", "")
+    local s = (RF.SafeLower and RF:SafeLower(str)) or str:lower()
+    return s:gsub("[%s_%-:'\"%c%p]", "")
 end
 
 local spellClassNormalizedCache = nil

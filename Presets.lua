@@ -197,6 +197,100 @@ RF.PresetSpells = {
                 { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0 },
             }
         },
+    },
+
+    -- Hunter
+    HUNTER = {
+        {
+            name = "Falke beschwören",
+            spellID = 1293526, -- Falke beschwören / Summon Hawk (WoW Forever Custom Spell)
+            macroName = "DR_FalkeBeschwoeren",
+            targetHelp = false,
+            fallbackMode = "omit",
+            startAttack = true,
+            petAttack = true,
+            modifiers = {
+                { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3 },
+                { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4 },
+                { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5 },
+                { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1 },
+                { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "alt",        enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0 },
+            }
+        },
+        {
+            name = "Aimed Shot",
+            spellID = 19434, -- Aimed Shot / Gezielter Schuss
+            macroName = "DR_AimedShot",
+            targetHelp = false,
+            fallbackMode = "omit",
+            startAttack = true,
+            petAttack = true,
+            modifiers = {
+                { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3 },
+                { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4 },
+                { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5 },
+                { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1 },
+                { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "alt",        enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0 },
+            }
+        },
+        {
+            name = "Multi-Shot",
+            spellID = 2643, -- Multi-Shot / Mehrfachschuss
+            macroName = "DR_MultiShot",
+            targetHelp = false,
+            fallbackMode = "omit",
+            startAttack = true,
+            petAttack = true,
+            modifiers = {
+                { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3 },
+                { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4 },
+                { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5 },
+                { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1 },
+                { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "alt",        enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0 },
+            }
+        },
+        {
+            name = "Serpent Sting",
+            spellID = 1978, -- Serpent Sting / Schlangenbiss
+            macroName = "DR_SerpentSting",
+            targetHelp = false,
+            fallbackMode = "omit",
+            startAttack = true,
+            petAttack = false,
+            modifiers = {
+                { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3 },
+                { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4 },
+                { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5 },
+                { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1 },
+                { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "alt",        enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0 },
+            }
+        },
+        {
+            name = "Mend Pet",
+            spellID = 136, -- Mend Pet / Tier heilen
+            macroName = "DR_MendPet",
+            targetHelp = true,
+            fallbackMode = "omit",
+            startAttack = false,
+            petAttack = false,
+            modifiers = {
+                { key = "shift_ctrl", enabled = false, mode = "relative", rankOffset = 3 },
+                { key = "shift_alt",  enabled = false, mode = "relative", rankOffset = 4 },
+                { key = "ctrl_alt",   enabled = false, mode = "relative", rankOffset = 5 },
+                { key = "shift",      enabled = true,  mode = "relative", rankOffset = 1 },
+                { key = "ctrl",       enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "alt",        enabled = false, mode = "relative", rankOffset = 2 },
+                { key = "nomod",      enabled = true,  mode = "relative", rankOffset = 0 },
+            }
+        },
     }
 }
 
@@ -215,27 +309,33 @@ function RF:GetPresetsForClass(classFileName)
         end
         spellName = spellName or p.name
         
+        local isHelp = (p.targetHelp ~= false)
+        local isHarm = not isHelp
+
         -- Deep copy preset definition
         local copy = {
             name = spellName,
             spellName = spellName,
+            spellID = p.spellID,
             macroName = p.macroName,
             targetMouseover = true,
-            targetMouseoverHelp = true,
-            targetMouseoverHarm = false,
+            targetMouseoverHelp = isHelp,
+            targetMouseoverHarm = isHarm,
             targetMouseoverNodead = true,
             targetFocus = false,
-            targetFocusHelp = true,
-            targetFocusHarm = false,
+            targetFocusHelp = isHelp,
+            targetFocusHarm = isHarm,
             targetFocusNodead = true,
             targetToT = false,
-            targetToTHelp = true,
-            targetToTHarm = false,
+            targetToTHelp = isHelp,
+            targetToTHarm = isHarm,
             targetToTNodead = true,
-            targetSelfcast = false,
+            targetSelfcast = isHelp,
             customTarget = "",
             isAccount = true, -- Default to General (Account, 120 Slots)
             fallbackMode = p.fallbackMode or "omit",
+            startAttack = p.startAttack or false,
+            petAttack = p.petAttack or false,
             modifiers = {}
         }
         for _, mod in ipairs(p.modifiers) do
@@ -244,7 +344,15 @@ function RF:GetPresetsForClass(classFileName)
                 enabled = mod.enabled,
                 mode = mod.mode,
                 rankOffset = mod.rankOffset,
-                customSpell = ""
+                customSpell = "",
+                targetMouseover = true,
+                targetTarget = true,
+                targetFocus = false,
+                targetToT = false,
+                targetSelfcast = isHelp,
+                isHelp = isHelp,
+                isHarm = isHarm,
+                isNodead = true
             })
         end
         table.insert(result, copy)
@@ -492,6 +600,10 @@ RF.SpellCatalog = {
     ["totem des heilenden flusses"] = 5394,
 
     -- Hunter
+    ["falke beschwören"] = 1293526,
+    ["falke beschworen"] = 1293526,
+    ["falke beschören"] = 1293526,
+    ["summon hawk"] = 1293526,
     ["aimed shot"] = 19434,
     ["gezielter schuss"] = 19434,
     ["arcane shot"] = 3044,

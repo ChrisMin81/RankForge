@@ -1240,6 +1240,43 @@ RegisterTest("Macro Generation: Omit Rank (Max Rank / Utility without (Rank X))"
     Assert(bodyWithRank:find("%(Rank") ~= nil or bodyWithRank:find("%(Rang") ~= nil, "Must contain rank when omitRank is false")
 end)
 
+RegisterTest("WoW Forever: Hunter 'Falke beschwören' (Spell ID 1293526) & Presets", function()
+    -- 1. Spell ID Resolution
+    AssertEquals(RF:ResolveSpellID("Falke beschwören"), 1293526, "Falke beschwören must resolve to 1293526")
+    AssertEquals(RF:ResolveSpellID("falke beschwören"), 1293526, "Lowercase falke beschwören must resolve to 1293526")
+    AssertEquals(RF:ResolveSpellID("Falke beschören"), 1293526, "Typo Falke beschören must resolve to 1293526")
+    AssertEquals(RF:ResolveSpellID("Summon Hawk"), 1293526, "Summon Hawk must resolve to 1293526")
+
+    -- 2. Class Lookup
+    AssertEquals(RF:GetClassForSpell("Falke beschwören"), "HUNTER", "Falke beschwören must belong to HUNTER")
+    AssertEquals(RF:GetClassForSpell("Summon Hawk"), "HUNTER", "Summon Hawk must belong to HUNTER")
+
+    -- 3. Harmful / Offensive spell type detection
+    AssertEquals(RF:IsSpellHarmful("Falke beschwören"), true, "Falke beschwören is harmful/offensive")
+    AssertEquals(RF:IsSpellHelpful("Falke beschwören"), false, "Falke beschwören is not helpful")
+
+    -- 4. Hunter Presets verification
+    local hunterPresets = RF:GetPresetsForClass("HUNTER")
+    Assert(#hunterPresets >= 4, "Must provide Hunter presets")
+    local foundFalke = false
+    for _, p in ipairs(hunterPresets) do
+        if p.spellID == 1293526 or p.spellName == "Falke beschwören" then
+            foundFalke = true
+            AssertEquals(p.startAttack, true, "Falke macro must have startAttack enabled")
+            AssertEquals(p.petAttack, true, "Falke macro must have petAttack enabled")
+            AssertEquals(p.targetMouseoverHarm, true, "Falke macro must be offensive (harm = true)")
+            AssertEquals(p.targetMouseoverHelp, false, "Falke macro must not be helpful")
+            break
+        end
+    end
+    Assert(foundFalke, "Falke beschwören preset must exist in HUNTER presets")
+
+    -- 5. Spell Rank Levels for sweet spot downranking
+    Assert(RF.SpellRankLevels["Falke beschwören"] ~= nil, "Falke beschwören rank levels must exist")
+    AssertEquals(RF.SpellRankLevels["Falke beschwören"][1], 25, "Rank 1 is learned at level 25")
+    AssertEquals(RF.SpellRankLevels["Falke beschwören"][4], 60, "Rank 4 is learned at level 60")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------

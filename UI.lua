@@ -619,7 +619,13 @@ local function CreateMainUI()
         end
     end)
     spellEdit:SetScript("OnEnterPressed", function(self)
-        local query = self:GetText():lower():trim()
+        local rawText = self:GetText() or ""
+        local query = rawText:lower():trim()
+        if query == "" then
+            self:ClearFocus()
+            return
+        end
+
         local spells = RF:GetLearnedSpellList()
         local matches = {}
         for _, sp in ipairs(spells) do
@@ -627,20 +633,47 @@ local function CreateMainUI()
                 table.insert(matches, sp)
             end
         end
+
+        local chosen = nil
         if #matches >= 1 then
-            local chosen = matches[1].name
+            chosen = matches[1].name
             for _, sp in ipairs(matches) do
                 if sp.name:lower() == query then
                     chosen = sp.name
                     break
                 end
             end
+        else
+            -- Fallback: check SpellCatalog and Presets
+            if RF.SpellCatalog then
+                for catName, sID in pairs(RF.SpellCatalog) do
+                    if catName == query or catName:find(query, 1, true) then
+                        if RF.SpellClassLookup then
+                            for origName, _ in pairs(RF.SpellClassLookup) do
+                                if origName:lower():trim() == catName then
+                                    chosen = origName
+                                    break
+                                end
+                            end
+                        end
+                        chosen = chosen or catName
+                        break
+                    end
+                end
+            end
+            if not chosen then
+                chosen = rawText:trim()
+            end
+        end
+
+        if chosen and chosen ~= "" then
             self:SetText(chosen)
             if currentMacro then
                 currentMacro.spellName = chosen
                 currentMacro.spellID = RF:ResolveSpellID(chosen)
+                local cleanName = chosen:gsub("%s+", ""):gsub("[%p%c]", "")
                 if currentMacro.macroName == "" or currentMacro.macroName:match("^DR_") then
-                    currentMacro.macroName = "DR_" .. chosen:gsub("%s+", "")
+                    currentMacro.macroName = "DR_" .. cleanName
                 end
                 RF:AutoConfigureSpellType(currentMacro, chosen)
                 RF:LoadMacroIntoEditor(currentMacro)
@@ -2412,6 +2445,28 @@ function RF:RefreshSpellPickerList()
 
     local filter = p.filterEdit:GetText():lower():trim()
     local spells = RF:GetLearnedSpellList()
+
+    -- Supplement with class preset spells not yet in spellbook
+    local knownNames = {}
+    for _, sp in ipairs(spells) do
+        knownNames[sp.name:lower()] = true
+    end
+    local _, _, charClass = RF:GetCurrentCharacterKey()
+    if RF.PresetSpells and charClass and RF.PresetSpells[charClass] then
+        for _, pr in ipairs(RF.PresetSpells[charClass]) do
+            local prName = pr.name or pr.spellName
+            if prName and not knownNames[prName:lower()] then
+                knownNames[prName:lower()] = true
+                table.insert(spells, {
+                    name = prName,
+                    spellID = pr.spellID,
+                    maxRank = 1,
+                    hasRanks = false
+                })
+            end
+        end
+    end
+
     local content = p.content
     local buttons = p.buttons
     p.filteredSpells = {}
