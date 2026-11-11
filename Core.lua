@@ -594,6 +594,99 @@ local HARMFUL_SPELLS = {
     ["Multi-Shot"] = true, ["Mehrfachschuss"] = true,
     ["Serpent Sting"] = true, ["Schlangenbiss"] = true,
     ["Concussive Shot"] = true, ["Erschütternder Schuss"] = true,
+    ["Kill Shot"] = true, ["Tödlicher Schuss"] = true,
+    ["Chimera Shot"] = true, ["Schimärenschuss"] = true,
+    ["Explosive Shot"] = true, ["Explosivschuss"] = true,
+    ["Steady Shot"] = true, ["Zuverlässiger Schuss"] = true,
+    ["Silencing Shot"] = true, ["Unterdrückender Schuss"] = true,
+    ["Scatter Shot"] = true, ["Streuschuss"] = true,
+    ["Raptor Strike"] = true, ["Raptorschlag"] = true,
+    ["Mongoose Bite"] = true, ["Mungobiss"] = true,
+    ["Wing Clip"] = true, ["Zurechtstutzen"] = true,
+    ["Volley"] = true, ["Salve"] = true,
+
+    -- Warlock
+    ["Wrack"] = true,
+    ["Incinerate"] = true, ["Verbrennen"] = true,
+    ["Chaos Bolt"] = true, ["Chaosblitz"] = true,
+    ["Haunt"] = true, ["Heimsuchung"] = true,
+    ["Unstable Affliction"] = true, ["Instabiles Gebrechen"] = true,
+    ["Seed of Corruption"] = true, ["Saat der Verderbnis"] = true,
+    ["Conflagrate"] = true, ["Feuersbrunst"] = true,
+    ["Soul Fire"] = true, ["Seelenfeuer"] = true,
+    ["Searing Pain"] = true, ["Sengender Schmerz"] = true,
+    ["Shadowfury"] = true, ["Schattenfuror"] = true,
+
+    -- Mage
+    ["Ice Lance"] = true, ["Eislanze"] = true,
+    ["Deep Freeze"] = true, ["Tieffrieren"] = true,
+    ["Living Bomb"] = true, ["Lebende Bombe"] = true,
+    ["Arcane Blast"] = true, ["Arkanschlag"] = true,
+    ["Arcane Barrage"] = true, ["Arkanes Geschoss"] = true,
+    ["Frostfire Bolt"] = true, ["Frostfeuerblitz"] = true,
+
+    -- Priest
+    ["Shadow Word: Death"] = true, ["Schattenwort: Tod"] = true,
+    ["Penance"] = true, ["Sühne"] = true,
+
+    -- Rogue
+    ["Shank"] = true,
+    ["Sinister Strike"] = true, ["Finsterer Stoß"] = true,
+    ["Eviscerate"] = true, ["Ausweiden"] = true,
+    ["Backstab"] = true, ["Meucheln"] = true,
+    ["Ambush"] = true, ["Hinterhalt"] = true,
+    ["Rupture"] = true, ["Blutung"] = true,
+    ["Kidney Shot"] = true, ["Nierenhieb"] = true,
+    ["Cheap Shot"] = true, ["Fieser Trick"] = true,
+    ["Gouge"] = true, ["Solarplexus"] = true,
+    ["Garrote"] = true, ["Erdrosseln"] = true,
+    ["Shiv"] = true, ["Tückische Klinge"] = true,
+    ["Mutilate"] = true, ["Verstümmeln"] = true,
+    ["Envenom"] = true, ["Vergiften"] = true,
+    ["Deadly Throw"] = true, ["Tödlicher Wurf"] = true,
+
+    -- Warrior
+    ["Heroic Strike"] = true, ["Heroischer Stoß"] = true,
+    ["Rend"] = true, ["Verwunden"] = true,
+    ["Thunder Clap"] = true, ["Donnerknall"] = true,
+    ["Shield Slam"] = true, ["Schildschlag"] = true,
+    ["Mortal Strike"] = true, ["Tödlicher Stoß"] = true,
+    ["Bloodthirst"] = true, ["Blutdurst"] = true,
+    ["Whirlwind"] = true, ["Wirbelwind"] = true,
+    ["Overpower"] = true, ["Überwältigen"] = true,
+    ["Revenge"] = true, ["Rache"] = true,
+    ["Execute"] = true, ["Hinrichten"] = true,
+    ["Sunder Armor"] = true, ["Rüstung zerreißen"] = true,
+    ["Devastate"] = true, ["Verwüsten"] = true,
+    ["Victory Rush"] = true, ["Siegesrausch"] = true,
+    ["Slam"] = true, ["Zerschmettern"] = true,
+    ["Cleave"] = true, ["Spalten"] = true,
+    ["Bladestorm"] = true, ["Klingensturm"] = true,
+    ["Shockwave"] = true, ["Schockwelle"] = true,
+
+    -- Paladin
+    ["Crusader Strike"] = true, ["Kreuzfahrerstoß"] = true,
+    ["Avenger's Shield"] = true, ["Schild des Rächers"] = true,
+    ["Hammer of the Righteous"] = true, ["Hammer der Rechtschaffenen"] = true,
+    ["Shield of Righteousness"] = true, ["Schild der Rechtschaffenheit"] = true,
+    ["Hammer of Wrath"] = true, ["Hammer des Zorns"] = true,
+    ["Holy Wrath"] = true, ["Heiliger Zorn"] = true,
+
+    -- Shaman
+    ["Lava Burst"] = true, ["Lavaeruption"] = true,
+    ["Stormstrike"] = true, ["Sturmschlag"] = true,
+    ["Lava Lash"] = true, ["Lavapeitsche"] = true,
+
+    -- Druid
+    ["Mangle"] = true, ["Zerfleischen"] = true,
+    ["Lacerate"] = true, ["Aufschlitzen"] = true,
+    ["Rip"] = true, ["Zerfetzen"] = true,
+    ["Ferocious Bite"] = true, ["Wilder Biss"] = true,
+    ["Claw"] = true, ["Klaue"] = true,
+    ["Rake"] = true, ["Krallenhieb"] = true,
+    ["Shred"] = true, ["Schreddern"] = true,
+    ["Maul"] = true, ["Zermalmen"] = true,
+    ["Swipe"] = true, ["Prankenhieb"] = true,
 }
 
 local HELPFUL_SPELLS = {
@@ -604,15 +697,24 @@ local HELPFUL_SPELLS = {
     ["Lesser Heal"] = true, ["Geringes Heilen"] = true, ["Geringe Heilung"] = true,
     ["Prayer of Healing"] = true, ["Gebet der Heilung"] = true,
     ["Power Word: Shield"] = true, ["Machtwort: Schild"] = true,
+    ["Binding Heal"] = true, ["Verbindende Heilung"] = true,
+    ["Prayer of Mending"] = true, ["Gebet der Besserung"] = true,
+    ["Circle of Healing"] = true, ["Kreis der Heilung"] = true,
     ["Healing Touch"] = true, ["Heilende Berührung"] = true,
     ["Regrowth"] = true, ["Nachwachsen"] = true,
     ["Rejuvenation"] = true, ["Verjüngung"] = true,
+    ["Lifebloom"] = true, ["Blühendes Leben"] = true,
+    ["Wild Growth"] = true, ["Wildwuchs"] = true,
+    ["Nourish"] = true, ["Pflege"] = true,
     ["Holy Light"] = true, ["Heiliges Licht"] = true,
     ["Flash of Light"] = true, ["Lichtblitz"] = true,
     ["Holy Shock"] = true, ["Heiliger Schock"] = true,
+    ["Beacon of Light"] = true, ["Flamme des Glaubens"] = true,
+    ["Lay on Hands"] = true, ["Handauflegung"] = true,
     ["Healing Wave"] = true, ["Welle der Heilung"] = true,
     ["Lesser Healing Wave"] = true, ["Geringe Welle der Heilung"] = true,
     ["Chain Heal"] = true, ["Kettenheilung"] = true,
+    ["Riptide"] = true, ["Springflut"] = true,
     ["Mend Pet"] = true, ["Tier heilen"] = true,
 }
 
@@ -829,6 +931,8 @@ RF.SpellClassLookup = {
     ["Shackle Undead"] = "PRIEST", ["Untote fesseln"] = "PRIEST",
     ["Mind Control"] = "PRIEST", ["Gedankenkontrolle"] = "PRIEST",
     ["Mind Vision"] = "PRIEST", ["Gedankensicht"] = "PRIEST",
+    ["Penance"] = "PRIEST", ["Sühne"] = "PRIEST", ["Suehne"] = "PRIEST",
+    ["Dispersion"] = "PRIEST",
 
     -- Hunter
     ["Falke beschwören"] = "HUNTER", ["Falke beschworen"] = "HUNTER", ["Falke beschören"] = "HUNTER",
@@ -853,6 +957,10 @@ RF.SpellClassLookup = {
     ["Call Pet"] = "HUNTER", ["Begleiter rufen"] = "HUNTER",
     ["Revive Pet"] = "HUNTER", ["Begleiter wiederbeleben"] = "HUNTER",
     ["Dismiss Pet"] = "HUNTER", ["Begleiter freigeben"] = "HUNTER",
+    ["Kill Command"] = "HUNTER", ["Fass!"] = "HUNTER", ["Fass"] = "HUNTER",
+    ["Chimera Shot"] = "HUNTER", ["Schimärenschuss"] = "HUNTER",
+    ["Explosive Shot"] = "HUNTER", ["Explosivschuss"] = "HUNTER",
+    ["Wyvern Sting"] = "HUNTER", ["Stich des Flügeldrachen"] = "HUNTER",
     ["Feign Death"] = "HUNTER", ["Totstellen"] = "HUNTER",
     ["Hunter's Mark"] = "HUNTER", ["Mal des Jägers"] = "HUNTER", ["Mal des Jaegers"] = "HUNTER",
     ["Flare"] = "HUNTER", ["Leuchtfeuer"] = "HUNTER",
@@ -914,6 +1022,8 @@ RF.SpellClassLookup = {
     ["Cat Form"] = "DRUID", ["Katzengestalt"] = "DRUID",
     ["Travel Form"] = "DRUID", ["Reisegestalt"] = "DRUID",
     ["Aquatic Form"] = "DRUID", ["Wassergestalt"] = "DRUID",
+    ["Wild Growth"] = "DRUID", ["Wildwuchs"] = "DRUID",
+    ["Nourish"] = "DRUID", ["Pflege"] = "DRUID",
 
     -- Paladin
     ["Holy Light"] = "PALADIN", ["Heiliges Licht"] = "PALADIN",
@@ -939,6 +1049,7 @@ RF.SpellClassLookup = {
     ["Crusader Strike"] = "PALADIN", ["Kreuzfahrerstoß"] = "PALADIN",
     ["Avenger's Shield"] = "PALADIN", ["Schild des Rächers"] = "PALADIN", ["Schild des Raechers"] = "PALADIN",
     ["Holy Wrath"] = "PALADIN", ["Heiliger Zorn"] = "PALADIN",
+    ["Beacon of Light"] = "PALADIN", ["Flamme des Glaubens"] = "PALADIN",
 
     -- Shaman
     ["Healing Wave"] = "SHAMAN", ["Welle der Heilung"] = "SHAMAN",
@@ -964,6 +1075,9 @@ RF.SpellClassLookup = {
     ["Poison Cleansing Totem"] = "SHAMAN", ["Totem der Giftreinigung"] = "SHAMAN",
     ["Cleanse Spirit"] = "SHAMAN", ["Geistreinigung"] = "SHAMAN",
     ["Cure Toxins"] = "SHAMAN", ["Gifte heilen"] = "SHAMAN",
+    ["Stormstrike"] = "SHAMAN", ["Sturmschlag"] = "SHAMAN",
+    ["Lava Lash"] = "SHAMAN", ["Lavapeitsche"] = "SHAMAN",
+    ["Hex"] = "SHAMAN", ["Verhexen"] = "SHAMAN",
 
     -- Mage
     ["Frostbolt"] = "MAGE", ["Frostblitz"] = "MAGE",
@@ -991,6 +1105,10 @@ RF.SpellClassLookup = {
     ["Cold Snap"] = "MAGE", ["Kälteeinbruch"] = "MAGE", ["Kaelteeinbruch"] = "MAGE",
     ["Ice Lance"] = "MAGE", ["Eislanze"] = "MAGE",
     ["Deep Freeze"] = "MAGE", ["Tieffrieren"] = "MAGE",
+    ["Living Bomb"] = "MAGE", ["Lebende Bombe"] = "MAGE",
+    ["Arcane Blast"] = "MAGE", ["Arkanschlag"] = "MAGE",
+    ["Arcane Barrage"] = "MAGE", ["Arkanes Geschoss"] = "MAGE",
+    ["Frostfire Bolt"] = "MAGE", ["Frostfeuerblitz"] = "MAGE",
 
     -- Warlock
     ["Shadow Bolt"] = "WARLOCK", ["Schattenblitz"] = "WARLOCK",
@@ -1019,6 +1137,7 @@ RF.SpellClassLookup = {
     ["Conflagrate"] = "WARLOCK", ["Feuersbrunst"] = "WARLOCK",
     ["Soul Fire"] = "WARLOCK", ["Seelenfeuer"] = "WARLOCK",
     ["Searing Pain"] = "WARLOCK", ["Sengender Schmerz"] = "WARLOCK",
+    ["Wrack"] = "WARLOCK",
 
     -- Warrior
     ["Heroic Strike"] = "WARRIOR", ["Heroischer Stoß"] = "WARRIOR", ["Heroischer Stoss"] = "WARRIOR",
@@ -1091,6 +1210,7 @@ RF.SpellClassLookup = {
     ["Mutilate"] = "ROGUE", ["Verstümmeln"] = "ROGUE", ["Verstuemmeln"] = "ROGUE",
     ["Envenom"] = "ROGUE", ["Vergiften"] = "ROGUE",
     ["Deadly Throw"] = "ROGUE", ["Tödlicher Wurf"] = "ROGUE", ["Toedlicher Wurf"] = "ROGUE",
+    ["Shank"] = "ROGUE",
 }
 
 local function NormalizeSpellKey(str)

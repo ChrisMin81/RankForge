@@ -1277,6 +1277,33 @@ RegisterTest("WoW Forever: Hunter 'Falke beschwören' (Spell ID 1293526) & Prese
     AssertEquals(RF.SpellRankLevels["Falke beschwören"][4], 60, "Rank 4 is learned at level 60")
 end)
 
+RegisterTest("Expanded Multi-Class Spells & Presets (Warrior, Mage, Rogue, Warlock)", function()
+    -- 1. All 9 classes have presets
+    local classes = { "PRIEST", "PALADIN", "DRUID", "SHAMAN", "HUNTER", "MAGE", "WARLOCK", "ROGUE", "WARRIOR" }
+    for _, cls in ipairs(classes) do
+        local pr = RF:GetPresetsForClass(cls)
+        Assert(#pr >= 2, "Class " .. cls .. " must have at least 2 presets defined")
+    end
+
+    -- 2. Custom WoW Forever spells resolution
+    AssertEquals(RF:GetClassForSpell("Shank"), "ROGUE", "Shank must belong to ROGUE")
+    AssertEquals(RF:GetClassForSpell("Wrack"), "WARLOCK", "Wrack must belong to WARLOCK")
+    AssertEquals(RF:IsSpellHarmful("Shank"), true, "Shank is harmful")
+    AssertEquals(RF:IsSpellHarmful("Wrack"), true, "Wrack is harmful")
+
+    -- 3. Spell catalog resolution for expanded spells
+    AssertEquals(RF:ResolveSpellID("Ice Lance"), 30455, "Ice Lance resolves to 30455")
+    AssertEquals(RF:ResolveSpellID("Eislanze"), 30455, "Eislanze resolves to 30455")
+    AssertEquals(RF:ResolveSpellID("Kill Shot"), 53351, "Kill Shot resolves to 53351")
+    AssertEquals(RF:ResolveSpellID("Tödlicher Schuss"), 53351, "Tödlicher Schuss resolves to 53351")
+    AssertEquals(RF:ResolveSpellID("Crusader Strike"), 35395, "Crusader Strike resolves to 35395")
+    AssertEquals(RF:ResolveSpellID("Kreuzfahrerstoß"), 35395, "Kreuzfahrerstoß resolves to 35395")
+    AssertEquals(RF:ResolveSpellID("Riptide"), 61295, "Riptide resolves to 61295")
+    AssertEquals(RF:ResolveSpellID("Springflut"), 61295, "Springflut resolves to 61295")
+    AssertEquals(RF:ResolveSpellID("Bladestorm"), 46924, "Bladestorm resolves to 46924")
+    AssertEquals(RF:ResolveSpellID("Klingensturm"), 46924, "Klingensturm resolves to 46924")
+end)
+
 --------------------------------------------------------------------------------
 -- Test Runner Execution
 --------------------------------------------------------------------------------
